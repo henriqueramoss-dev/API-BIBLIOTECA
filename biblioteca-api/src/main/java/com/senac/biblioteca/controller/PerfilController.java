@@ -5,6 +5,7 @@ import com.senac.biblioteca.dto.PerfilRequest;
 import com.senac.biblioteca.entity.Perfil;
 import com.senac.biblioteca.service.PerfilService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,11 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Controller responsável pelos endpoints REST de perfis.
- * Recebe requisições HTTP, delega as regras para a camada Service
- * e devolve respostas documentadas, paginadas e com HATEOAS.
- */
 /**
  * Controller dos perfis. Expõe o CRUD, a listagem paginada e a busca
  * personalizada por telefone. A camada Service contém as regras de negócio.
@@ -60,7 +56,10 @@ public class PerfilController {
         summary = "Listar perfis",
         description = "Retorna os perfis cadastrados de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Perfil>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -76,7 +75,8 @@ public class PerfilController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Perfil encontrado"),
-        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
+        @ApiResponse(responseCode = "404", description = "Perfil não encontrado"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Perfil>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -97,22 +97,21 @@ public class PerfilController {
         @ApiResponse(responseCode = "409", description = "Conflito de dados, como valor duplicado")
     })
     public ResponseEntity<EntityModel<Perfil>> criar(@Valid @RequestBody PerfilRequest item) {
-        return service.criar(item)
-            .map(assembler::toModel)
-            .map(model -> ResponseEntity.status(HttpStatus.CREATED).body(model))
-            .orElse(ResponseEntity.badRequest().build());
+        Perfil criado = service.criar(item);
+        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
     }
 
     // Atualização de um recurso existente.
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar perfil",
-        description = "Atualiza telefone, endereço e data de nascimento."
+        description = "Atualiza telefone, endereço, data de nascimento e usuário de um perfil existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
-        @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
+        @ApiResponse(responseCode = "404", description = "Perfil não encontrado"),
+        @ApiResponse(responseCode = "409", description = "O usuário informado já possui outro perfil")
     })
     public ResponseEntity<EntityModel<Perfil>> atualizar(
         @PathVariable Long id,
@@ -148,8 +147,12 @@ public class PerfilController {
         summary = "Buscar perfis por telefone",
         description = "Busca perfis pelo telefone usando paginação."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Perfil>>> buscar(
+        @Parameter(description = "Parte do telefone a ser pesquisada", example = "1199")
         @RequestParam String telefone,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

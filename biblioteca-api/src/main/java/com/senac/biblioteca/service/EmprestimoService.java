@@ -5,6 +5,7 @@ import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Livro;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.enums.StatusEmprestimo;
+import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
 import com.senac.biblioteca.repository.EmprestimoRepository;
 import com.senac.biblioteca.repository.LivroRepository;
 import com.senac.biblioteca.repository.UsuarioRepository;
@@ -46,47 +47,54 @@ public class EmprestimoService {
     }
 
     // Só cria o empréstimo quando usuário e livro informados existem.
-    public Optional<Emprestimo> criar(EmprestimoRequest dados) {
-        Optional<Usuario> usuario = usuarioRepository.findById(dados.getUsuarioId());
-        Optional<Livro> livro = livroRepository.findById(dados.getLivroId());
-
-        if (usuario.isEmpty() || livro.isEmpty()) {
-            return Optional.empty();
-        }
+    public Emprestimo criar(EmprestimoRequest dados) {
+        Usuario usuario = buscarUsuario(dados.getUsuarioId());
+        Livro livro = buscarLivro(dados.getLivroId());
 
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setDataEmprestimo(dados.getDataEmprestimo());
         emprestimo.setDataPrevistaDevolucao(dados.getDataPrevistaDevolucao());
         emprestimo.setStatus(dados.getStatus());
-        emprestimo.setUsuario(usuario.get());
-        emprestimo.setLivro(livro.get());
+        emprestimo.setUsuario(usuario);
+        emprestimo.setLivro(livro);
 
-        return Optional.of(repository.save(emprestimo));
+        return repository.save(emprestimo);
     }
 
     // Atualiza datas e status quando o empréstimo existe.
     public Optional<Emprestimo> atualizar(Long id, EmprestimoRequest dados) {
-        Optional<Usuario> usuario = usuarioRepository.findById(dados.getUsuarioId());
-        Optional<Livro> livro = livroRepository.findById(dados.getLivroId());
-
-        if (usuario.isEmpty() || livro.isEmpty()) {
+        Optional<Emprestimo> existente = repository.findById(id);
+        if (existente.isEmpty()) {
             return Optional.empty();
         }
 
-        return repository.findById(id)
-            .map(emprestimo -> {
-                emprestimo.setDataEmprestimo(dados.getDataEmprestimo());
-                emprestimo.setDataPrevistaDevolucao(dados.getDataPrevistaDevolucao());
-                emprestimo.setStatus(dados.getStatus());
-                emprestimo.setUsuario(usuario.get());
-                emprestimo.setLivro(livro.get());
+        Usuario usuario = buscarUsuario(dados.getUsuarioId());
+        Livro livro = buscarLivro(dados.getLivroId());
 
-                // Salva a atualização e busca novamente o empréstimo com o
-                // EntityGraph do Repository. Assim, Livro, Categoria e Autores
-                // já chegam carregados para a resposta JSON/HATEOAS.
-                repository.save(emprestimo);
-                return repository.findById(id).orElse(emprestimo);
-            });
+        Emprestimo emprestimo = existente.get();
+        emprestimo.setDataEmprestimo(dados.getDataEmprestimo());
+        emprestimo.setDataPrevistaDevolucao(dados.getDataPrevistaDevolucao());
+        emprestimo.setStatus(dados.getStatus());
+        emprestimo.setUsuario(usuario);
+        emprestimo.setLivro(livro);
+
+        // Salva a atualização e busca novamente o empréstimo com o
+        // EntityGraph do Repository. Assim, Livro, Categoria e Autores
+        // já chegam carregados para a resposta JSON/HATEOAS.
+        repository.save(emprestimo);
+        return Optional.of(repository.findById(id).orElse(emprestimo));
+    }
+
+    // Garante que o usuário informado existe.
+    private Usuario buscarUsuario(Long usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new RecursoRelacionadoNaoEncontradoException("Usuário", usuarioId));
+    }
+
+    // Garante que o livro informado existe.
+    private Livro buscarLivro(Long livroId) {
+        return livroRepository.findById(livroId)
+            .orElseThrow(() -> new RecursoRelacionadoNaoEncontradoException("Livro", livroId));
     }
 
     // Exclui pelo id quando encontrado.

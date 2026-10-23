@@ -6,6 +6,7 @@ import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.enums.StatusEmprestimo;
 import com.senac.biblioteca.service.EmprestimoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,7 +49,10 @@ public class EmprestimoController {
         summary = "Listar empréstimos",
         description = "Retorna os empréstimos cadastrados de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Emprestimo>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -63,7 +67,8 @@ public class EmprestimoController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Empréstimo encontrado"),
-        @ApiResponse(responseCode = "404", description = "Empréstimo não encontrado")
+        @ApiResponse(responseCode = "404", description = "Empréstimo não encontrado"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Emprestimo>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -82,16 +87,14 @@ public class EmprestimoController {
         @ApiResponse(responseCode = "400", description = "Dados inválidos")
     })
     public ResponseEntity<EntityModel<Emprestimo>> criar(@Valid @RequestBody EmprestimoRequest item) {
-        return service.criar(item)
-            .map(assembler::toModel)
-            .map(model -> ResponseEntity.status(HttpStatus.CREATED).body(model))
-            .orElse(ResponseEntity.badRequest().build());
+        Emprestimo criado = service.criar(item);
+        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
     }
 
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar empréstimo",
-        description = "Atualiza datas e status de um empréstimo existente."
+        description = "Atualiza datas, status, usuário e livro de um empréstimo existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Empréstimo atualizado com sucesso"),
@@ -130,8 +133,12 @@ public class EmprestimoController {
         summary = "Buscar empréstimos por status",
         description = "Busca empréstimos pelo status informado."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Emprestimo>>> buscar(
+        @Parameter(description = "Status do empréstimo (ATIVO, DEVOLVIDO ou ATRASADO)", example = "ATIVO")
         @RequestParam StatusEmprestimo status,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

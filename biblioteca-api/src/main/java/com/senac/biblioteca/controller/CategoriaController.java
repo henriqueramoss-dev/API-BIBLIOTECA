@@ -4,6 +4,7 @@ import com.senac.biblioteca.assembler.CategoriaModelAssembler;
 import com.senac.biblioteca.entity.Categoria;
 import com.senac.biblioteca.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,7 +48,10 @@ public class CategoriaController {
         summary = "Listar categorias",
         description = "Retorna as categorias cadastradas de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Categoria>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -62,7 +66,8 @@ public class CategoriaController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Categoria encontrada"),
-        @ApiResponse(responseCode = "404", description = "Categoria não encontrada")
+        @ApiResponse(responseCode = "404", description = "Categoria não encontrada"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Categoria>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -112,7 +117,8 @@ public class CategoriaController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Categoria excluída com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Categoria não encontrada")
+        @ApiResponse(responseCode = "404", description = "Categoria não encontrada"),
+        @ApiResponse(responseCode = "409", description = "Categoria possui livros e não pode ser excluída")
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
@@ -127,8 +133,12 @@ public class CategoriaController {
         summary = "Buscar categorias por nome",
         description = "Busca categorias cujo nome contém o texto informado."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Categoria>>> buscar(
+        @Parameter(description = "Texto que deve estar contido no nome da categoria", example = "Romance")
         @RequestParam String nome,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

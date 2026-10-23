@@ -4,6 +4,7 @@ import com.senac.biblioteca.dto.LivroRequest;
 import com.senac.biblioteca.entity.Autor;
 import com.senac.biblioteca.entity.Categoria;
 import com.senac.biblioteca.entity.Livro;
+import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
 import com.senac.biblioteca.repository.AutorRepository;
 import com.senac.biblioteca.repository.CategoriaRepository;
 import com.senac.biblioteca.repository.LivroRepository;
@@ -47,61 +48,37 @@ public class LivroService {
     }
 
     // Valida categoria e autores antes de persistir o novo livro.
-    public Optional<Livro> criar(LivroRequest dados) {
-        Optional<Categoria> categoria = categoriaRepository.findById(dados.getCategoriaId());
-
-        if (categoria.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Set<Autor> autores = new HashSet<>();
-        if (dados.getAutoresIds() != null) {
-            for (Long autorId : dados.getAutoresIds()) {
-                Optional<Autor> autor = autorRepository.findById(autorId);
-                if (autor.isEmpty()) {
-                    return Optional.empty();
-                }
-                autores.add(autor.get());
-            }
-        }
+    public Livro criar(LivroRequest dados) {
+        Categoria categoria = buscarCategoria(dados.getCategoriaId());
+        Set<Autor> autores = buscarAutores(dados.getAutoresIds());
 
         Livro livro = new Livro();
         livro.setTitulo(dados.getTitulo());
         livro.setIsbn(dados.getIsbn());
         livro.setAnoPublicacao(dados.getAnoPublicacao());
-        livro.setCategoria(categoria.get());
+        livro.setCategoria(categoria);
         livro.setAutores(autores);
 
-        return Optional.of(repository.save(livro));
+        return repository.save(livro);
     }
 
     // Atualiza os dados principais se o livro existir.
     public Optional<Livro> atualizar(Long id, LivroRequest dados) {
-        Optional<Categoria> categoria = categoriaRepository.findById(dados.getCategoriaId());
-        if (categoria.isEmpty()) {
+        Optional<Livro> existente = repository.findById(id);
+        if (existente.isEmpty()) {
             return Optional.empty();
         }
 
-        Set<Autor> autores = new HashSet<>();
-        if (dados.getAutoresIds() != null) {
-            for (Long autorId : dados.getAutoresIds()) {
-                Optional<Autor> autor = autorRepository.findById(autorId);
-                if (autor.isEmpty()) {
-                    return Optional.empty();
-                }
-                autores.add(autor.get());
-            }
-        }
+        Categoria categoria = buscarCategoria(dados.getCategoriaId());
+        Set<Autor> autores = buscarAutores(dados.getAutoresIds());
 
-        return repository.findById(id)
-            .map(livro -> {
-                livro.setTitulo(dados.getTitulo());
-                livro.setIsbn(dados.getIsbn());
-                livro.setAnoPublicacao(dados.getAnoPublicacao());
-                livro.setCategoria(categoria.get());
-                livro.setAutores(autores);
-                return repository.save(livro);
-            });
+        Livro livro = existente.get();
+        livro.setTitulo(dados.getTitulo());
+        livro.setIsbn(dados.getIsbn());
+        livro.setAnoPublicacao(dados.getAnoPublicacao());
+        livro.setCategoria(categoria);
+        livro.setAutores(autores);
+        return Optional.of(repository.save(livro));
     }
 
     // Exclui o livro pelo id quando encontrado.
@@ -117,5 +94,28 @@ public class LivroService {
     // Consulta personalizada por parte do título, com paginação.
     public Page<Livro> buscarPorTitulo(String titulo, Pageable pageable) {
         return repository.findByTituloContainingIgnoreCase(titulo, pageable);
+    }
+
+    // Garante que a categoria informada existe.
+    private Categoria buscarCategoria(Long categoriaId) {
+        return categoriaRepository.findById(categoriaId)
+            .orElseThrow(() -> new RecursoRelacionadoNaoEncontradoException("Categoria", categoriaId));
+    }
+
+    // Garante que todos os autores informados existem.
+    private Set<Autor> buscarAutores(Set<Long> autoresIds) {
+        Set<Autor> autores = new HashSet<>();
+        if (autoresIds == null) {
+            return autores;
+        }
+
+        for (Long autorId : autoresIds) {
+            if (autorId == null) {
+                throw new RecursoRelacionadoNaoEncontradoException("Autor", null);
+            }
+            autores.add(autorRepository.findById(autorId)
+                .orElseThrow(() -> new RecursoRelacionadoNaoEncontradoException("Autor", autorId)));
+        }
+        return autores;
     }
 }

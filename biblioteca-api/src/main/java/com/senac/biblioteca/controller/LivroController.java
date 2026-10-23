@@ -5,6 +5,7 @@ import com.senac.biblioteca.dto.LivroRequest;
 import com.senac.biblioteca.entity.Livro;
 import com.senac.biblioteca.service.LivroService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,7 +49,10 @@ public class LivroController {
         summary = "Listar livros",
         description = "Retorna os livros cadastrados de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Livro>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -63,7 +67,8 @@ public class LivroController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Livro encontrado"),
-        @ApiResponse(responseCode = "404", description = "Livro não encontrado")
+        @ApiResponse(responseCode = "404", description = "Livro não encontrado"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Livro>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -83,16 +88,14 @@ public class LivroController {
         @ApiResponse(responseCode = "409", description = "Conflito de dados, como valor duplicado")
     })
     public ResponseEntity<EntityModel<Livro>> criar(@Valid @RequestBody LivroRequest item) {
-        return service.criar(item)
-            .map(assembler::toModel)
-            .map(model -> ResponseEntity.status(HttpStatus.CREATED).body(model))
-            .orElse(ResponseEntity.badRequest().build());
+        Livro criado = service.criar(item);
+        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
     }
 
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar livro",
-        description = "Atualiza título, ISBN e ano de publicação de um livro."
+        description = "Atualiza título, ISBN, ano de publicação, categoria e autores de um livro existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Livro atualizado com sucesso"),
@@ -117,7 +120,8 @@ public class LivroController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Livro excluído com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Livro não encontrado")
+        @ApiResponse(responseCode = "404", description = "Livro não encontrado"),
+        @ApiResponse(responseCode = "409", description = "Livro possui empréstimos e não pode ser excluído")
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
@@ -132,8 +136,12 @@ public class LivroController {
         summary = "Buscar livros por título",
         description = "Busca livros cujo título contém o texto informado."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Livro>>> buscar(
+        @Parameter(description = "Texto que deve estar contido no título do livro", example = "Dom")
         @RequestParam String titulo,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

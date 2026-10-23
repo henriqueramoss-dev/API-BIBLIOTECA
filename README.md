@@ -32,19 +32,25 @@ O projeto está organizado de forma simples e objetiva.
 com.senac.biblioteca
 │
 ├── BibliotecaApplication.java
+├── assembler
+├── config
 ├── controller
+├── dto
 ├── entity
 ├── enums
-├── repository
 ├── exception
-└── config
+├── repository
+└── service
 ```
 
 Responsabilidade de cada pacote:
 
 - `entity`: representa as tabelas do banco de dados;
 - `repository`: realiza o acesso aos dados com Spring Data JPA;
+- `service`: concentra as regras de negócio e valida os relacionamentos;
 - `controller`: recebe as requisições HTTP e disponibiliza os endpoints REST;
+- `dto`: dados de entrada que referenciam outros registros por ID (livro, perfil e empréstimo);
+- `assembler`: monta as respostas HATEOAS (`EntityModel`) com os links de cada recurso;
 - `enums`: armazena valores fixos utilizados pelas entidades;
 - `exception`: tratamento de erros da API;
 - `config`: configurações gerais, como Swagger.
@@ -278,8 +284,9 @@ A API utilizará códigos HTTP adequados para cada operação.
 | Requisição realizada com sucesso | 200 OK |
 | Recurso criado | 201 Created |
 | Exclusão realizada | 204 No Content |
-| Dados inválidos | 400 Bad Request |
+| Dados inválidos, ID relacionado inexistente, parâmetro ausente ou ordenação inválida | 400 Bad Request |
 | Recurso não encontrado | 404 Not Found |
+| Valor duplicado (e-mail, ISBN, perfil) ou registro em uso ao excluir | 409 Conflict |
 | Erro interno | 500 Internal Server Error |
 
 ---
@@ -373,7 +380,30 @@ Exemplo simplificado:
 }
 ```
 
-Serão utilizados recursos como:
+Além de `self`, `update`, `delete` e do link para a listagem, cada recurso
+traz links para os recursos relacionados, permitindo navegar pela API:
+
+| Recurso | Links relacionados |
+|---|---|
+| Livro | `categoria`, `autores` |
+| Empréstimo | `usuario`, `livro` |
+| Perfil | `usuario` |
+| Usuário | `perfil` (quando existir) |
+
+Exemplo de um empréstimo:
+
+```json
+"_links": {
+  "self":        { "href": "http://localhost:8080/emprestimos/1" },
+  "update":      { "href": "http://localhost:8080/emprestimos/1" },
+  "delete":      { "href": "http://localhost:8080/emprestimos/1" },
+  "emprestimos": { "href": "http://localhost:8080/emprestimos" },
+  "usuario":     { "href": "http://localhost:8080/usuarios/1" },
+  "livro":       { "href": "http://localhost:8080/livros/1" }
+}
+```
+
+São utilizados os recursos:
 
 - `EntityModel`
 - `PagedModel`

@@ -2,6 +2,8 @@ package com.senac.biblioteca.assembler;
 
 import com.senac.biblioteca.controller.EmprestimoController;
 import com.senac.biblioteca.entity.Emprestimo;
+import com.senac.biblioteca.controller.LivroController;
+import com.senac.biblioteca.controller.UsuarioController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,8 @@ public class EmprestimoModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * usuario -> navega para o usuário que pegou o livro
+     * livro -> navega para o livro emprestado
      * emprestimos -> retorna para a listagem paginada do recurso
      */
     @Override
@@ -33,7 +37,9 @@ public class EmprestimoModelAssembler
             linkTo(EmprestimoController.class).slash(item.getId()).withSelfRel(),
             linkTo(EmprestimoController.class).slash(item.getId()).withRel("update"),
             linkTo(EmprestimoController.class).slash(item.getId()).withRel("delete"),
-            linkTo(EmprestimoController.class).withRel("emprestimos")
+            linkTo(EmprestimoController.class).withRel("emprestimos"),
+            linkTo(UsuarioController.class).slash(item.getUsuario().getId()).withRel("usuario"),
+            linkTo(LivroController.class).slash(item.getLivro().getId()).withRel("livro")
         );
     }
 }
