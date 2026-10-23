@@ -4,6 +4,7 @@ import com.senac.biblioteca.assembler.AutorModelAssembler;
 import com.senac.biblioteca.entity.Autor;
 import com.senac.biblioteca.service.AutorService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,7 +48,10 @@ public class AutorController {
         summary = "Listar autores",
         description = "Retorna os autores cadastrados de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Autor>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -62,7 +66,8 @@ public class AutorController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Autor encontrado"),
-        @ApiResponse(responseCode = "404", description = "Autor não encontrado")
+        @ApiResponse(responseCode = "404", description = "Autor não encontrado"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Autor>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -112,7 +117,8 @@ public class AutorController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Autor excluído com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Autor não encontrado")
+        @ApiResponse(responseCode = "404", description = "Autor não encontrado"),
+        @ApiResponse(responseCode = "409", description = "Autor está vinculado a livros e não pode ser excluído")
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
@@ -127,8 +133,12 @@ public class AutorController {
         summary = "Buscar autores por nome",
         description = "Busca autores cujo nome contém o texto informado."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Autor>>> buscar(
+        @Parameter(description = "Texto que deve estar contido no nome do autor", example = "Machado")
         @RequestParam String nome,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

@@ -3,6 +3,7 @@ package com.senac.biblioteca.service;
 import com.senac.biblioteca.dto.PerfilRequest;
 import com.senac.biblioteca.entity.Perfil;
 import com.senac.biblioteca.entity.Usuario;
+import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
 import com.senac.biblioteca.repository.PerfilRepository;
 import com.senac.biblioteca.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
@@ -37,35 +38,38 @@ public class PerfilService {
     }
 
     // Antes de salvar, confirma se o usuário informado existe.
-    public Optional<Perfil> criar(PerfilRequest dados) {
-        Optional<Usuario> usuario = usuarioRepository.findById(dados.getUsuarioId());
-
-        if (usuario.isEmpty()) {
-            return Optional.empty();
-        }
-
+    public Perfil criar(PerfilRequest dados) {
         Perfil perfil = new Perfil();
         perfil.setTelefone(dados.getTelefone());
         perfil.setEndereco(dados.getEndereco());
         perfil.setDataNascimento(dados.getDataNascimento());
-        perfil.setUsuario(usuario.get());
+        perfil.setUsuario(buscarUsuario(dados.getUsuarioId()));
 
-        return Optional.of(repository.save(perfil));
+        return repository.save(perfil);
     }
 
     // Atualiza os dados do perfil quando o id é válido.
     public Optional<Perfil> atualizar(Long id, PerfilRequest dados) {
-        return repository.findById(id)
-            .map(perfil -> {
-                perfil.setTelefone(dados.getTelefone());
-                perfil.setEndereco(dados.getEndereco());
-                perfil.setDataNascimento(dados.getDataNascimento());
+        Optional<Perfil> existente = repository.findById(id);
+        if (existente.isEmpty()) {
+            return Optional.empty();
+        }
 
-                usuarioRepository.findById(dados.getUsuarioId())
-                    .ifPresent(perfil::setUsuario);
+        Usuario usuario = buscarUsuario(dados.getUsuarioId());
 
-                return repository.save(perfil);
-            });
+        Perfil perfil = existente.get();
+        perfil.setTelefone(dados.getTelefone());
+        perfil.setEndereco(dados.getEndereco());
+        perfil.setDataNascimento(dados.getDataNascimento());
+        perfil.setUsuario(usuario);
+
+        return Optional.of(repository.save(perfil));
+    }
+
+    // Garante que o usuário informado existe.
+    private Usuario buscarUsuario(Long usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new RecursoRelacionadoNaoEncontradoException("Usuário", usuarioId));
     }
 
     // Exclui o perfil se ele existir.

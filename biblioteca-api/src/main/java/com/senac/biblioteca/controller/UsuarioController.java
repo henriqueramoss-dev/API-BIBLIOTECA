@@ -4,6 +4,7 @@ import com.senac.biblioteca.assembler.UsuarioModelAssembler;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,7 +53,10 @@ public class UsuarioController {
         summary = "Listar usuários",
         description = "Retorna os usuários cadastrados de forma paginada."
     )
-    @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de paginação ou ordenação inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Usuario>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
@@ -68,7 +72,8 @@ public class UsuarioController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuário encontrado"),
-        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+        @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
     public ResponseEntity<EntityModel<Usuario>> buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id)
@@ -123,7 +128,8 @@ public class UsuarioController {
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Usuário excluído com sucesso"),
-        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
+        @ApiResponse(responseCode = "409", description = "Usuário possui empréstimos e não pode ser excluído")
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
@@ -139,8 +145,12 @@ public class UsuarioController {
         summary = "Buscar usuários por nome",
         description = "Retorna usuários cujo nome contém o texto informado, usando paginação."
     )
-    @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Parâmetro de busca ausente ou inválido")
+    })
     public ResponseEntity<PagedModel<EntityModel<Usuario>>> buscar(
+        @Parameter(description = "Texto que deve estar contido no nome do usuário", example = "Henrique")
         @RequestParam String nome,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {

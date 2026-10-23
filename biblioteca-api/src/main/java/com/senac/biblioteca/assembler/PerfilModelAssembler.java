@@ -2,6 +2,7 @@ package com.senac.biblioteca.assembler;
 
 import com.senac.biblioteca.controller.PerfilController;
 import com.senac.biblioteca.entity.Perfil;
+import com.senac.biblioteca.controller.UsuarioController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class PerfilModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * usuario -> navega para o usuário dono do perfil
      * perfis -> retorna para a listagem paginada do recurso
      */
     @Override
@@ -33,7 +35,8 @@ public class PerfilModelAssembler
             linkTo(PerfilController.class).slash(item.getId()).withSelfRel(),
             linkTo(PerfilController.class).slash(item.getId()).withRel("update"),
             linkTo(PerfilController.class).slash(item.getId()).withRel("delete"),
-            linkTo(PerfilController.class).withRel("perfis")
+            linkTo(PerfilController.class).withRel("perfis"),
+            linkTo(UsuarioController.class).slash(item.getUsuario().getId()).withRel("usuario")
         );
     }
 }

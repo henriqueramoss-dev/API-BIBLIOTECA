@@ -1,7 +1,10 @@
 package com.senac.biblioteca.assembler;
 
 import com.senac.biblioteca.controller.LivroController;
+import com.senac.biblioteca.entity.Autor;
 import com.senac.biblioteca.entity.Livro;
+import com.senac.biblioteca.controller.AutorController;
+import com.senac.biblioteca.controller.CategoriaController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -24,16 +27,28 @@ public class LivroModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * categoria -> navega para a categoria do livro
+     * autores -> navega para cada autor do livro
      * livros -> retorna para a listagem paginada do recurso
      */
     @Override
     public EntityModel<Livro> toModel(Livro item) {
-        return EntityModel.of(
+        EntityModel<Livro> model = EntityModel.of(
             item,
             linkTo(LivroController.class).slash(item.getId()).withSelfRel(),
             linkTo(LivroController.class).slash(item.getId()).withRel("update"),
             linkTo(LivroController.class).slash(item.getId()).withRel("delete"),
             linkTo(LivroController.class).withRel("livros")
         );
+
+        if (item.getCategoria() != null) {
+            model.add(linkTo(CategoriaController.class).slash(item.getCategoria().getId()).withRel("categoria"));
+        }
+
+        for (Autor autor : item.getAutores()) {
+            model.add(linkTo(AutorController.class).slash(autor.getId()).withRel("autores"));
+        }
+
+        return model;
     }
 }

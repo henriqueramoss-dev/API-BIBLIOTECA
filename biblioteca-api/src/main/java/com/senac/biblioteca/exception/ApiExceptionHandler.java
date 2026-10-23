@@ -1,11 +1,16 @@
 package com.senac.biblioteca.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -22,6 +27,8 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     /**
      * Trata erros de Bean Validation, como campos obrigatórios vazios,
@@ -105,6 +112,84 @@ public class ApiExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
+     * Trata IDs de registros relacionados que não existem.
+     *
+     * Exemplo: cadastrar um livro com uma categoria ou autor inexistente.
+     *
+     * Retorna HTTP 400 - Bad Request.
+     */
+    @ExceptionHandler(RecursoRelacionadoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarRelacionamentoInexistente(RecursoRelacionadoNaoEncontradoException ex) {
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Relacionamento inválido",
+            ex.getMessage()
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
+     * Trata parâmetros obrigatórios ausentes na URL.
+     *
+     * Exemplo: chamar /livros/buscar sem informar o parâmetro titulo.
+     *
+     * Retorna HTTP 400 - Bad Request.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Map<String, Object>> tratarParametroAusente(MissingServletRequestParameterException ex) {
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Parâmetro obrigatório ausente",
+            "O parâmetro '" + ex.getParameterName() + "' é obrigatório."
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
+     * Trata ordenação por um campo que não existe na entidade.
+     *
+     * Exemplo: /livros?sort=campoInexistente.
+     *
+     * Retorna HTTP 400 - Bad Request.
+     */
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<Map<String, Object>> tratarOrdenacaoInvalida(PropertyReferenceException ex) {
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Ordenação inválida",
+            "O campo '" + ex.getPropertyName() + "' não pode ser usado para ordenação."
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
+     * Trata qualquer erro inesperado, mantendo o mesmo formato de resposta.
+     *
+     * Retorna HTTP 500 - Internal Server Error.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> tratarErroInesperado(Exception ex) throws Exception {
+        // Exceções que o Spring já sabe converter (404 de rota, 405, 415...)
+        // continuam sendo tratadas por ele.
+        if (ex instanceof ErrorResponse) {
+            throw ex;
+        }
+
+        log.error("Erro inesperado na API", ex);
+
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Erro interno",
+            "Ocorreu um erro inesperado ao processar a requisição."
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resposta);
     }
 
     /**
