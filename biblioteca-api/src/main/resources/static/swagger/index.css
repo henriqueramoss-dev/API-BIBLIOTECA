@@ -1,0 +1,68 @@
+/*
+ * Tema personalizado do Swagger UI da API de Biblioteca.
+ *
+ * Este arquivo substitui o index.css padrão do Swagger UI
+ * (ver config/SwaggerUiConfig.java) e é carregado depois do swagger-ui.css,
+ * por isso consegue sobrescrever as cores e fontes originais.
+ */
+
+/* ===== Paleta e variáveis ===== */
+:root {
+    --cor-primaria: #1f3a5f;        /* azul-marinho: topo e títulos */
+    --cor-primaria-escura: #152a46;
+    --cor-destaque: #c8963e;        /* dourado: detalhes e foco */
+    --cor-fundo: #f4f1ea;           /* papel envelhecido */
+    --cor-cartao: #ffffff;
+    --cor-texto: #2b2b2b;
+    --cor-texto-suave: #5f6b7a;
+    --cor-borda: #ddd6c8;
+
+    --cor-get: #2f6fae;
+    --cor-post: #2e8b57;
+    --cor-put: #c27c0e;
+    --cor-delete: #b33a3a;
+
+    --raio: 8px;
+    --sombra: 0 1px 3px rgba(31, 58, 95, 0.12);
+    --fonte: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --fonte-codigo: "Cascadia Code", Consolas, "Courier New", monospace;
+}
+
+/* ===== Base (mantém as regras do index.css original) ===== */
+html {
+    box-sizing: border-box;
+    overflow-y: scroll;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    background: var(--cor-fundo);
+    color: var(--cor-texto);
+    font-family: var(--fonte);
+}
+
+.swagger-ui,
+.swagger-ui .info .title,
+.swagger-ui .opblock-tag,
+.swagger-ui .opblock .opblock-summary-description,
+.swagger-ui .opblock .opblock-section-header h4,
+.swagger-ui table thead tr th,
+.swagger-ui .parameter__name,
+.swagger-ui .response-col_status,
+.swagger-ui .btn,
+.swagger-ui select,
+.swagger-ui label,
+.swagger-ui .model-title {
+    font-family: var(--fonte);
+}
+
+.swagger-ui .wrapper {
+    max-width: 1200px;
+    padding: 0 24px;
+}
