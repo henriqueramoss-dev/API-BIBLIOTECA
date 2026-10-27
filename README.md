@@ -497,17 +497,9 @@ spring.datasource.password=
 
 Console do H2:
 
-```text
-http://localhost:8080/h2-console
-```
-
-Dados de acesso:
-
-```text
-JDBC URL: jdbc:h2:mem:biblioteca
-User Name: sa
-Password: vazio
-```
+> **O console web do H2 não está disponível neste projeto.** A partir do Spring Boot 4 ele saiu do pacote padrão e fica no módulo separado `spring-boot-h2console`, que não está no `pom.xml` (por isso `http://localhost:8080/h2-console` responde 404, apesar das linhas `spring.h2.console.*` do `application.properties`). Para consultar os dados, use a própria API (Swagger ou Postman).
+>
+> Para habilitá-lo apenas em testes locais, adicione ao `pom.xml` a dependência `org.springframework.boot:spring-boot-h2console` e reinicie a API. Dados de acesso: JDBC URL `jdbc:h2:mem:biblioteca`, usuário `sa`, senha vazia. Não deixe o console habilitado fora do seu computador: ele dá acesso direto ao banco.
 
 ---
 
@@ -610,9 +602,22 @@ O aplicativo mobile (React Native / Expo) está no repositório [REACT-NATIVE](h
 
 ---
 
+## Documentação, termos e privacidade
+
+| Documento | Conteúdo |
+|---|---|
+| [Documentação do projeto](docs/README.md) | Índice com os guias abaixo |
+| [Guia de instalação](docs/guia-de-instalacao.md) | Como rodar a API, o site e o app |
+| [Guia da API](docs/guia-da-api.md) | Endpoints, paginação, erros e exemplos |
+| [Modelo de dados](docs/modelo-de-dados.md) | Entidades, campos e regras |
+| [Arquitetura](docs/arquitetura.md) | Como o código está organizado |
+| [Segurança e limitações](docs/seguranca-e-limitacoes.md) | O que falta para uso real |
+| [Termos de Serviço](biblioteca-api/TERMS_OF_SERVICE.md) | Regras de uso do sistema |
+| [Política de Privacidade](biblioteca-api/PRIVACY_POLICY.md) | Quais dados são tratados e os direitos do titular (LGPD) |
+
 ## Termos de uso
 
-Esta API foi desenvolvida para fins acadêmicos no curso de Sistemas para Internet.
+Esta API foi desenvolvida para fins acadêmicos no curso de Sistemas para Internet. A versão completa está nos [Termos de Serviço](biblioteca-api/TERMS_OF_SERVICE.md).
 
 Condições de uso:
 

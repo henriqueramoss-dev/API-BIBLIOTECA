@@ -1,54 +1,108 @@
-# Termos de Serviço — API de Biblioteca
+# Termos de Serviço — Biblioteca
+
+**Última atualização:** 27 de outubro de 2026
+
+Estes termos valem para o uso do sistema **Biblioteca — Gestão de Acervo e Empréstimos**, formado pela **API** (`biblioteca-api`), pelo **site** (`biblioteca-web`) e pelo **aplicativo** mobile. Ao usar qualquer uma dessas partes, você concorda com o que está escrito aqui.
 
 ## 1. Finalidade
 
-A **API de Biblioteca - Gestão de Acervo e Empréstimos** foi desenvolvida para fins acadêmicos, com o objetivo de demonstrar a construção de uma API REST utilizando Java e Spring Boot.
+A Biblioteca é um **projeto acadêmico** (curso de Sistemas para Internet, Senac), criado para demonstrar a construção de uma API REST com Java e Spring Boot e de telas que a consomem.
 
-A API permite o gerenciamento de usuários, perfis, autores, categorias, livros e empréstimos.
+O sistema permite cadastrar, consultar, atualizar e excluir **usuários, perfis, autores, categorias, livros e empréstimos**.
 
-## 2. Uso permitido
+## 2. Quem pode usar
 
-A API pode ser utilizada para:
+O projeto é voltado a estudantes, professores e avaliadores. Não há criação de contas com senha: qualquer pessoa que consiga acessar a API consegue usar o sistema (veja a seção 7).
 
-- estudos e atividades acadêmicas;
-- testes locais de endpoints REST;
+## 3. Uso permitido
+
+Você pode usar o sistema para:
+
+- estudo e atividades acadêmicas;
+- testes de endpoints REST, com o Swagger ou o Postman;
 - demonstrações de CRUD, paginação, validação, Swagger/OpenAPI e HATEOAS;
-- aprendizado de Spring Boot, JPA e banco de dados H2.
+- aprendizado de Spring Boot, JPA, React e React Native;
+- avaliação do projeto.
 
-## 3. Ambiente de execução
+## 4. Uso não permitido
 
-A aplicação foi projetada para execução local, utilizando o endereço:
+Você **não deve**:
 
-```text
-http://localhost:8080
-```
+- cadastrar **dados pessoais reais** de ninguém, nem dados confidenciais ou sensíveis;
+- usar o sistema em **produção** ou para controlar uma biblioteca de verdade sem revisão de segurança e de persistência;
+- tentar acessar dados de outras pessoas, sobrecarregar a API ou burlar as validações;
+- usar o sistema para fins ilegais ou que prejudiquem terceiros;
+- apresentar o projeto como seu sem manter a identificação do autor.
 
-O banco utilizado é o H2 em memória. Portanto, os dados cadastrados durante os testes podem ser apagados quando a aplicação for encerrada.
+## 5. Dados cadastrados
 
-## 4. Responsabilidade sobre os dados
+- **Use somente dados fictícios.** CPF, e-mail, telefone, endereço e datas de nascimento devem ser inventados.
+- Quem cadastra um dado é **responsável** por ele e por ter o direito de usá-lo.
+- O tratamento de dados pessoais está descrito na [Política de Privacidade](PRIVACY_POLICY.md).
 
-Esta API não foi desenvolvida para armazenar dados reais, confidenciais ou sensíveis.
+## 6. Regras do sistema
 
-Os dados utilizados devem ser apenas dados fictícios ou apropriados para ambiente acadêmico e de testes.
+Estas regras são aplicadas pela API e valem para o site e para o app:
 
-## 5. Disponibilidade
+| Regra | Efeito |
+|---|---|
+| E-mail, CPF, ISBN e código de categoria **não podem se repetir** | A API recusa o cadastro com erro 409 |
+| Cada usuário tem **no máximo um perfil** | Um segundo perfil para o mesmo usuário é recusado (409) |
+| O **CPF** deve ter 11 dígitos, sem pontos ou traço; o **CEP**, 8 dígitos; o **estado**, a sigla com 2 letras | Valores inválidos são recusados (400) |
+| Registros **em uso não podem ser excluídos** | Um livro com empréstimos, uma categoria ou um autor com livros e um usuário com empréstimos não podem ser excluídos (409). Excluir um usuário apaga também o perfil dele |
+| As listagens têm **no máximo 100 registros por página** | Valores maiores são recusados (400); páginas que não existem retornam 404 |
+| O status de um empréstimo é **ativo, devolvido ou atrasado** | O status não muda sozinho com o passar do tempo: quem registra escolhe o valor |
 
-Por se tratar de um projeto acadêmico, não há garantia de disponibilidade contínua, suporte comercial ou manutenção em ambiente de produção.
+## 7. Login e acesso
 
-## 6. Documentação
+A API **ainda não tem autenticação**. A tela "Entrar" do app é **demonstrativa**: aceita qualquer e-mail e senha e **não guarda nem confere a senha**. "Criar conta" cadastra um usuário e um perfil, mas não cria credenciais.
 
-A documentação dos endpoints está disponível por meio do Swagger UI quando a aplicação estiver em execução:
+Isso significa que **não existe controle de quem pode ler ou alterar os dados**. Por isso o sistema só deve rodar em ambiente local e de testes.
 
-```text
-http://localhost:8080/swagger-ui.html
-```
+## 8. Ambiente de execução
 
-## 7. Código-fonte
+O sistema foi projetado para rodar **localmente**:
 
-O código-fonte e a documentação do projeto estão disponíveis no repositório:
+| Parte | Endereço |
+|---|---|
+| API | `http://localhost:8080` |
+| Documentação (Swagger) | `http://localhost:8080/swagger-ui.html` |
+| Site | `http://localhost:5173` |
 
-https://github.com/henriqueramoss-dev/API-DE-JAVA-
+A API usa o banco **H2 em memória**: **todos os dados cadastrados são apagados quando a API é encerrada**.
 
-## 8. Responsável
+## 9. Disponibilidade e suporte
+
+Por ser um projeto acadêmico, **não há garantia** de disponibilidade contínua, de suporte, de correção de erros em prazo definido nem de manutenção. O sistema é fornecido **"como está"**.
+
+## 10. Limitação de responsabilidade
+
+O autor não se responsabiliza por perdas de dados, falhas, uso indevido ou prejuízos decorrentes do uso do sistema, em especial se ele for usado em desacordo com estes termos (por exemplo, com dados reais ou em produção). O uso é por conta e risco de quem usa.
+
+## 11. Propriedade intelectual
+
+O código-fonte e a documentação estão publicados para fins acadêmicos, sob a condição **"Uso acadêmico — Projeto Senac"**: podem ser lidos, executados e usados como referência de estudo, mantendo-se a identificação do autor. O projeto não vem acompanhado de uma licença de código aberto formal.
+
+Bibliotecas de terceiros (Spring Boot, React, Expo etc.) seguem as licenças dos seus próprios autores.
+
+## 12. Alterações nos termos
+
+Estes termos podem ser alterados quando o sistema mudar. A data de atualização fica no topo e o histórico fica no controle de versões do repositório (Git). Continuar a usar o sistema depois de uma alteração significa que você aceita a nova versão.
+
+## 13. Lei aplicável
+
+Estes termos seguem a legislação brasileira, em especial a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+
+## 14. Contato e código-fonte
 
 Projeto acadêmico desenvolvido por **Henrique Ramos**.
+
+- Código-fonte: <https://github.com/henriqueramoss-dev/API-DE-JAVA->
+- Dúvidas ou pedidos sobre dados: <https://github.com/henriqueramoss-dev/API-DE-JAVA-/issues>
+
+## 15. Documentos relacionados
+
+- [Política de Privacidade](PRIVACY_POLICY.md)
+- [Documentação do projeto](../docs/README.md)
+
+> Este documento foi elaborado para um projeto acadêmico e não substitui a avaliação de um profissional de direito.

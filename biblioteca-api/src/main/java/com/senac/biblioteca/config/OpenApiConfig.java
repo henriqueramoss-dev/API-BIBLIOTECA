@@ -44,7 +44,10 @@ import java.util.Map;
             e HATEOAS para fornecer links de navegação entre os recursos.
 
             Esta API foi desenvolvida para fins acadêmicos e deve ser utilizada
-            em ambiente local de desenvolvimento e testes.
+            em ambiente local de desenvolvimento e testes, somente com dados fictícios.
+
+            Veja a [Política de Privacidade](https://github.com/henriqueramoss-dev/API-DE-JAVA-/blob/develop/biblioteca-api/PRIVACY_POLICY.md)
+            e a [documentação do projeto](https://github.com/henriqueramoss-dev/API-DE-JAVA-/blob/develop/docs/README.md).
             """,
         termsOfService = "https://github.com/henriqueramoss-dev/API-DE-JAVA-/blob/develop/biblioteca-api/TERMS_OF_SERVICE.md",
         contact = @Contact(
