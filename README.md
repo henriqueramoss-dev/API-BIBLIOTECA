@@ -341,6 +341,13 @@ Além disso, a documentação será feita diretamente nos controllers usando:
 
 Os campos das entidades utilizam `@Schema` para fornecer descrições e exemplos.
 
+A interface do Swagger tem um tema próprio, com a mesma identidade visual do site
+(azul-marinho, fundo creme e os mesmos ícones): a apresentação da API imita uma ficha
+catalográfica, cada grupo de endpoints tem o ícone da entidade e cada endpoint lembra
+a lombada de um livro, com a cor do método HTTP. Os arquivos ficam em
+`resources/static/swagger/` (`index.css`, `index.html` e `favicon.svg`) e são ligados ao
+Swagger pela classe `config/SwaggerUiConfig.java`.
+
 Exemplo:
 
 ```java

@@ -4,28 +4,47 @@
  * Este arquivo substitui o index.css padrão do Swagger UI
  * (ver config/SwaggerUiConfig.java) e é carregado depois do swagger-ui.css,
  * por isso consegue sobrescrever as cores e fontes originais.
+ *
+ * Usa a mesma paleta do site (biblioteca-web/src/styles.css): azul-marinho,
+ * fundo creme e os mesmos ícones de traço. A apresentação da API imita uma
+ * ficha catalográfica e cada endpoint lembra a lombada de um livro.
  */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap");
 
 /* ===== Paleta e variáveis ===== */
 :root {
-    --cor-primaria: #1f3a5f;        /* azul-marinho: topo e títulos */
-    --cor-primaria-escura: #152a46;
-    --cor-destaque: #c8963e;        /* dourado: detalhes e foco */
-    --cor-fundo: #f4f1ea;           /* papel envelhecido */
+    --cor-fundo: #f6f4ef;
     --cor-cartao: #ffffff;
-    --cor-texto: #2b2b2b;
-    --cor-texto-suave: #5f6b7a;
-    --cor-borda: #ddd6c8;
+    --cor-cartao-2: #faf8f4;
+    --cor-borda: #e6e1d6;
+    --cor-texto: #1f2430;
+    --cor-texto-suave: #6b6f7b;
+    --cor-primaria: #1f4e79;
+    --cor-primaria-escura: #183f63;
+    --cor-primaria-suave: #e7eef6;
+    --cor-menu: #17324d;
+    --cor-menu-texto: #c9d6e3;
+    --cor-ficha-linha: #e4ecf4;
+    --cor-ficha-margem: #d9a3a0;
 
-    --cor-get: #2f6fae;
-    --cor-post: #2e8b57;
-    --cor-put: #c27c0e;
-    --cor-delete: #b33a3a;
+    --cor-get: #1f4e79;
+    --cor-post: #2f7d4f;
+    --cor-put: #b7791f;
+    --cor-delete: #b4372f;
 
-    --raio: 8px;
-    --sombra: 0 1px 3px rgba(31, 58, 95, 0.12);
-    --fonte: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --fonte-codigo: "Cascadia Code", Consolas, "Courier New", monospace;
+    --raio: 10px;
+    --sombra: 0 1px 2px rgba(20, 30, 50, 0.06), 0 4px 16px rgba(20, 30, 50, 0.04);
+    --fonte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --fonte-titulo: "Lora", Georgia, "Times New Roman", serif;
+    --fonte-codigo: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+
+    /* Ícones de traço (os mesmos do site). Usados como máscara, herdam a cor. */
+    --icone-livro: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Zm0 16a2 2 0 0 1 2-2h13v2H6'/%3E%3C/svg%3E");
+    --icone-autores: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 4l5 5-10 10H5v-5L15 4Z'/%3E%3C/svg%3E");
+    --icone-categorias: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12V4h8l10 10-8 8L3 12Zm5-4h.01'/%3E%3C/svg%3E");
+    --icone-usuarios: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0'/%3E%3C/svg%3E");
+    --icone-perfis: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v14H4zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 5a3 3 0 0 1 6 0m3-7h3m-3 4h3'/%3E%3C/svg%3E");
+    --icone-emprestimos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h13l-4-4M17 17H4l4 4'/%3E%3C/svg%3E");
 }
 
 /* ===== Base (mantém as regras do index.css original) ===== */
@@ -58,11 +77,382 @@ body {
 .swagger-ui .btn,
 .swagger-ui select,
 .swagger-ui label,
-.swagger-ui .model-title {
+.swagger-ui .model-title,
+.swagger-ui .info p,
+.swagger-ui .info li,
+.swagger-ui .markdown p,
+.swagger-ui .renderedMarkdown p,
+.swagger-ui .tab li,
+.swagger-ui .opblock-description-wrapper p,
+.swagger-ui .response-col_description,
+.swagger-ui .responses-inner h4,
+.swagger-ui .responses-inner h5 {
     font-family: var(--fonte);
+    color: var(--cor-texto);
 }
 
 .swagger-ui .wrapper {
-    max-width: 1200px;
+    max-width: 1120px;
     padding: 0 24px;
+}
+
+.swagger-ui a { color: var(--cor-primaria); }
+
+/* ===== Barra do topo: marca da Biblioteca no lugar do logo do Swagger ===== */
+.swagger-ui .topbar {
+    background: var(--cor-menu);
+    padding: 14px 0;
+    border-bottom: 4px solid var(--cor-primaria);
+}
+
+.swagger-ui .topbar .topbar-wrapper { max-width: 1120px; margin: 0 auto; padding: 0 24px; align-items: center; flex-wrap: nowrap; }
+
+/* botão de tema escuro do Swagger, à direita e em branco */
+.swagger-ui .topbar .dark-mode-toggle { margin-left: auto; }
+.swagger-ui .topbar .dark-mode-toggle button { opacity: 0.8; }
+.swagger-ui .topbar .dark-mode-toggle svg { fill: #ffffff; color: #ffffff; }
+.swagger-ui .topbar .download-url-wrapper { display: none; }
+.swagger-ui .topbar a.link { flex: 0 0 auto; max-width: none; gap: 12px; }
+.swagger-ui .topbar a.link svg,
+.swagger-ui .topbar a.link img { display: none; }
+
+.swagger-ui .topbar a.link::before {
+    content: "";
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.12) center / 22px no-repeat
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Zm0 16a2 2 0 0 1 2-2h13v2H6'/%3E%3C/svg%3E");
+}
+
+.swagger-ui .topbar a.link::after {
+    content: "Biblioteca  ·  Documentação da API";
+    white-space: pre;
+    color: #ffffff;
+    font: 700 1.15rem var(--fonte);
+    letter-spacing: -0.01em;
+}
+
+/* ===== Apresentação da API como ficha catalográfica ===== */
+.swagger-ui .information-container.wrapper { padding-top: 36px; padding-bottom: 8px; }
+
+.swagger-ui .info {
+    margin: 0;
+    padding: 30px 34px 26px 64px;
+    position: relative;
+    background-color: var(--cor-cartao);
+    /* pautas da ficha */
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 27px,
+        var(--cor-ficha-linha) 27px,
+        var(--cor-ficha-linha) 28px
+    );
+    background-position: 0 86px;
+    border: 1px solid var(--cor-borda);
+    border-radius: 6px;
+    box-shadow: var(--sombra), 6px 6px 0 -1px #ece6da, 6px 6px 0 0 var(--cor-borda);
+}
+
+/* margem vermelha e furo da ficha */
+.swagger-ui .info::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 44px;
+    width: 2px;
+    background: var(--cor-ficha-margem);
+    opacity: 0.7;
+}
+
+
+.swagger-ui .info hgroup.main { margin-bottom: 18px; }
+
+.swagger-ui .info .title {
+    font-family: var(--fonte-titulo);
+    font-size: 1.9rem;
+    line-height: 1.2;
+    color: var(--cor-menu);
+}
+
+/* versão como etiqueta de classificação do livro */
+.swagger-ui .info .title small {
+    background: var(--cor-cartao);
+    border: 1.5px solid var(--cor-primaria);
+    border-radius: 4px;
+    padding: 2px 8px;
+    top: -6px;
+    margin-left: 10px;
+}
+
+.swagger-ui .info .title small pre {
+    color: var(--cor-primaria);
+    font: 600 0.75rem var(--fonte-codigo);
+}
+
+.swagger-ui .info .title small.version-stamp { background: var(--cor-primaria); }
+.swagger-ui .info .title small.version-stamp pre { color: #ffffff; }
+
+.swagger-ui .info hgroup .base-url,
+.swagger-ui .info hgroup a.link { color: var(--cor-texto-suave); font-family: var(--fonte-codigo); font-size: 0.85rem; font-weight: 400; }
+
+.swagger-ui .info .description p,
+.swagger-ui .info .description li { font-size: 0.97rem; line-height: 28px; margin: 0; }
+.swagger-ui .info .description p + p { margin-top: 0; }
+
+.swagger-ui .info .info__tos,
+.swagger-ui .info .info__contact,
+.swagger-ui .info .info__license,
+.swagger-ui .info .info__extdocs { margin: 0; line-height: 28px; }
+
+.swagger-ui .info > div:not(.description) a,
+.swagger-ui .info .info__extdocs {
+    color: var(--cor-primaria);
+    font-family: var(--fonte);
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+/* ===== Servidores ===== */
+.swagger-ui .scheme-container {
+    background: transparent;
+    box-shadow: none;
+    padding: 18px 0 6px;
+    margin: 0;
+}
+
+.swagger-ui .scheme-container .schemes > label { color: var(--cor-texto-suave); }
+
+.swagger-ui select {
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    box-shadow: none;
+    background-color: var(--cor-cartao);
+    color: var(--cor-texto);
+}
+
+.swagger-ui select:focus { outline: 2px solid var(--cor-primaria-suave); border-color: var(--cor-primaria); }
+
+/* ===== Grupos de endpoints como estantes ===== */
+.swagger-ui .opblock-tag-section { margin-top: 26px; }
+
+.swagger-ui .opblock-tag {
+    border-bottom: 2px solid var(--cor-borda);
+    padding: 10px 6px 12px;
+    margin-bottom: 12px;
+    gap: 14px;
+}
+
+.swagger-ui .opblock-tag:hover { background: transparent; }
+
+.swagger-ui .opblock-tag::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--cor-primaria-suave) center / 22px no-repeat;
+}
+
+.swagger-ui .opblock-tag::after {
+    content: "";
+    position: absolute;
+}
+
+.swagger-ui h3.opblock-tag { position: relative; }
+
+.swagger-ui h3.opblock-tag > a.nostyle span,
+.swagger-ui h3.opblock-tag > a.nostyle {
+    font-family: var(--fonte-titulo);
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--cor-menu);
+}
+
+.swagger-ui h3.opblock-tag small,
+.swagger-ui h3.opblock-tag small p,
+.swagger-ui h3.opblock-tag .renderedMarkdown p {
+    color: var(--cor-texto-suave);
+    font-size: 0.92rem;
+    font-weight: 400;
+}
+
+/* ícone de cada estante (o ícone é desenhado num elemento sobreposto) */
+.swagger-ui h3.opblock-tag::after {
+    left: 6px;
+    top: 50%;
+    width: 42px;
+    height: 42px;
+    margin-top: -21px;
+    background: var(--cor-primaria);
+    -webkit-mask: var(--icone-livro) center / 22px no-repeat;
+    mask: var(--icone-livro) center / 22px no-repeat;
+}
+
+.swagger-ui h3#operations-tag-Autores::after { -webkit-mask-image: var(--icone-autores); mask-image: var(--icone-autores); }
+.swagger-ui h3#operations-tag-Categorias::after { -webkit-mask-image: var(--icone-categorias); mask-image: var(--icone-categorias); }
+.swagger-ui h3[id="operations-tag-Empréstimos"]::after { -webkit-mask-image: var(--icone-emprestimos); mask-image: var(--icone-emprestimos); }
+.swagger-ui h3#operations-tag-Livros::after { -webkit-mask-image: var(--icone-livro); mask-image: var(--icone-livro); }
+.swagger-ui h3#operations-tag-Perfis::after { -webkit-mask-image: var(--icone-perfis); mask-image: var(--icone-perfis); }
+.swagger-ui h3[id="operations-tag-Usuários"]::after { -webkit-mask-image: var(--icone-usuarios); mask-image: var(--icone-usuarios); }
+
+.swagger-ui .opblock-tag svg { fill: var(--cor-texto-suave); }
+
+/* ===== Cada endpoint como a lombada de um livro ===== */
+.swagger-ui .opblock {
+    --metodo: var(--cor-get);
+    background: var(--cor-cartao) !important;
+    border: 1px solid var(--cor-borda) !important;
+    border-left: 6px solid var(--metodo) !important;
+    border-radius: 6px 8px 8px 6px;
+    box-shadow: var(--sombra);
+    margin-bottom: 10px;
+}
+
+.swagger-ui .opblock.opblock-get { --metodo: var(--cor-get); }
+.swagger-ui .opblock.opblock-post { --metodo: var(--cor-post); }
+.swagger-ui .opblock.opblock-put { --metodo: var(--cor-put); }
+.swagger-ui .opblock.opblock-delete { --metodo: var(--cor-delete); }
+
+.swagger-ui .opblock .opblock-summary { border: none !important; padding: 8px 12px 8px 8px; }
+.swagger-ui .opblock.is-open .opblock-summary { border-bottom: 1px solid var(--cor-borda) !important; }
+
+/* método como etiqueta de classificação */
+.swagger-ui .opblock .opblock-summary-method {
+    background: var(--metodo) !important;
+    border-radius: 4px;
+    min-width: 76px;
+    padding: 6px 0;
+    font: 700 0.78rem var(--fonte);
+    letter-spacing: 0.06em;
+    text-shadow: none;
+}
+
+.swagger-ui .opblock .opblock-summary-path,
+.swagger-ui .opblock .opblock-summary-path a {
+    font-family: var(--fonte-codigo);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--cor-texto);
+}
+
+.swagger-ui .opblock .opblock-summary-description { color: var(--cor-texto-suave); font-size: 0.92rem; }
+
+.swagger-ui .opblock .opblock-section-header {
+    background: var(--cor-cartao-2);
+    box-shadow: none;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.swagger-ui .opblock .opblock-section-header h4 { font-weight: 700; }
+
+.swagger-ui .opblock .tab-header .tab-item.active h4 span:after { background: var(--metodo) !important; }
+
+.swagger-ui .opblock .opblock-summary:focus-visible,
+.swagger-ui .opblock .opblock-summary-control:focus { outline: 2px solid var(--cor-primaria-suave); outline-offset: 0; }
+
+.swagger-ui .opblock-body .opblock-description-wrapper p { color: var(--cor-texto); }
+
+/* ===== Botões ===== */
+.swagger-ui .btn {
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
+    background: var(--cor-cartao);
+    color: var(--cor-texto);
+    box-shadow: none;
+    font-weight: 600;
+}
+
+.swagger-ui .btn:hover { box-shadow: none; background: var(--cor-cartao-2); }
+
+.swagger-ui .btn.try-out__btn { border-color: var(--cor-primaria); color: var(--cor-primaria); }
+.swagger-ui .btn.try-out__btn.cancel { border-color: var(--cor-delete); color: var(--cor-delete); }
+
+.swagger-ui .btn.execute,
+.swagger-ui .btn.authorize {
+    background: var(--cor-primaria);
+    border-color: var(--cor-primaria);
+    color: #ffffff;
+}
+
+.swagger-ui .btn.execute:hover { background: var(--cor-primaria-escura); }
+
+.swagger-ui .btn-clear { border-color: var(--cor-borda); }
+
+.swagger-ui .copy-to-clipboard { background: var(--cor-primaria); border-radius: 6px; }
+
+/* ===== Campos ===== */
+.swagger-ui input[type="text"],
+.swagger-ui input[type="email"],
+.swagger-ui input[type="number"],
+.swagger-ui textarea {
+    border: 1px solid var(--cor-borda);
+    border-radius: 8px;
+    font-family: var(--fonte-codigo);
+}
+
+.swagger-ui input[type="text"]:focus,
+.swagger-ui textarea:focus { outline: 2px solid var(--cor-primaria-suave); border-color: var(--cor-primaria); }
+
+.swagger-ui .parameter__name.required:after { color: var(--cor-delete); }
+.swagger-ui .parameter__name.required span { color: var(--cor-delete); }
+
+/* ===== Exemplos de JSON e respostas ===== */
+.swagger-ui .highlight-code > .microlight,
+.swagger-ui .microlight,
+.swagger-ui textarea.curl {
+    background: #13202e !important;
+    border-radius: 8px;
+    font-family: var(--fonte-codigo) !important;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.swagger-ui .response-col_status { font-weight: 700; }
+.swagger-ui table.responses-table tbody tr td { border-color: var(--cor-borda); }
+
+/* ===== Esquemas (fichas dos modelos) ===== */
+.swagger-ui section.models {
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+    background: var(--cor-cartao);
+    box-shadow: var(--sombra);
+}
+
+.swagger-ui section.models h4 {
+    font-family: var(--fonte-titulo);
+    font-size: 1.3rem;
+    color: var(--cor-menu);
+}
+
+.swagger-ui .models .json-schema-2020-12:not(.json-schema-2020-12--embedded) {
+    background-color: var(--cor-cartao-2) !important;
+    border: 1px solid var(--cor-borda);
+    border-left: 4px solid var(--cor-primaria);
+    border-radius: 6px 8px 8px 6px;
+}
+
+.swagger-ui .models .json-schema-2020-12:not(.json-schema-2020-12--embedded):hover {
+    background-color: var(--cor-primaria-suave) !important;
+}
+
+.swagger-ui .models .json-schema-2020-12__title,
+.swagger-ui .model-title { color: var(--cor-menu) !important; font-family: var(--fonte); font-weight: 700; }
+
+.swagger-ui .json-schema-2020-12__attribute--primary,
+.swagger-ui .prop-type { color: var(--cor-primaria) !important; font-family: var(--fonte-codigo); }
+
+.swagger-ui .json-schema-2020-12-expand-deep-button { color: var(--cor-texto-suave); }
+
+/* ===== Rodapé ===== */
+#swagger-ui { padding-bottom: 48px; }
+
+@media (max-width: 640px) {
+    .swagger-ui .topbar a.link::after { content: "Biblioteca"; }
+    .swagger-ui .topbar .topbar-wrapper { flex-direction: row; align-items: center; }
+    .swagger-ui .info { padding: 24px 20px 24px 40px; }
+    .swagger-ui .info::before { left: 26px; }
+    .swagger-ui .info .title { font-size: 1.6rem; }
 }
