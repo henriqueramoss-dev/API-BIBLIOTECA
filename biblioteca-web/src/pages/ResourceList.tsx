@@ -48,7 +48,9 @@ export default function ResourceList() {
     if (!confirm(`Excluir ${resource.singular.toLowerCase()} "${resource.title(item)}"?`)) return;
     try {
       await remove(resource.key, item.id);
-      load();
+      // Se era o último item da página, volta uma página (a API responde 404 para página inexistente).
+      if (data && data.items.length === 1 && page > 0) goTo(page - 1);
+      else load();
     } catch (e) {
       alert((e as Error).message);
     }

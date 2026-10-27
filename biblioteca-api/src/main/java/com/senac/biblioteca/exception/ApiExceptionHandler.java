@@ -152,6 +152,24 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata parâmetros de paginação fora dos limites.
+     *
+     * Exemplo: GET /livros?size=100000 (o máximo é 100 por página) ou page=-1.
+     *
+     * Retorna HTTP 400 - Bad Request, explicando o limite.
+     */
+    @ExceptionHandler(PaginacaoInvalidaException.class)
+    public ResponseEntity<ErroResposta> tratarPaginacaoInvalida(PaginacaoInvalidaException ex) {
+        ErroResposta resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Paginação inválida",
+            ex.getMessage()
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
      * Trata endereços que não existem na API.
      *
      * Exemplo: GET /livross (com erro de digitação).

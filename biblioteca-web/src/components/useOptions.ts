@@ -11,7 +11,7 @@ export function useOptions(key: ResourceKey | undefined) {
   useEffect(() => {
     if (!key) return;
     const r = RESOURCES[key];
-    list<any>(r.key, r.embeddedKey, { size: 200 })
+    list<any>(r.key, r.embeddedKey, { size: 100 } /* máximo da API por página */)
       .then((page) => setOptions(page.items.map((i) => ({ value: String(i.id), label: r.title(i) }))))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoaded(true));

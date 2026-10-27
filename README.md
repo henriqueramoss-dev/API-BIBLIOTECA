@@ -310,6 +310,18 @@ Também poderá ser utilizado ordenamento:
 GET /livros?page=0&size=10&sort=titulo,asc
 ```
 
+Limites da paginação (configurados em `config/PaginacaoConfig.java`):
+
+| Situação | Resposta |
+|---|---|
+| Sem `page`/`size` | Página 0 com 10 registros |
+| `size` entre 1 e 100 | Normal |
+| `size` acima de 100, menor que 1 ou que não é número | `400` — "O tamanho da página (size) deve ser entre 1 e 100. Valor informado: 100000." |
+| `page` negativa ou que não é número | `400` — "A página (page) deve ser um número a partir de 0." |
+| `page` depois da última página | `404` — "A página 100000 não existe. Esta listagem tem 1 página (de 0 a 0)." |
+
+Uma listagem sem nenhum registro continua respondendo `200` na página 0.
+
 ---
 
 ## 10. Códigos HTTP

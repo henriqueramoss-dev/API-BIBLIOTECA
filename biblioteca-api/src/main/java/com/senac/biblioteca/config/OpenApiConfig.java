@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,6 +80,29 @@ public class OpenApiConfig {
         return openApi -> {
             ModelConverters.getInstance().read(ErroResposta.class).forEach(openApi.getComponents()::addSchemas);
             Schema<?> esquema = new Schema<>().$ref("#/components/schemas/ErroResposta");
+
+            // Limites da paginação explicados nos parâmetros "page" e "size" (ver PaginacaoConfig).
+            openApi.getPaths().values().forEach(caminho -> caminho.readOperations().forEach(operacao -> {
+                if (operacao.getParameters() == null || operacao.getParameters().stream().noneMatch(p -> "size".equals(p.getName()))) {
+                    return;
+                }
+                operacao.getParameters().forEach(parametro -> {
+                    if ("page".equals(parametro.getName())) {
+                        parametro.setDescription("Número da página, começando em 0. Se passar da última página, a API responde 404.");
+                    } else if ("sort".equals(parametro.getName())) {
+                        parametro.setDescription("Ordenação no formato campo,(asc|desc). Ex.: titulo,asc. Pode repetir para ordenar por mais de um campo.");
+                    } else if ("size".equals(parametro.getName())) {
+                        parametro.setDescription("Registros por página: de 1 a " + PaginacaoConfig.TAMANHO_MAXIMO
+                            + " (padrão 10). Fora desse limite, a API responde 400.");
+                    }
+                });
+                ApiResponse naoEncontrado = operacao.getResponses().get("404");
+                if (naoEncontrado == null) {
+                    operacao.getResponses().addApiResponse("404", new ApiResponse().description("Página inexistente"));
+                } else if (!naoEncontrado.getDescription().contains("página")) {
+                    naoEncontrado.setDescription(naoEncontrado.getDescription() + " ou página inexistente");
+                }
+            }));
 
             openApi.getPaths().values().forEach(caminho -> caminho.readOperations().forEach(operacao ->
                 operacao.getResponses().forEach((codigo, resposta) -> {

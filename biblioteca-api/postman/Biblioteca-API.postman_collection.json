@@ -1136,6 +1136,82 @@
           ]
         },
         {
+          "name": "400 - Tamanho de pagina acima do limite",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/livros?page=0&size=100000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "livros"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "100000"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - Pagina inexistente",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/livros?page=100000&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "livros"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "100000"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Preparar 409 - Criar usuario unico",
           "event": [
             {
