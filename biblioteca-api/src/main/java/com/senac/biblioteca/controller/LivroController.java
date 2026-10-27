@@ -3,6 +3,7 @@ package com.senac.biblioteca.controller;
 import com.senac.biblioteca.assembler.LivroModelAssembler;
 import com.senac.biblioteca.dto.LivroRequest;
 import com.senac.biblioteca.entity.Livro;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.service.LivroService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -74,7 +75,7 @@ public class LivroController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @PostMapping
@@ -110,7 +111,7 @@ public class LivroController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @DeleteMapping("/{id}")
@@ -125,7 +126,7 @@ public class LivroController {
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
-            return ResponseEntity.notFound().build();
+            throw naoEncontrado(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -147,5 +148,10 @@ public class LivroController {
     ) {
         Page<Livro> pagina = service.buscarPorTitulo(titulo, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
+    private RecursoNaoEncontradoException naoEncontrado(Long id) {
+        return new RecursoNaoEncontradoException("Livro com ID " + id + " não encontrado.");
     }
 }

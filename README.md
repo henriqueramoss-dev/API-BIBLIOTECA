@@ -309,9 +309,21 @@ A API utilizará códigos HTTP adequados para cada operação.
 | Recurso criado | 201 Created |
 | Exclusão realizada | 204 No Content |
 | Dados inválidos, ID relacionado inexistente, parâmetro ausente ou ordenação inválida | 400 Bad Request |
-| Recurso não encontrado | 404 Not Found |
+| Registro ou endereço não encontrado | 404 Not Found |
 | Valor duplicado (e-mail, ISBN, perfil) ou registro em uso ao excluir | 409 Conflict |
 | Erro interno | 500 Internal Server Error |
+
+Todos os erros voltam com uma mensagem explicando o problema, no mesmo formato.
+Exemplo de `GET /livros/999` quando o livro não existe:
+
+```json
+{
+  "timestamp": "2026-10-27T16:53:52.564",
+  "status": 404,
+  "erro": "Não encontrado",
+  "mensagem": "Livro com ID 999 não encontrado."
+}
+```
 
 ---
 

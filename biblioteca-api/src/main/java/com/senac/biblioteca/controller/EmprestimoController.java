@@ -4,6 +4,7 @@ import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.dto.EmprestimoRequest;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.enums.StatusEmprestimo;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.service.EmprestimoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -74,7 +75,7 @@ public class EmprestimoController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @PostMapping
@@ -108,7 +109,7 @@ public class EmprestimoController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @DeleteMapping("/{id}")
@@ -122,7 +123,7 @@ public class EmprestimoController {
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
-            return ResponseEntity.notFound().build();
+            throw naoEncontrado(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -144,5 +145,10 @@ public class EmprestimoController {
     ) {
         Page<Emprestimo> pagina = service.buscarPorStatus(status, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
+    private RecursoNaoEncontradoException naoEncontrado(Long id) {
+        return new RecursoNaoEncontradoException("Empréstimo com ID " + id + " não encontrado.");
     }
 }

@@ -3,6 +3,7 @@ package com.senac.biblioteca.controller;
 import com.senac.biblioteca.assembler.PerfilModelAssembler;
 import com.senac.biblioteca.dto.PerfilRequest;
 import com.senac.biblioteca.entity.Perfil;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.service.PerfilService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,7 +83,7 @@ public class PerfilController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     // Cadastro de um novo recurso validado com Bean Validation.
@@ -120,7 +121,7 @@ public class PerfilController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     // Exclusão pelo identificador.
@@ -135,7 +136,7 @@ public class PerfilController {
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
-            return ResponseEntity.notFound().build();
+            throw naoEncontrado(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -158,5 +159,10 @@ public class PerfilController {
     ) {
         Page<Perfil> pagina = service.buscarPorTelefone(telefone, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
+    private RecursoNaoEncontradoException naoEncontrado(Long id) {
+        return new RecursoNaoEncontradoException("Perfil com ID " + id + " não encontrado.");
     }
 }

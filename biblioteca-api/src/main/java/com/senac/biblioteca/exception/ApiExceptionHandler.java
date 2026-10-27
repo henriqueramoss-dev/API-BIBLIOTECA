@@ -14,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -130,6 +131,42 @@ public class ApiExceptionHandler {
         );
 
         return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
+     * Trata registros que não existem.
+     *
+     * Exemplo: buscar, atualizar ou excluir /livros/999 quando o ID 999 não está cadastrado.
+     *
+     * Retorna HTTP 404 - Not Found.
+     */
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> tratarRecursoNaoEncontrado(RecursoNaoEncontradoException ex) {
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.NOT_FOUND,
+            "Não encontrado",
+            ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resposta);
+    }
+
+    /**
+     * Trata endereços que não existem na API.
+     *
+     * Exemplo: GET /livross (com erro de digitação).
+     *
+     * Retorna HTTP 404 - Not Found, no mesmo formato das outras respostas de erro.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> tratarEnderecoInexistente(NoResourceFoundException ex) {
+        Map<String, Object> resposta = criarResposta(
+            HttpStatus.NOT_FOUND,
+            "Endereço não encontrado",
+            "O endereço '/" + ex.getResourcePath() + "' não existe nesta API."
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resposta);
     }
 
     /**

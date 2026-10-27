@@ -2,6 +2,7 @@ package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.CategoriaModelAssembler;
 import com.senac.biblioteca.entity.Categoria;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -73,7 +74,7 @@ public class CategoriaController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @PostMapping
@@ -107,7 +108,7 @@ public class CategoriaController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     @DeleteMapping("/{id}")
@@ -122,7 +123,7 @@ public class CategoriaController {
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
-            return ResponseEntity.notFound().build();
+            throw naoEncontrado(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -144,5 +145,10 @@ public class CategoriaController {
     ) {
         Page<Categoria> pagina = service.buscarPorNome(nome, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
+    private RecursoNaoEncontradoException naoEncontrado(Long id) {
+        return new RecursoNaoEncontradoException("Categoria com ID " + id + " não encontrada.");
     }
 }

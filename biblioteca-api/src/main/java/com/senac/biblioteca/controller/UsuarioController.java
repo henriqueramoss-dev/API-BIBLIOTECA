@@ -2,6 +2,7 @@ package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.UsuarioModelAssembler;
 import com.senac.biblioteca.entity.Usuario;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -79,7 +80,7 @@ public class UsuarioController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     // POST /usuarios: cria um novo usuário após validar o JSON recebido.
@@ -117,7 +118,7 @@ public class UsuarioController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+            .orElseThrow(() -> naoEncontrado(id));
     }
 
     // DELETE /usuarios/{id}: remove um usuário existente.
@@ -133,7 +134,7 @@ public class UsuarioController {
     })
     public ResponseEntity<Void> excluir(@PathVariable Long id) {
         if (!service.excluir(id)) {
-            return ResponseEntity.notFound().build();
+            throw naoEncontrado(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -156,5 +157,10 @@ public class UsuarioController {
     ) {
         Page<Usuario> pagina = service.buscarPorNome(nome, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
+    private RecursoNaoEncontradoException naoEncontrado(Long id) {
+        return new RecursoNaoEncontradoException("Usuário com ID " + id + " não encontrado.");
     }
 }
