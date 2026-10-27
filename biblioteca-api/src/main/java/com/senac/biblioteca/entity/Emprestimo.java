@@ -1,6 +1,7 @@
 package com.senac.biblioteca.entity;
 
 import com.senac.biblioteca.enums.StatusEmprestimo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -46,6 +47,8 @@ public class Emprestimo {
 
     // Many-to-One: um usuário pode possuir vários empréstimos.
     @NotNull(message = "O usuário é obrigatório")
+    // O CPF do usuário não é repetido aqui: ele só aparece nas rotas de /usuarios.
+    @JsonIgnoreProperties("cpf")
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

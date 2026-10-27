@@ -164,7 +164,10 @@ Todos os erros têm o mesmo formato, com uma mensagem em português:
 | **404** | Registro não encontrado | `Livro com ID 999 não encontrado.` |
 | **404** | Página que não existe | `A página 100000 não existe. Esta listagem tem 1 página (de 0 a 0).` |
 | **404** | Endereço que não existe | `O endereço '/livross' não existe nesta API.` |
-| **405** | Método HTTP não aceito | `O método PATCH não é aceito neste endereço. Métodos aceitos: GET, DELETE, PUT.` |
+| **400** | Dados que se contradizem (regras do empréstimo) | `Informe a data de devolução quando o status for DEVOLVIDO.` (acompanha o objeto `campos`) |
+| **405** | Método HTTP não aceito (a resposta traz o cabeçalho `Allow` com os métodos aceitos) | `O método PATCH não é aceito neste endereço. Métodos aceitos: DELETE, GET, PUT.` |
+| **406** | Cabeçalho `Accept` que a API não atende | `A API responde em application/json (ou HAL+JSON). Ajuste o cabeçalho Accept.` |
+| **415** | `Content-Type` que a API não aceita | `Envie o corpo da requisição como application/json.` |
 | **409** | Valor repetido ou registro em uso | `A operação não pôde ser concluída porque existe um dado duplicado ou um relacionamento que impede a alteração.` |
 | **500** | Erro inesperado | `Ocorreu um erro inesperado ao processar a requisição.` |
 
@@ -187,6 +190,20 @@ Erro de validação (**400**), com os problemas por campo:
 
 Os exemplos usam `curl`. A ordem importa: um livro precisa de uma categoria, um empréstimo precisa de um livro e de um usuário, e assim por diante.
 
+### Regras que a API confere além do formato
+
+| Recurso | Regra | Erro |
+|---|---|---|
+| Usuário | O **CPF** precisa ter 11 dígitos, sem pontos ou traço, **e os dígitos verificadores corretos**. Sequências como `00000000000` e `11111111111` são recusadas | 400, campo `cpf` |
+| Categoria | O **código** é gravado em maiúsculas e sem espaços nas pontas (`rom` vira `ROM`), então `ROM`, `rom` e `Rom` são o mesmo código | 409 se já existir |
+| Empréstimo | `dataPrevistaDevolucao` e `dataDevolucao` não podem ser anteriores a `dataEmprestimo` | 400, campo da data |
+| Empréstimo | Status `DEVOLVIDO` exige `dataDevolucao` | 400, campo `dataDevolucao` |
+| Empréstimo | Só o status `DEVOLVIDO` pode ter `dataDevolucao` | 400, campo `status` |
+
+> **CPF nos exemplos.** `12345678909` é um CPF de teste com dígitos corretos. Nunca cadastre o CPF de uma pessoa real.
+>
+> **Onde o CPF aparece.** Ele é devolvido pelas rotas de `/usuarios`, mas **não** dentro de empréstimos, perfis e demais respostas em que o usuário vem aninhado.
+
 ### 1. Cadastrar uma categoria e um autor
 
 ```bash
@@ -201,7 +218,7 @@ curl -X POST http://localhost:8080/autores -H "Content-Type: application/json" -
 }'
 ```
 
-A resposta é **201 Created**, com o endereço do novo registro no cabeçalho `Location`.
+A resposta é **201 Created**, com o endereço do novo registro no cabeçalho `Location`. O código da categoria volta em maiúsculas.
 
 ### 2. Cadastrar um livro (usa os IDs acima)
 

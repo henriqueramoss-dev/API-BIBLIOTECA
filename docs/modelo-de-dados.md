@@ -89,7 +89,7 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 |---|---|---|
 | nome * | texto | até 100 |
 | email * | texto | formato de e-mail, até 150, **único** |
-| cpf * | texto | exatamente 11 dígitos, sem pontos ou traço, **único** |
+| cpf * | texto | exatamente 11 dígitos, sem pontos ou traço, com **dígitos verificadores corretos**, **único**. Só aparece nas rotas de `/usuarios` |
 | matricula | texto | até 20 |
 | tipo * | enum | `ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE` |
 
@@ -120,7 +120,7 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 | Campo | Tipo | Regras |
 |---|---|---|
 | nome * | texto | até 80 |
-| codigo * | texto | até 10, **único** (ex.: `ROM`) |
+| codigo * | texto | até 10, **único**, gravado em **maiúsculas** (ex.: `ROM`; `rom` vira `ROM`) |
 | descricao | texto | até 255 |
 | localizacao | texto | até 50 (ex.: `Estante A`) |
 | publicoAlvo | texto | até 50 |
@@ -142,8 +142,8 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 | Campo | Tipo | Regras |
 |---|---|---|
 | dataEmprestimo * | data | |
-| dataPrevistaDevolucao * | data | |
-| dataDevolucao | data | preencha quando o livro for devolvido |
+| dataPrevistaDevolucao * | data | não pode ser anterior à data do empréstimo |
+| dataDevolucao | data | obrigatória quando o status é `DEVOLVIDO` e proibida nos outros status; não pode ser anterior à data do empréstimo |
 | status * | enum | `ATIVO`, `DEVOLVIDO` ou `ATRASADO` |
 | observacao | texto | até 255 |
 | usuarioId * | número | ID de um usuário existente |

@@ -104,7 +104,7 @@ public class LivroService {
     // Livros de uma categoria; 404 se a categoria não existir.
     public Page<Livro> listarPorCategoria(Long categoriaId, Pageable pageable) {
         if (!categoriaRepository.existsById(categoriaId)) {
-            throw new RecursoNaoEncontradoException("Categoria com ID " + categoriaId + " não encontrada.");
+            throw RecursoNaoEncontradoException.categoria(categoriaId);
         }
 
         return repository.findByCategoriaId(categoriaId, pageable);
@@ -113,7 +113,7 @@ public class LivroService {
     // Livros de um autor; 404 se o autor não existir.
     public Page<Livro> listarPorAutor(Long autorId, Pageable pageable) {
         if (!autorRepository.existsById(autorId)) {
-            throw new RecursoNaoEncontradoException("Autor com ID " + autorId + " não encontrado.");
+            throw RecursoNaoEncontradoException.autor(autorId);
         }
 
         return repository.findByAutoresId(autorId, pageable);

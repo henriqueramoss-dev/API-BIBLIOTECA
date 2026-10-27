@@ -1,6 +1,7 @@
 package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.PerfilModelAssembler;
+import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.dto.PerfilRequest;
 import com.senac.biblioteca.entity.Perfil;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
@@ -64,7 +65,7 @@ public class PerfilController {
     public ResponseEntity<PagedModel<EntityModel<Perfil>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Perfil> pagina = service.listar(pageable);
+        Page<Perfil> pagina = Paginas.conferir(service.listar(pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -83,7 +84,7 @@ public class PerfilController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.perfil(id));
     }
 
     // Cadastro de um novo recurso validado com Bean Validation.
@@ -123,7 +124,7 @@ public class PerfilController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.perfil(id));
     }
 
     // Exclusão pelo identificador.
@@ -138,7 +139,7 @@ public class PerfilController {
     })
     public ResponseEntity<Void> excluir(@Parameter(description = "ID do perfil", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
-            throw naoEncontrado(id);
+            throw RecursoNaoEncontradoException.perfil(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -159,12 +160,7 @@ public class PerfilController {
         @RequestParam String telefone,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Perfil> pagina = service.buscarPorTelefone(telefone, pageable);
+        Page<Perfil> pagina = Paginas.conferir(service.buscarPorTelefone(telefone, pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
-    }
-
-    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
-    private RecursoNaoEncontradoException naoEncontrado(Long id) {
-        return new RecursoNaoEncontradoException("Perfil com ID " + id + " não encontrado.");
     }
 }

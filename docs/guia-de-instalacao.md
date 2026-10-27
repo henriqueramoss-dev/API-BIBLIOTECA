@@ -43,12 +43,21 @@ java -jar target/biblioteca-0.0.1-SNAPSHOT.jar
 
 Abra <http://localhost:8080/swagger-ui.html>. Clique em um endpoint, depois em **Try it out** e **Execute**.
 
+### Testes automatizados
+
+```bash
+cd biblioteca-api
+mvn test
+```
+
+São 13 testes de integração (a API sobe numa porta aleatória, não precisa estar rodando). Demora cerca de 1 minuto.
+
 ### Postman
 
 1. Importe `biblioteca-api/postman/Biblioteca-API.postman_collection.json`.
 2. Com a API rodando, use **Run collection** sem mudar a ordem das pastas.
 
-A coleção tem 56 requisições, cada uma com seu teste, e pode ser executada várias vezes seguidas: a última pasta ("Exclusões") apaga o que foi criado.
+A coleção tem 60 requisições, cada uma com seu teste, e pode ser executada várias vezes seguidas: a última pasta ("Exclusões") apaga o que foi criado.
 
 ## 2. Site
 

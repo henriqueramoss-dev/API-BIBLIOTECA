@@ -2,6 +2,7 @@ package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.CategoriaModelAssembler;
 import com.senac.biblioteca.assembler.LivroModelAssembler;
+import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.entity.Categoria;
 import com.senac.biblioteca.entity.Livro;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
@@ -68,7 +69,7 @@ public class CategoriaController {
     public ResponseEntity<PagedModel<EntityModel<Categoria>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Categoria> pagina = service.listar(pageable);
+        Page<Categoria> pagina = Paginas.conferir(service.listar(pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -86,7 +87,7 @@ public class CategoriaController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.categoria(id));
     }
 
     @PostMapping
@@ -122,7 +123,7 @@ public class CategoriaController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.categoria(id));
     }
 
     @DeleteMapping("/{id}")
@@ -137,7 +138,7 @@ public class CategoriaController {
     })
     public ResponseEntity<Void> excluir(@Parameter(description = "ID da categoria", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
-            throw naoEncontrado(id);
+            throw RecursoNaoEncontradoException.categoria(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -157,7 +158,7 @@ public class CategoriaController {
         @RequestParam String nome,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Categoria> pagina = service.buscarPorNome(nome, pageable);
+        Page<Categoria> pagina = Paginas.conferir(service.buscarPorNome(nome, pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -175,12 +176,7 @@ public class CategoriaController {
         @Parameter(description = "ID da categoria", example = "1") @PathVariable Long id,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Livro> pagina = livroService.listarPorCategoria(id, pageable);
+        Page<Livro> pagina = Paginas.conferir(livroService.listarPorCategoria(id, pageable));
         return ResponseEntity.ok(livroPagedAssembler.toModel(pagina, livroAssembler));
-    }
-
-    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
-    private RecursoNaoEncontradoException naoEncontrado(Long id) {
-        return new RecursoNaoEncontradoException("Categoria com ID " + id + " não encontrada.");
     }
 }
