@@ -54,7 +54,9 @@ public class EmprestimoService {
         Emprestimo emprestimo = new Emprestimo();
         emprestimo.setDataEmprestimo(dados.getDataEmprestimo());
         emprestimo.setDataPrevistaDevolucao(dados.getDataPrevistaDevolucao());
+        emprestimo.setDataDevolucao(dados.getDataDevolucao());
         emprestimo.setStatus(dados.getStatus());
+        emprestimo.setObservacao(dados.getObservacao());
         emprestimo.setUsuario(usuario);
         emprestimo.setLivro(livro);
 
@@ -74,7 +76,9 @@ public class EmprestimoService {
         Emprestimo emprestimo = existente.get();
         emprestimo.setDataEmprestimo(dados.getDataEmprestimo());
         emprestimo.setDataPrevistaDevolucao(dados.getDataPrevistaDevolucao());
+        emprestimo.setDataDevolucao(dados.getDataDevolucao());
         emprestimo.setStatus(dados.getStatus());
+        emprestimo.setObservacao(dados.getObservacao());
         emprestimo.setUsuario(usuario);
         emprestimo.setLivro(livro);
 

@@ -1,10 +1,13 @@
 package com.senac.biblioteca.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.senac.biblioteca.enums.TipoUsuario;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
@@ -37,6 +40,22 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 150)
     @Schema(description = "E-mail do usuário", example = "henrique@email.com")
     private String email;
+
+    // CPF com 11 dígitos, sem pontos ou traço, e único no sistema.
+    @NotBlank(message = "O CPF é obrigatório")
+    @Pattern(regexp = "\\d{11}", message = "O CPF deve ter 11 dígitos, sem pontos ou traço")
+    @Column(nullable = false, unique = true, length = 11)
+    @Schema(description = "CPF do usuário (somente números)", example = "12345678909")
+    private String cpf;
+
+    @Size(max = 20, message = "A matrícula deve ter no máximo 20 caracteres")
+    @Schema(description = "Matrícula na instituição (opcional)", example = "2026001")
+    private String matricula;
+
+    @NotNull(message = "O tipo de usuário é obrigatório")
+    @Enumerated(EnumType.STRING)
+    @Schema(description = "Tipo de usuário", example = "ALUNO")
+    private TipoUsuario tipo;
 
     // Relacionamento One-to-One: um usuário possui um único perfil.
     @JsonIgnore
@@ -79,6 +98,30 @@ public class Usuario {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getCpf() {
+        return cpf;
+    }
+
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
+    }
+
+    public TipoUsuario getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoUsuario tipo) {
+        this.tipo = tipo;
     }
 
     public Perfil getPerfil() {

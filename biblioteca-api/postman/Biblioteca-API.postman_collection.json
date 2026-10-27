@@ -62,7 +62,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Henrique Ramos\",\n  \"email\": \"henrique@email.com\"\n}",
+              "raw": "{\n  \"nome\": \"Henrique Ramos\",\n  \"email\": \"henrique@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -161,7 +161,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Henrique Ramos Atualizado\",\n  \"email\": \"henrique.atualizado@email.com\"\n}",
+              "raw": "{\n  \"nome\": \"Henrique Ramos Atualizado\",\n  \"email\": \"henrique.atualizado@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -221,7 +221,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
+              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -320,7 +320,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
+              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -380,7 +380,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Machado de Assis\"\n}",
+              "raw": "{\n  \"nome\": \"Machado de Assis\",\n  \"nacionalidade\": \"Brasileira\",\n  \"dataNascimento\": \"1839-06-21\",\n  \"generoLiterario\": \"Romance\",\n  \"biografia\": \"Fundador da Academia Brasileira de Letras.\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -479,7 +479,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Machado de Assis Atualizado\"\n}",
+              "raw": "{\n  \"nome\": \"Machado de Assis Atualizado\",\n  \"nacionalidade\": \"Brasileira\",\n  \"dataNascimento\": \"1839-06-21\",\n  \"generoLiterario\": \"Romance\",\n  \"biografia\": \"Fundador da Academia Brasileira de Letras.\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -539,7 +539,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Romance\"\n}",
+              "raw": "{\n  \"nome\": \"Romance\",\n  \"codigo\": \"ROM\",\n  \"descricao\": \"Narrativas de ficção em prosa\",\n  \"localizacao\": \"Estante A\",\n  \"publicoAlvo\": \"Adulto\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -638,7 +638,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Literatura Brasileira\"\n}",
+              "raw": "{\n  \"nome\": \"Literatura Brasileira\",\n  \"codigo\": \"LIT\",\n  \"descricao\": \"Narrativas de ficção em prosa\",\n  \"localizacao\": \"Estante A\",\n  \"publicoAlvo\": \"Adulto\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -698,7 +698,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -797,7 +797,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -857,7 +857,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"observacao\": \"Retirado no balcão\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -956,7 +956,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"observacao\": \"Retirado no balcão\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1030,7 +1030,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\",\n  \"cpf\": \"11122233344\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1066,7 +1066,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"observacao\": \"Retirado no balcão\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1123,7 +1123,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1179,7 +1179,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"55566677788\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1215,7 +1215,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\"\n}",
+              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"99988877766\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1250,7 +1250,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Categoria Postman\"\n}",
+              "raw": "{\n  \"nome\": \"Categoria Postman\",\n  \"codigo\": \"PST\",\n  \"descricao\": \"Narrativas de ficção em prosa\",\n  \"localizacao\": \"Estante A\",\n  \"publicoAlvo\": \"Adulto\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1285,7 +1285,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1321,7 +1321,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"

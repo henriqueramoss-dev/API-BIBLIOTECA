@@ -59,7 +59,7 @@ Responsabilidade de cada pacote:
 
 ## 4. Entidades do sistema
 
-A API será composta pelas seguintes entidades:
+A API será composta pelas seguintes entidades. Cada uma possui pelo menos 5 dados cadastrais próprios (além do `id` e dos relacionamentos). Campos marcados com * são obrigatórios.
 
 ### Usuario
 
@@ -68,8 +68,11 @@ Representa o usuário cadastrado na biblioteca.
 Principais dados:
 
 - id
-- nome
-- email
+- nome *
+- email * (único)
+- cpf * (11 dígitos, único)
+- matricula
+- tipo * (`ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE`)
 
 ### Perfil
 
@@ -78,9 +81,13 @@ Armazena informações complementares do usuário.
 Principais dados:
 
 - id
-- telefone
-- endereco
-- data de nascimento
+- telefone *
+- endereco *
+- cidade *
+- estado * (sigla com 2 letras, ex.: SP)
+- cep * (8 dígitos)
+- data de nascimento *
+- usuario * (relacionamento)
 
 ### Autor
 
@@ -89,11 +96,24 @@ Representa o autor de um ou mais livros.
 Principais dados:
 
 - id
-- nome
+- nome *
+- nacionalidade *
+- data de nascimento
+- gênero literário
+- biografia
 
 ### Categoria
 
 Representa a categoria de um livro.
+
+Principais dados:
+
+- id
+- nome *
+- codigo * (único, ex.: ROM)
+- descricao
+- localizacao (ex.: Estante A)
+- publico alvo
 
 Exemplos:
 
@@ -109,11 +129,13 @@ Representa um livro cadastrado na biblioteca.
 Principais dados:
 
 - id
-- titulo
-- isbn
-- ano de publicação
-- categoria
-- autores
+- titulo *
+- isbn * (único)
+- ano de publicação *
+- editora *
+- número de páginas *
+- categoria * (relacionamento)
+- autores (relacionamento)
 
 ### Emprestimo
 
@@ -122,11 +144,13 @@ Representa o empréstimo de um livro para um usuário.
 Principais dados:
 
 - id
-- usuario
-- livro
-- data do empréstimo
-- data prevista para devolução
-- status
+- data do empréstimo *
+- data prevista para devolução *
+- data de devolução
+- status *
+- observacao
+- usuario * (relacionamento)
+- livro * (relacionamento)
 
 ---
 

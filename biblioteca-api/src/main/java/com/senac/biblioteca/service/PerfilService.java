@@ -42,6 +42,9 @@ public class PerfilService {
         Perfil perfil = new Perfil();
         perfil.setTelefone(dados.getTelefone());
         perfil.setEndereco(dados.getEndereco());
+        perfil.setCidade(dados.getCidade());
+        perfil.setEstado(dados.getEstado());
+        perfil.setCep(dados.getCep());
         perfil.setDataNascimento(dados.getDataNascimento());
         perfil.setUsuario(buscarUsuario(dados.getUsuarioId()));
 
@@ -60,6 +63,9 @@ public class PerfilService {
         Perfil perfil = existente.get();
         perfil.setTelefone(dados.getTelefone());
         perfil.setEndereco(dados.getEndereco());
+        perfil.setCidade(dados.getCidade());
+        perfil.setEstado(dados.getEstado());
+        perfil.setCep(dados.getCep());
         perfil.setDataNascimento(dados.getDataNascimento());
         perfil.setUsuario(usuario);
 

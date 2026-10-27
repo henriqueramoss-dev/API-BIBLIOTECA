@@ -42,6 +42,10 @@ public class AutorService {
         return repository.findById(id)
             .map(autor -> {
                 autor.setNome(dados.getNome());
+                autor.setNacionalidade(dados.getNacionalidade());
+                autor.setDataNascimento(dados.getDataNascimento());
+                autor.setGeneroLiterario(dados.getGeneroLiterario());
+                autor.setBiografia(dados.getBiografia());
                 return repository.save(autor);
             });
     }

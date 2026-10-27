@@ -45,6 +45,9 @@ public class UsuarioService {
             .map(usuario -> {
                 usuario.setNome(dados.getNome());
                 usuario.setEmail(dados.getEmail());
+                usuario.setCpf(dados.getCpf());
+                usuario.setMatricula(dados.getMatricula());
+                usuario.setTipo(dados.getTipo());
                 return repository.save(usuario);
             });
     }

@@ -56,6 +56,8 @@ public class LivroService {
         livro.setTitulo(dados.getTitulo());
         livro.setIsbn(dados.getIsbn());
         livro.setAnoPublicacao(dados.getAnoPublicacao());
+        livro.setEditora(dados.getEditora());
+        livro.setNumeroPaginas(dados.getNumeroPaginas());
         livro.setCategoria(categoria);
         livro.setAutores(autores);
 
@@ -76,6 +78,8 @@ public class LivroService {
         livro.setTitulo(dados.getTitulo());
         livro.setIsbn(dados.getIsbn());
         livro.setAnoPublicacao(dados.getAnoPublicacao());
+        livro.setEditora(dados.getEditora());
+        livro.setNumeroPaginas(dados.getNumeroPaginas());
         livro.setCategoria(categoria);
         livro.setAutores(autores);
         return Optional.of(repository.save(livro));
