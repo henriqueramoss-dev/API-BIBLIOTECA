@@ -2,6 +2,7 @@ package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.assembler.UsuarioModelAssembler;
+import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
@@ -73,7 +74,7 @@ public class UsuarioController {
     public ResponseEntity<PagedModel<EntityModel<Usuario>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Usuario> pagina = service.listar(pageable);
+        Page<Usuario> pagina = Paginas.conferir(service.listar(pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -92,7 +93,7 @@ public class UsuarioController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.usuario(id));
     }
 
     // POST /usuarios: cria um novo usuário após validar o JSON recebido.
@@ -132,7 +133,7 @@ public class UsuarioController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.usuario(id));
     }
 
     // DELETE /usuarios/{id}: remove um usuário existente.
@@ -148,7 +149,7 @@ public class UsuarioController {
     })
     public ResponseEntity<Void> excluir(@Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
-            throw naoEncontrado(id);
+            throw RecursoNaoEncontradoException.usuario(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -169,7 +170,7 @@ public class UsuarioController {
         @RequestParam String nome,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Usuario> pagina = service.buscarPorNome(nome, pageable);
+        Page<Usuario> pagina = Paginas.conferir(service.buscarPorNome(nome, pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -187,12 +188,7 @@ public class UsuarioController {
         @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Emprestimo> pagina = emprestimoService.listarPorUsuario(id, pageable);
+        Page<Emprestimo> pagina = Paginas.conferir(emprestimoService.listarPorUsuario(id, pageable));
         return ResponseEntity.ok(emprestimoPagedAssembler.toModel(pagina, emprestimoAssembler));
-    }
-
-    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
-    private RecursoNaoEncontradoException naoEncontrado(Long id) {
-        return new RecursoNaoEncontradoException("Usuário com ID " + id + " não encontrado.");
     }
 }

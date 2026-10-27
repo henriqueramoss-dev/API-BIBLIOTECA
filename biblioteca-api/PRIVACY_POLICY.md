@@ -39,7 +39,7 @@ Todos os dados abaixo são **informados por você** ao cadastrar um registro, no
 |---|---|---|
 | Nome | Sim | |
 | E-mail | Sim | Não pode se repetir |
-| CPF | Sim | 11 dígitos; não pode se repetir |
+| CPF | Sim | 11 dígitos com dígitos verificadores corretos; não pode se repetir |
 | Matrícula | Não | |
 | Tipo (aluno, professor, funcionário ou visitante) | Sim | |
 
@@ -150,6 +150,7 @@ E tem **limitações que impedem o uso com dados reais**:
 | Sem autenticação nem permissões | Quem alcançar a API consegue ler, alterar e excluir tudo |
 | Tráfego em HTTP, sem criptografia | Os dados podem ser lidos por quem estiver na mesma rede |
 | CPF e demais dados guardados sem criptografia | Quem acessar o banco lê os dados |
+| O CPF completo é devolvido pelas rotas de `/usuarios` | Quem alcançar a API lê o CPF de todos os usuários. Ele não é repetido dentro de empréstimos e perfis |
 | Se o console do H2 for habilitado (hoje ele **não** está disponível, veja o README) | Quem tiver acesso à API conseguiria consultar o banco diretamente |
 | Sem limite de requisições | Não há proteção contra uso abusivo |
 

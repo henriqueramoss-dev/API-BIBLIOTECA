@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -19,6 +21,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Map;
 
 /**
@@ -170,6 +174,25 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata dados que contradizem uma regra de negócio.
+     *
+     * Exemplo: empréstimo com data de devolução anterior à data do empréstimo.
+     *
+     * Retorna HTTP 400 - Bad Request, com o campo problemático em "campos".
+     */
+    @ExceptionHandler(ValidacaoNegocioException.class)
+    public ResponseEntity<ErroResposta> tratarValidacaoNegocio(ValidacaoNegocioException ex) {
+        ErroResposta resposta = new ErroResposta(
+            HttpStatus.BAD_REQUEST.value(),
+            "Dados inválidos",
+            ex.getMessage(),
+            ex.getCampos()
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
+    }
+
+    /**
      * Trata endereços que não existem na API.
      *
      * Exemplo: GET /livross (com erro de digitação).
@@ -196,15 +219,22 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErroResposta> tratarMetodoNaoPermitido(HttpRequestMethodNotSupportedException ex) {
-        String aceitos = ex.getSupportedHttpMethods() == null ? "" :
-            " Métodos aceitos: " + String.join(", ", ex.getSupportedHttpMethods().stream().map(Object::toString).toList()) + ".";
+        Set<HttpMethod> aceitos = ex.getSupportedHttpMethods();
+        String lista = aceitos == null || aceitos.isEmpty() ? "" :
+            " Métodos aceitos: " + aceitos.stream().map(HttpMethod::name).collect(Collectors.joining(", ")) + ".";
         ErroResposta resposta = criarResposta(
             HttpStatus.METHOD_NOT_ALLOWED,
             "Método não permitido",
-            "O método " + ex.getMethod() + " não é aceito neste endereço." + aceitos
+            "O método " + ex.getMethod() + " não é aceito neste endereço." + lista
         );
 
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(resposta);
+        ResponseEntity.BodyBuilder resposta405 = ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED);
+        // O cabeçalho Allow é obrigatório em respostas 405 (RFC 9110).
+        if (aceitos != null && !aceitos.isEmpty()) {
+            resposta405.allow(aceitos.toArray(HttpMethod[]::new));
+        }
+
+        return resposta405.body(resposta);
     }
 
     /**
@@ -250,10 +280,10 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResposta> tratarErroInesperado(Exception ex) throws Exception {
-        // Exceções que o Spring já sabe converter (404 de rota, 405, 415...)
-        // continuam sendo tratadas por ele.
-        if (ex instanceof ErrorResponse) {
-            throw ex;
+        // Erros HTTP que o próprio Spring já identifica (415, 406, 400 de requisição malformada...):
+        // mantém o código e os cabeçalhos dele, mas responde no formato padrão da API.
+        if (ex instanceof ErrorResponse erroHttp) {
+            return responderErroHttp(erroHttp);
         }
 
         log.error("Erro inesperado na API", ex);
@@ -265,6 +295,44 @@ public class ApiExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resposta);
+    }
+
+    /**
+     * Converte um erro HTTP do Spring (415, 406 etc.) para o formato padrão da API.
+     */
+    private ResponseEntity<ErroResposta> responderErroHttp(ErrorResponse erro) {
+        HttpStatus status = HttpStatus.resolve(erro.getStatusCode().value());
+        if (status == null || status.is5xxServerError()) {
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        String titulo;
+        String mensagem;
+        switch (status) {
+            case UNSUPPORTED_MEDIA_TYPE -> {
+                titulo = "Tipo de conteúdo não suportado";
+                mensagem = "Envie o corpo da requisição como application/json.";
+            }
+            case NOT_ACCEPTABLE -> {
+                titulo = "Formato de resposta não disponível";
+                mensagem = "A API responde em application/json (ou HAL+JSON). Ajuste o cabeçalho Accept.";
+            }
+            case INTERNAL_SERVER_ERROR -> {
+                titulo = "Erro interno";
+                mensagem = "Ocorreu um erro inesperado ao processar a requisição.";
+            }
+            default -> {
+                titulo = "Requisição inválida";
+                mensagem = "A requisição não pôde ser processada.";
+            }
+        }
+
+        // O tipo JSON é definido aqui porque, no 406, o cabeçalho Accept do cliente pede um formato
+        // que a API não atende e o Spring não conseguiria escolher como escrever o corpo.
+        return ResponseEntity.status(status)
+            .headers(erro.getHeaders())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(criarResposta(status, titulo, mensagem));
     }
 
     /**

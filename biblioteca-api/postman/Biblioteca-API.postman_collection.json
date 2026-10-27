@@ -990,7 +990,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\",\n  \"cpf\": \"11122233344\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\",\n  \"cpf\": \"11144477735\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1034,6 +1034,114 @@
               }
             },
             "url": "{{baseUrl}}/emprestimos",
+            "description": "Valida tratamento de JSON/enum inválido. Deve retornar 400 Bad Request."
+          }
+        },
+        {
+          "name": "400 - Emprestimo devolvido antes de ser emprestado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"dataDevolucao\": \"2026-10-01\",\n  \"status\": \"DEVOLVIDO\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/emprestimos",
+            "description": "Valida tratamento de JSON/enum inválido. Deve retornar 400 Bad Request."
+          }
+        },
+        {
+          "name": "400 - Emprestimo DEVOLVIDO sem data de devolucao",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"DEVOLVIDO\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/emprestimos",
+            "description": "Valida tratamento de JSON/enum inválido. Deve retornar 400 Bad Request."
+          }
+        },
+        {
+          "name": "400 - Usuario com CPF invalido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"cpf.invalido@email.com\",\n  \"cpf\": \"11122233344\",\n  \"tipo\": \"ALUNO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/usuarios",
             "description": "Valida tratamento de JSON/enum inválido. Deve retornar 400 Bad Request."
           }
         },
@@ -1113,6 +1221,45 @@
             "method": "DELETE",
             "url": "{{baseUrl}}/autores/999999",
             "description": "Tenta excluir um ID inexistente e deve retornar 404 Not Found."
+          }
+        },
+        {
+          "name": "405 - Metodo nao permitido em livros",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 405\", function () {",
+                  "  pm.response.to.have.status(405);",
+                  "});",
+                  "pm.test(\"Cabecalho Allow informado\", function () {",
+                  "  pm.response.to.have.header(\"Allow\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/livros/{{livroId}}",
+            "description": "Valida tratamento de JSON/enum inválido. Deve retornar 400 Bad Request."
           }
         },
         {
@@ -1235,7 +1382,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"55566677788\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"52998224725\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1271,7 +1418,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"99988877766\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"39053344705\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

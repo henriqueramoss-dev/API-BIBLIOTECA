@@ -555,7 +555,7 @@ http://localhost:8080
 | 5 endpoints por entidade | 6 ou 7 por entidade (40 no total) |
 | Pageable | Sim, em todas as listagens e consultas |
 | Consulta personalizada | Pelo menos uma por entidade |
-| Status HTTP | 200, 201 (com `Location`), 204, 400, 404, 405, 409 e 500, todos com mensagem |
+| Status HTTP | 200, 201 (com `Location`), 204, 400, 404, 405 (com `Allow`), 406, 409, 415 e 500, todos com mensagem |
 | Swagger/OpenAPI | Todos os endpoints com descrição, exemplos e códigos de resposta (inclusive o formato dos erros) |
 | HATEOAS | `EntityModel` e `PagedModel`, links `self`, `update`, `delete` e de navegação entre recursos |
 

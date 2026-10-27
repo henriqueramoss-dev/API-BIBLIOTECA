@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { list, Page, remove } from '../api/client';
+import { ApiError, list, Page, remove } from '../api/client';
 import { isResourceKey, RESOURCES } from '../api/resources';
 import { Icon } from '../components/Icon';
 
@@ -24,8 +24,18 @@ export default function ResourceList() {
     setError(undefined);
     list(resource.key, resource.embeddedKey, { page, size: PAGE_SIZE, search: { [resource.search.param]: term } })
       .then(setData)
-      .catch((e: Error) => setError(e.message))
+      .catch((e: Error) => {
+        // Página que não existe mais (endereço antigo, ou itens excluídos em outra aba): volta para a primeira.
+        if ((e as ApiError).status === 404 && page > 0) {
+          const next = new URLSearchParams(params);
+          next.delete('page');
+          setParams(next, { replace: true });
+          return;
+        }
+        setError(e.message);
+      })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resource, page, term]);
 
   useEffect(load, [load]);

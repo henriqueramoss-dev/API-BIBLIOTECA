@@ -1,5 +1,6 @@
 package com.senac.biblioteca.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -57,6 +58,8 @@ public class Perfil {
 
     // Relacionamento One-to-One: cada perfil pertence a um único usuário.
     @NotNull(message = "O usuário é obrigatório")
+    // O CPF do usuário não é repetido aqui: ele só aparece nas rotas de /usuarios.
+    @JsonIgnoreProperties("cpf")
     @OneToOne
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;

@@ -1,6 +1,7 @@
 package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
+import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.dto.EmprestimoRequest;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.enums.StatusEmprestimo;
@@ -57,7 +58,7 @@ public class EmprestimoController {
     public ResponseEntity<PagedModel<EntityModel<Emprestimo>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Emprestimo> pagina = service.listar(pageable);
+        Page<Emprestimo> pagina = Paginas.conferir(service.listar(pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -75,7 +76,7 @@ public class EmprestimoController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.emprestimo(id));
     }
 
     @PostMapping
@@ -111,7 +112,7 @@ public class EmprestimoController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.emprestimo(id));
     }
 
     @DeleteMapping("/{id}")
@@ -125,7 +126,7 @@ public class EmprestimoController {
     })
     public ResponseEntity<Void> excluir(@Parameter(description = "ID do empréstimo", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
-            throw naoEncontrado(id);
+            throw RecursoNaoEncontradoException.emprestimo(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -145,12 +146,7 @@ public class EmprestimoController {
         @RequestParam StatusEmprestimo status,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Emprestimo> pagina = service.buscarPorStatus(status, pageable);
+        Page<Emprestimo> pagina = Paginas.conferir(service.buscarPorStatus(status, pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
-    }
-
-    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
-    private RecursoNaoEncontradoException naoEncontrado(Long id) {
-        return new RecursoNaoEncontradoException("Empréstimo com ID " + id + " não encontrado.");
     }
 }

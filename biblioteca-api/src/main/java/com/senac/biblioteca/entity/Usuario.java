@@ -2,12 +2,12 @@ package com.senac.biblioteca.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.senac.biblioteca.enums.TipoUsuario;
+import com.senac.biblioteca.validation.Cpf;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Usuario {
 
     // CPF com 11 dígitos, sem pontos ou traço, e único no sistema.
     @NotBlank(message = "O CPF é obrigatório")
-    @Pattern(regexp = "\\d{11}", message = "O CPF deve ter 11 dígitos, sem pontos ou traço")
+    @Cpf
     @Column(nullable = false, unique = true, length = 11)
     @Schema(description = "CPF do usuário (somente números)", example = "12345678909")
     private String cpf;

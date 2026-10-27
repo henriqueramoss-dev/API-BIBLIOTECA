@@ -2,6 +2,7 @@ package com.senac.biblioteca.controller;
 
 import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.assembler.LivroModelAssembler;
+import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.dto.LivroRequest;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Livro;
@@ -69,7 +70,7 @@ public class LivroController {
     public ResponseEntity<PagedModel<EntityModel<Livro>>> listar(
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Livro> pagina = service.listar(pageable);
+        Page<Livro> pagina = Paginas.conferir(service.listar(pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -87,7 +88,7 @@ public class LivroController {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.livro(id));
     }
 
     @PostMapping
@@ -125,7 +126,7 @@ public class LivroController {
         return service.atualizar(id, item)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
-            .orElseThrow(() -> naoEncontrado(id));
+            .orElseThrow(() -> RecursoNaoEncontradoException.livro(id));
     }
 
     @DeleteMapping("/{id}")
@@ -140,7 +141,7 @@ public class LivroController {
     })
     public ResponseEntity<Void> excluir(@Parameter(description = "ID do livro", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
-            throw naoEncontrado(id);
+            throw RecursoNaoEncontradoException.livro(id);
         }
 
         return ResponseEntity.noContent().build();
@@ -160,7 +161,7 @@ public class LivroController {
         @RequestParam String titulo,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Livro> pagina = service.buscarPorTitulo(titulo, pageable);
+        Page<Livro> pagina = Paginas.conferir(service.buscarPorTitulo(titulo, pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
     }
 
@@ -178,12 +179,7 @@ public class LivroController {
         @Parameter(description = "ID do livro", example = "1") @PathVariable Long id,
         @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
     ) {
-        Page<Emprestimo> pagina = emprestimoService.listarPorLivro(id, pageable);
+        Page<Emprestimo> pagina = Paginas.conferir(emprestimoService.listarPorLivro(id, pageable));
         return ResponseEntity.ok(emprestimoPagedAssembler.toModel(pagina, emprestimoAssembler));
-    }
-
-    // Erro 404 com mensagem, tratado no ApiExceptionHandler.
-    private RecursoNaoEncontradoException naoEncontrado(Long id) {
-        return new RecursoNaoEncontradoException("Livro com ID " + id + " não encontrado.");
     }
 }

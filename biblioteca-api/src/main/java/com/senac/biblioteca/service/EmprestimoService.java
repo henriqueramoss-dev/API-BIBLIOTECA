@@ -7,6 +7,7 @@ import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.enums.StatusEmprestimo;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
+import com.senac.biblioteca.exception.ValidacaoNegocioException;
 import com.senac.biblioteca.repository.EmprestimoRepository;
 import com.senac.biblioteca.repository.LivroRepository;
 import com.senac.biblioteca.repository.UsuarioRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -47,8 +49,9 @@ public class EmprestimoService {
         return repository.findById(id);
     }
 
-    // Só cria o empréstimo quando usuário e livro informados existem.
+    // Só cria o empréstimo quando as datas fazem sentido e usuário e livro informados existem.
     public Emprestimo criar(EmprestimoRequest dados) {
+        conferirDatasEStatus(dados);
         Usuario usuario = buscarUsuario(dados.getUsuarioId());
         Livro livro = buscarLivro(dados.getLivroId());
 
@@ -71,6 +74,7 @@ public class EmprestimoService {
             return Optional.empty();
         }
 
+        conferirDatasEStatus(dados);
         Usuario usuario = buscarUsuario(dados.getUsuarioId());
         Livro livro = buscarLivro(dados.getLivroId());
 
@@ -88,6 +92,39 @@ public class EmprestimoService {
         // já chegam carregados para a resposta JSON/HATEOAS.
         repository.save(emprestimo);
         return Optional.of(repository.findById(id).orElse(emprestimo));
+    }
+
+    /**
+     * Regras que o Bean Validation não cobre, por envolverem mais de um campo:
+     *  - as datas de devolução não podem ser anteriores à data do empréstimo;
+     *  - empréstimo DEVOLVIDO precisa da data de devolução;
+     *  - só empréstimo DEVOLVIDO pode ter data de devolução.
+     */
+    private void conferirDatasEStatus(EmprestimoRequest dados) {
+        LocalDate emprestimo = dados.getDataEmprestimo();
+        LocalDate prevista = dados.getDataPrevistaDevolucao();
+        LocalDate devolucao = dados.getDataDevolucao();
+        StatusEmprestimo status = dados.getStatus();
+
+        if (emprestimo != null && prevista != null && prevista.isBefore(emprestimo)) {
+            throw new ValidacaoNegocioException("dataPrevistaDevolucao",
+                "A devolução prevista deve ser igual ou posterior à data do empréstimo.");
+        }
+
+        if (emprestimo != null && devolucao != null && devolucao.isBefore(emprestimo)) {
+            throw new ValidacaoNegocioException("dataDevolucao",
+                "A data de devolução deve ser igual ou posterior à data do empréstimo.");
+        }
+
+        if (status == StatusEmprestimo.DEVOLVIDO && devolucao == null) {
+            throw new ValidacaoNegocioException("dataDevolucao",
+                "Informe a data de devolução quando o status for DEVOLVIDO.");
+        }
+
+        if (status != StatusEmprestimo.DEVOLVIDO && devolucao != null) {
+            throw new ValidacaoNegocioException("status",
+                "Só um empréstimo com status DEVOLVIDO pode ter data de devolução.");
+        }
     }
 
     // Garante que o usuário informado existe.
@@ -120,7 +157,7 @@ public class EmprestimoService {
     // Empréstimos de um usuário; 404 se o usuário não existir.
     public Page<Emprestimo> listarPorUsuario(Long usuarioId, Pageable pageable) {
         if (!usuarioRepository.existsById(usuarioId)) {
-            throw new RecursoNaoEncontradoException("Usuário com ID " + usuarioId + " não encontrado.");
+            throw RecursoNaoEncontradoException.usuario(usuarioId);
         }
 
         return repository.findByUsuarioId(usuarioId, pageable);
@@ -129,7 +166,7 @@ public class EmprestimoService {
     // Histórico de empréstimos de um livro; 404 se o livro não existir.
     public Page<Emprestimo> listarPorLivro(Long livroId, Pageable pageable) {
         if (!livroRepository.existsById(livroId)) {
-            throw new RecursoNaoEncontradoException("Livro com ID " + livroId + " não encontrado.");
+            throw RecursoNaoEncontradoException.livro(livroId);
         }
 
         return repository.findByLivroId(livroId, pageable);

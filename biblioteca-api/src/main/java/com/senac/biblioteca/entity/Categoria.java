@@ -33,7 +33,7 @@ public class Categoria {
     @NotBlank(message = "O código é obrigatório")
     @Size(max = 10, message = "O código deve ter no máximo 10 caracteres")
     @Column(nullable = false, unique = true, length = 10)
-    @Schema(description = "Código único da categoria", example = "ROM")
+    @Schema(description = "Código único da categoria (gravado em maiúsculas)", example = "ROM")
     private String codigo;
 
     @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres")
@@ -80,8 +80,12 @@ public class Categoria {
         return codigo;
     }
 
+    /**
+     * O código é gravado sem espaços nas pontas e em maiúsculas ("rom" vira "ROM"),
+     * para que a regra "código único" não seja contornada trocando maiúsculas por minúsculas.
+     */
     public void setCodigo(String codigo) {
-        this.codigo = codigo;
+        this.codigo = codigo == null ? null : codigo.trim().toUpperCase(java.util.Locale.ROOT);
     }
 
     public String getDescricao() {
