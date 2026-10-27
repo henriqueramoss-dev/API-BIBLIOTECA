@@ -183,26 +183,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Excluir usuario",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -337,26 +317,6 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () {",
                   "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Excluir perfil",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/perfis/{{perfilId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
                   "});"
                 ]
               }
@@ -501,26 +461,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Excluir autor",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/autores/{{autorId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -655,26 +595,6 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () {",
                   "    pm.response.to.have.status(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Excluir categoria",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
                   "});"
                 ]
               }
@@ -819,26 +739,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Excluir livro",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/livros/{{livroId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -978,26 +878,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Excluir emprestimo",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/emprestimos/{{emprestimoId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -1066,7 +946,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"ATIVO\",\n  \"observacao\": \"Retirado no balcão\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
+              "raw": "{\n  \"dataEmprestimo\": \"2026-10-09\",\n  \"dataPrevistaDevolucao\": \"2026-10-25\",\n  \"status\": \"PERDIDO\",\n  \"observacao\": \"Retirado no balcão\",\n  \"usuarioId\": {{usuarioId}},\n  \"livroId\": {{livroId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1285,7 +1165,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9786500000001\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaConflitoId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1321,7 +1201,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9788535910663\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaId}},\n  \"autoresIds\": [{{autorId}}]\n}",
+              "raw": "{\n  \"titulo\": \"Dom Casmurro\",\n  \"isbn\": \"9786500000001\",\n  \"anoPublicacao\": 1899,\n  \"editora\": \"Companhia das Letras\",\n  \"numeroPaginas\": 256,\n  \"categoriaId\": {{categoriaConflitoId}},\n  \"autoresIds\": [{{autorId}}]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1331,6 +1211,192 @@
             "url": "{{baseUrl}}/livros",
             "description": "Execute depois de 'Preparar 409 - Criar livro com ISBN unico'. Deve retornar 409 Conflict."
           }
+        }
+      ]
+    },
+    {
+      "name": "Exclusões",
+      "description": "Executada por último: exclui os registros na ordem inversa das dependências (empréstimo antes de livro e usuário; livro antes de autor e categoria). Assim a coleção pode ser executada várias vezes seguidas.",
+      "item": [
+        {
+          "name": "Excluir emprestimo",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/emprestimos/{{emprestimoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir perfil",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/perfis/{{perfilId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir livro",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir livro do teste 409",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/livros/{{livroConflitoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir autor",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/autores/{{autorId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir categoria",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir categoria do teste 409",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/categorias/{{categoriaConflitoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir usuario",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir usuario do teste 409",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/usuarios/{{usuarioConflitoId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
