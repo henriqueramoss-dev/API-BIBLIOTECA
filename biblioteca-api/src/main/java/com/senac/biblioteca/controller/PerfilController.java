@@ -17,8 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -79,7 +79,7 @@ public class PerfilController {
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado"),
         @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
-    public ResponseEntity<EntityModel<Perfil>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<Perfil>> buscarPorId(@Parameter(description = "ID do perfil", example = "1") @PathVariable Long id) {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
@@ -90,7 +90,7 @@ public class PerfilController {
     @PostMapping
     @Operation(
         summary = "Cadastrar perfil",
-        description = "Cria um perfil para um usuário já cadastrado."
+        description = "Cria o perfil de um usuário já cadastrado. Cada usuário pode ter apenas um perfil."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Perfil criado com sucesso"),
@@ -99,14 +99,16 @@ public class PerfilController {
     })
     public ResponseEntity<EntityModel<Perfil>> criar(@Valid @RequestBody PerfilRequest item) {
         Perfil criado = service.criar(item);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
+        EntityModel<Perfil> model = assembler.toModel(criado);
+        // 201 Created com o endereço do novo recurso no cabeçalho Location.
+        return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(model);
     }
 
     // Atualização de um recurso existente.
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar perfil",
-        description = "Atualiza telefone, endereço, data de nascimento e usuário de um perfil existente."
+        description = "Atualiza telefone, endereço, cidade, estado, CEP, data de nascimento e usuário de um perfil existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso"),
@@ -115,7 +117,7 @@ public class PerfilController {
         @ApiResponse(responseCode = "409", description = "O usuário informado já possui outro perfil")
     })
     public ResponseEntity<EntityModel<Perfil>> atualizar(
-        @PathVariable Long id,
+        @Parameter(description = "ID do perfil", example = "1") @PathVariable Long id,
         @Valid @RequestBody PerfilRequest item
     ) {
         return service.atualizar(id, item)
@@ -134,7 +136,7 @@ public class PerfilController {
         @ApiResponse(responseCode = "204", description = "Perfil excluído com sucesso"),
         @ApiResponse(responseCode = "404", description = "Perfil não encontrado")
     })
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    public ResponseEntity<Void> excluir(@Parameter(description = "ID do perfil", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
             throw naoEncontrado(id);
         }

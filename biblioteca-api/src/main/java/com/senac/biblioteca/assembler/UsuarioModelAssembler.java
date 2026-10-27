@@ -25,6 +25,7 @@ public class UsuarioModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * emprestimos -> navega para os empréstimos deste usuário
      * perfil -> navega para o perfil do usuário, quando ele existir
      * usuarios -> retorna para a listagem paginada do recurso
      */
@@ -35,6 +36,7 @@ public class UsuarioModelAssembler
             linkTo(UsuarioController.class).slash(item.getId()).withSelfRel(),
             linkTo(UsuarioController.class).slash(item.getId()).withRel("update"),
             linkTo(UsuarioController.class).slash(item.getId()).withRel("delete"),
+            linkTo(UsuarioController.class).slash(item.getId()).slash("emprestimos").withRel("emprestimos"),
             linkTo(UsuarioController.class).withRel("usuarios")
         );
 

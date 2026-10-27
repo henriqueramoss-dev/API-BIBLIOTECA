@@ -5,6 +5,7 @@ import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Livro;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.enums.StatusEmprestimo;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
 import com.senac.biblioteca.repository.EmprestimoRepository;
 import com.senac.biblioteca.repository.LivroRepository;
@@ -114,5 +115,23 @@ public class EmprestimoService {
     // Consulta personalizada pelo enum StatusEmprestimo, também paginada.
     public Page<Emprestimo> buscarPorStatus(StatusEmprestimo status, Pageable pageable) {
         return repository.findByStatus(status, pageable);
+    }
+
+    // Empréstimos de um usuário; 404 se o usuário não existir.
+    public Page<Emprestimo> listarPorUsuario(Long usuarioId, Pageable pageable) {
+        if (!usuarioRepository.existsById(usuarioId)) {
+            throw new RecursoNaoEncontradoException("Usuário com ID " + usuarioId + " não encontrado.");
+        }
+
+        return repository.findByUsuarioId(usuarioId, pageable);
+    }
+
+    // Histórico de empréstimos de um livro; 404 se o livro não existir.
+    public Page<Emprestimo> listarPorLivro(Long livroId, Pageable pageable) {
+        if (!livroRepository.existsById(livroId)) {
+            throw new RecursoNaoEncontradoException("Livro com ID " + livroId + " não encontrado.");
+        }
+
+        return repository.findByLivroId(livroId, pageable);
     }
 }

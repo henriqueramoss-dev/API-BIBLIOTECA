@@ -18,8 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,7 +71,7 @@ public class EmprestimoController {
         @ApiResponse(responseCode = "404", description = "Empréstimo não encontrado"),
         @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
-    public ResponseEntity<EntityModel<Emprestimo>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<Emprestimo>> buscarPorId(@Parameter(description = "ID do empréstimo", example = "1") @PathVariable Long id) {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
@@ -81,7 +81,7 @@ public class EmprestimoController {
     @PostMapping
     @Operation(
         summary = "Cadastrar empréstimo",
-        description = "Cria um empréstimo para um usuário e um livro já cadastrados."
+        description = "Cria um empréstimo para um usuário e um livro já cadastrados. A data de devolução e a observação são opcionais."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Empréstimo criado com sucesso"),
@@ -89,13 +89,15 @@ public class EmprestimoController {
     })
     public ResponseEntity<EntityModel<Emprestimo>> criar(@Valid @RequestBody EmprestimoRequest item) {
         Emprestimo criado = service.criar(item);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
+        EntityModel<Emprestimo> model = assembler.toModel(criado);
+        // 201 Created com o endereço do novo recurso no cabeçalho Location.
+        return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(model);
     }
 
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar empréstimo",
-        description = "Atualiza datas, status, usuário e livro de um empréstimo existente."
+        description = "Atualiza datas, data de devolução, status, observação, usuário e livro de um empréstimo existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Empréstimo atualizado com sucesso"),
@@ -103,7 +105,7 @@ public class EmprestimoController {
         @ApiResponse(responseCode = "404", description = "Empréstimo não encontrado")
     })
     public ResponseEntity<EntityModel<Emprestimo>> atualizar(
-        @PathVariable Long id,
+        @Parameter(description = "ID do empréstimo", example = "1") @PathVariable Long id,
         @Valid @RequestBody EmprestimoRequest item
     ) {
         return service.atualizar(id, item)
@@ -121,7 +123,7 @@ public class EmprestimoController {
         @ApiResponse(responseCode = "204", description = "Empréstimo excluído com sucesso"),
         @ApiResponse(responseCode = "404", description = "Empréstimo não encontrado")
     })
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    public ResponseEntity<Void> excluir(@Parameter(description = "ID do empréstimo", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
             throw naoEncontrado(id);
         }

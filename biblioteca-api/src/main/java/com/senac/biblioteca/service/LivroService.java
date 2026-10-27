@@ -4,6 +4,7 @@ import com.senac.biblioteca.dto.LivroRequest;
 import com.senac.biblioteca.entity.Autor;
 import com.senac.biblioteca.entity.Categoria;
 import com.senac.biblioteca.entity.Livro;
+import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.exception.RecursoRelacionadoNaoEncontradoException;
 import com.senac.biblioteca.repository.AutorRepository;
 import com.senac.biblioteca.repository.CategoriaRepository;
@@ -98,6 +99,24 @@ public class LivroService {
     // Consulta personalizada por parte do título, com paginação.
     public Page<Livro> buscarPorTitulo(String titulo, Pageable pageable) {
         return repository.findByTituloContainingIgnoreCase(titulo, pageable);
+    }
+
+    // Livros de uma categoria; 404 se a categoria não existir.
+    public Page<Livro> listarPorCategoria(Long categoriaId, Pageable pageable) {
+        if (!categoriaRepository.existsById(categoriaId)) {
+            throw new RecursoNaoEncontradoException("Categoria com ID " + categoriaId + " não encontrada.");
+        }
+
+        return repository.findByCategoriaId(categoriaId, pageable);
+    }
+
+    // Livros de um autor; 404 se o autor não existir.
+    public Page<Livro> listarPorAutor(Long autorId, Pageable pageable) {
+        if (!autorRepository.existsById(autorId)) {
+            throw new RecursoNaoEncontradoException("Autor com ID " + autorId + " não encontrado.");
+        }
+
+        return repository.findByAutoresId(autorId, pageable);
     }
 
     // Garante que a categoria informada existe.

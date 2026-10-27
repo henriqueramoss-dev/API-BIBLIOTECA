@@ -1,8 +1,11 @@
 package com.senac.biblioteca.controller;
 
+import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.assembler.UsuarioModelAssembler;
+import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
+import com.senac.biblioteca.service.EmprestimoService;
 import com.senac.biblioteca.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,8 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,15 +40,24 @@ public class UsuarioController {
     private final UsuarioModelAssembler assembler;
     // Converte Page<Usuario> para uma resposta paginada compatível com HATEOAS.
     private final PagedResourcesAssembler<Usuario> pagedResourcesAssembler;
+    private final EmprestimoService emprestimoService;
+    private final EmprestimoModelAssembler emprestimoAssembler;
+    private final PagedResourcesAssembler<Emprestimo> emprestimoPagedAssembler;
 
     public UsuarioController(
         UsuarioService service,
         UsuarioModelAssembler assembler,
-        PagedResourcesAssembler<Usuario> pagedResourcesAssembler
+        PagedResourcesAssembler<Usuario> pagedResourcesAssembler,
+        EmprestimoService emprestimoService,
+        EmprestimoModelAssembler emprestimoAssembler,
+        PagedResourcesAssembler<Emprestimo> emprestimoPagedAssembler
     ) {
         this.service = service;
         this.assembler = assembler;
         this.pagedResourcesAssembler = pagedResourcesAssembler;
+        this.emprestimoService = emprestimoService;
+        this.emprestimoAssembler = emprestimoAssembler;
+        this.emprestimoPagedAssembler = emprestimoPagedAssembler;
     }
 
     // GET /usuarios: lista usuários usando page, size e sort.
@@ -76,7 +88,7 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
         @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
-    public ResponseEntity<EntityModel<Usuario>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<Usuario>> buscarPorId(@Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
         return service.buscarPorId(id)
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
@@ -87,7 +99,7 @@ public class UsuarioController {
     @PostMapping
     @Operation(
         summary = "Cadastrar usuário",
-        description = "Cria um novo usuário na biblioteca."
+        description = "Cria um novo usuário na biblioteca. E-mail e CPF não podem se repetir."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
@@ -96,14 +108,16 @@ public class UsuarioController {
     })
     public ResponseEntity<EntityModel<Usuario>> criar(@Valid @RequestBody Usuario item) {
         Usuario criado = service.criar(item);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assembler.toModel(criado));
+        EntityModel<Usuario> model = assembler.toModel(criado);
+        // 201 Created com o endereço do novo recurso no cabeçalho Location.
+        return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(model);
     }
 
     // PUT /usuarios/{id}: atualiza os dados de um usuário existente.
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar usuário",
-        description = "Atualiza o nome e o e-mail de um usuário existente."
+        description = "Atualiza nome, e-mail, CPF, matrícula e tipo de um usuário existente."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
@@ -112,7 +126,7 @@ public class UsuarioController {
         @ApiResponse(responseCode = "409", description = "E-mail já cadastrado para outro usuário")
     })
     public ResponseEntity<EntityModel<Usuario>> atualizar(
-        @PathVariable Long id,
+        @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
         @Valid @RequestBody Usuario item
     ) {
         return service.atualizar(id, item)
@@ -132,7 +146,7 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado"),
         @ApiResponse(responseCode = "409", description = "Usuário possui empréstimos e não pode ser excluído")
     })
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    public ResponseEntity<Void> excluir(@Parameter(description = "ID do usuário", example = "1") @PathVariable Long id) {
         if (!service.excluir(id)) {
             throw naoEncontrado(id);
         }
@@ -157,6 +171,24 @@ public class UsuarioController {
     ) {
         Page<Usuario> pagina = service.buscarPorNome(nome, pageable);
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
+    }
+
+    @GetMapping("/{id}/emprestimos")
+    @Operation(
+        summary = "Listar empréstimos do usuário",
+        description = "Retorna, de forma paginada, os empréstimos feitos pelo usuário informado."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listagem realizada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "ID, paginação ou ordenação inválidos"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
+    public ResponseEntity<PagedModel<EntityModel<Emprestimo>>> listarEmprestimos(
+        @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
+        @ParameterObject @PageableDefault(size = 10, page = 0, sort = "id") Pageable pageable
+    ) {
+        Page<Emprestimo> pagina = emprestimoService.listarPorUsuario(id, pageable);
+        return ResponseEntity.ok(emprestimoPagedAssembler.toModel(pagina, emprestimoAssembler));
     }
 
     // Erro 404 com mensagem, tratado no ApiExceptionHandler.

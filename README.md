@@ -13,7 +13,7 @@ O projeto contempla **somente os Requisitos Técnicos - Parte 1** da atividade.
 ## 2. Tecnologias utilizadas
 
 - Java 21
-- Spring Boot
+- Spring Boot 4.1.2 (versão estável mais recente)
 - Maven
 - Spring Web MVC
 - Spring Data JPA
@@ -279,6 +279,19 @@ Exemplo:
 GET /usuarios/buscar?nome=Henrique
 ```
 
+Endpoints por entidade:
+
+| Entidade | Endpoints | Consultas personalizadas |
+|---|---:|---|
+| Livros | 7 | `GET /livros/buscar?titulo=`, `GET /livros/{id}/emprestimos` |
+| Autores | 7 | `GET /autores/buscar?nome=`, `GET /autores/{id}/livros` |
+| Categorias | 7 | `GET /categorias/buscar?nome=`, `GET /categorias/{id}/livros` |
+| Usuários | 7 | `GET /usuarios/buscar?nome=`, `GET /usuarios/{id}/emprestimos` |
+| Perfis | 6 | `GET /perfis/buscar?telefone=` |
+| Empréstimos | 6 | `GET /emprestimos/buscar?status=` |
+
+O `POST` retorna `201 Created` com o endereço do novo registro no cabeçalho `Location`.
+
 ---
 
 ## 9. Paginação
@@ -428,10 +441,15 @@ traz links para os recursos relacionados, permitindo navegar pela API:
 
 | Recurso | Links relacionados |
 |---|---|
-| Livro | `categoria`, `autores` |
+| Livro | `categoria`, `autores`, `emprestimos` (histórico do livro) |
 | Empréstimo | `usuario`, `livro` |
 | Perfil | `usuario` |
-| Usuário | `perfil` (quando existir) |
+| Usuário | `perfil` (quando existir), `emprestimos` |
+| Autor | `livros` |
+| Categoria | `livros` |
+
+Assim é possível navegar nos dois sentidos: do livro para a categoria e da categoria
+para os seus livros, do empréstimo para o usuário e do usuário para os seus empréstimos.
 
 Exemplo de um empréstimo:
 
@@ -518,24 +536,24 @@ http://localhost:8080
 
 | Requisito | Implementação no projeto |
 |---|---|
-| Spring Boot | Sim |
+| Spring Boot (versão mais recente) | 4.1.2 |
 | Java 17 ou superior | Java 21 |
 | Maven ou Gradle | Maven |
 | H2 | Sim |
 | Spring Data JPA | Sim |
 | Mínimo de 5 entidades | 6 entidades |
 | One-to-One | Usuario x Perfil |
-| One-to-Many | Categoria x Livro / Usuario x Emprestimo |
+| One-to-Many | Categoria x Livro / Usuario x Emprestimo / Livro x Emprestimo |
 | Many-to-Many | Livro x Autor |
 | Bean Validation | Sim |
-| Enum | StatusEmprestimo |
+| Enum | StatusEmprestimo (Emprestimo) e TipoUsuario (Usuario) |
 | CRUD completo | Sim, para todas as entidades |
-| 5 endpoints por entidade | Sim |
-| Pageable | Sim |
-| Consulta personalizada | Uma por entidade |
-| Status HTTP | Sim |
-| Swagger/OpenAPI | Sim |
-| HATEOAS | Sim |
+| 5 endpoints por entidade | 6 ou 7 por entidade (40 no total) |
+| Pageable | Sim, em todas as listagens e consultas |
+| Consulta personalizada | Pelo menos uma por entidade |
+| Status HTTP | 200, 201 (com `Location`), 204, 400, 404, 405, 409 e 500, todos com mensagem |
+| Swagger/OpenAPI | Todos os endpoints com descrição, exemplos e códigos de resposta (inclusive o formato dos erros) |
+| HATEOAS | `EntityModel` e `PagedModel`, links `self`, `update`, `delete` e de navegação entre recursos |
 
 ---
 

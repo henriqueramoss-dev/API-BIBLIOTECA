@@ -24,6 +24,7 @@ public class CategoriaModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * livros -> navega para os livros desta categoria
      * categorias -> retorna para a listagem paginada do recurso
      */
     @Override
@@ -33,6 +34,7 @@ public class CategoriaModelAssembler
             linkTo(CategoriaController.class).slash(item.getId()).withSelfRel(),
             linkTo(CategoriaController.class).slash(item.getId()).withRel("update"),
             linkTo(CategoriaController.class).slash(item.getId()).withRel("delete"),
+            linkTo(CategoriaController.class).slash(item.getId()).slash("livros").withRel("livros"),
             linkTo(CategoriaController.class).withRel("categorias")
         );
     }

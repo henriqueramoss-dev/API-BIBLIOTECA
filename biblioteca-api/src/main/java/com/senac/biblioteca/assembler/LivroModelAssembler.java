@@ -27,6 +27,7 @@ public class LivroModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * emprestimos -> navega para o histórico de empréstimos deste livro
      * categoria -> navega para a categoria do livro
      * autores -> navega para cada autor do livro
      * livros -> retorna para a listagem paginada do recurso
@@ -38,6 +39,7 @@ public class LivroModelAssembler
             linkTo(LivroController.class).slash(item.getId()).withSelfRel(),
             linkTo(LivroController.class).slash(item.getId()).withRel("update"),
             linkTo(LivroController.class).slash(item.getId()).withRel("delete"),
+            linkTo(LivroController.class).slash(item.getId()).slash("emprestimos").withRel("emprestimos"),
             linkTo(LivroController.class).withRel("livros")
         );
 

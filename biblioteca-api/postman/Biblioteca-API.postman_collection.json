@@ -706,6 +706,26 @@
           ]
         },
         {
+          "name": "Historico de emprestimos do livro",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/livros/{{livroId}}/emprestimos?page=0&size=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Atualizar livro",
           "request": {
             "method": "PUT",
@@ -838,6 +858,66 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () {",
                   "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar emprestimos do usuario",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}/emprestimos?page=0&size=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar livros da categoria",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categorias/{{categoriaId}}/livros?page=0&size=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar livros do autor",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/autores/{{autorId}}/livros?page=0&size=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () {",
+                  "  pm.response.to.have.status(200);",
                   "});"
                 ]
               }
@@ -1034,6 +1114,26 @@
             "url": "{{baseUrl}}/autores/999999",
             "description": "Tenta excluir um ID inexistente e deve retornar 404 Not Found."
           }
+        },
+        {
+          "name": "404 - Livros de categoria inexistente",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categorias/999999/livros"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Preparar 409 - Criar usuario unico",

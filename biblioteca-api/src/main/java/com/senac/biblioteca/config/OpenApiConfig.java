@@ -1,12 +1,22 @@
 package com.senac.biblioteca.config;
 
+import com.senac.biblioteca.dto.ErroResposta;
+import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Configuração central da documentação Swagger/OpenAPI.
@@ -58,5 +68,45 @@ import org.springframework.context.annotation.Configuration;
 )
 public class OpenApiConfig {
 
-    // Toda a personalização do Swagger é feita pelas anotações acima.
+    // As informações gerais do Swagger são definidas pelas anotações acima.
+
+    /**
+     * Documenta o corpo das respostas de erro (4xx e 5xx) de todos os endpoints
+     * com o esquema ErroResposta e um exemplo de acordo com o código HTTP.
+     */
+    @Bean
+    public OpenApiCustomizer respostasDeErro() {
+        return openApi -> {
+            ModelConverters.getInstance().read(ErroResposta.class).forEach(openApi.getComponents()::addSchemas);
+            Schema<?> esquema = new Schema<>().$ref("#/components/schemas/ErroResposta");
+
+            openApi.getPaths().values().forEach(caminho -> caminho.readOperations().forEach(operacao ->
+                operacao.getResponses().forEach((codigo, resposta) -> {
+                    if (codigo.startsWith("4") || codigo.startsWith("5")) {
+                        resposta.setContent(new Content().addMediaType("application/json",
+                            new MediaType().schema(esquema).example(exemplo(codigo, resposta.getDescription()))));
+                    }
+                })
+            ));
+        };
+    }
+
+    private Map<String, Object> exemplo(String codigo, String descricao) {
+        Map<String, Object> corpo = new LinkedHashMap<>();
+        corpo.put("timestamp", "2026-10-27T16:53:52");
+        corpo.put("status", Integer.parseInt(codigo));
+        corpo.put("erro", switch (codigo) {
+            case "400" -> "Dados inválidos";
+            case "404" -> "Não encontrado";
+            case "405" -> "Método não permitido";
+            case "409" -> "Conflito de dados";
+            default -> "Erro interno";
+        });
+        corpo.put("mensagem", descricao + ".");
+        if ("400".equals(codigo) && descricao.startsWith("Dados inválidos")) {
+            corpo.put("mensagem", "Um ou mais campos possuem valores inválidos.");
+            corpo.put("campos", Map.of("nome", "O nome é obrigatório"));
+        }
+        return corpo;
+    }
 }
