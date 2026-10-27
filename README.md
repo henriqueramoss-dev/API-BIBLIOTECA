@@ -53,7 +53,7 @@ Responsabilidade de cada pacote:
 - `assembler`: monta as respostas HATEOAS (`EntityModel`) com os links de cada recurso;
 - `enums`: armazena valores fixos utilizados pelas entidades;
 - `exception`: tratamento de erros da API;
-- `config`: configurações gerais, como Swagger.
+- `config`: configurações gerais, como Swagger e CORS.
 
 ---
 
@@ -508,6 +508,32 @@ Não fazem parte desta etapa:
 - versionamento da API;
 - recursos avançados previstos para etapas futuras.
 
+
+---
+
+## 17. Front-end web
+
+A pasta `biblioteca-web` contém as telas web da biblioteca, feitas com **React + Vite + TypeScript**, que consomem esta API.
+
+Telas disponíveis:
+
+- **Início**: totais de cada cadastro, empréstimos por status e empréstimos recentes;
+- **Listagem** de empréstimos, livros, autores, categorias, usuários e perfis, com busca (endpoints `/buscar`), paginação e exclusão;
+- **Formulário** de cadastro e edição de cada entidade, com validação dos campos e exibição dos erros devolvidos pela API.
+
+Como executar (com a API já rodando em `http://localhost:8080`):
+
+```bash
+cd biblioteca-web
+npm install
+npm run dev
+```
+
+O site abre em `http://localhost:5173`. Para usar outro endereço da API, copie `.env.example` para `.env` e altere `VITE_API_URL`.
+
+A classe `config/CorsConfig.java` libera o acesso à API a partir de `localhost` e da rede local (`192.168.*`), necessário para o navegador aceitar as requisições do front-end.
+
+O aplicativo mobile (React Native / Expo) está no repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE).
 
 ---
 
