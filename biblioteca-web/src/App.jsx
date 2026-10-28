@@ -6,6 +6,8 @@ import Dashboard from './pages/Dashboard';
 import ResourceForm from './pages/ResourceForm';
 import ResourceList from './pages/ResourceList';
 
+// Estrutura da página: menu lateral, barra de topo e as rotas.
+// Arquivo em JavaScript (.jsx).
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
