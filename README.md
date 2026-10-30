@@ -286,7 +286,8 @@ Endpoints por entidade:
 | Livros | 7 | `GET /livros/buscar?titulo=`, `GET /livros/{id}/emprestimos` |
 | Autores | 7 | `GET /autores/buscar?nome=`, `GET /autores/{id}/livros` |
 | Categorias | 7 | `GET /categorias/buscar?nome=`, `GET /categorias/{id}/livros` |
-| Usuários | 7 | `GET /usuarios/buscar?nome=`, `GET /usuarios/{id}/emprestimos` |
+| Usuários | 8 | `GET /usuarios/buscar?nome=`, `GET /usuarios/{id}/emprestimos`, `PUT /usuarios/{id}/senha` |
+| Autenticação | 1 | `POST /auth/login` |
 | Perfis | 6 | `GET /perfis/buscar?telefone=` |
 | Empréstimos | 6 | `GET /emprestimos/buscar?status=` |
 
@@ -567,7 +568,7 @@ Este projeto está limitado aos requisitos da **Parte 1** da atividade.
 
 Não fazem parte desta etapa:
 
-- autenticação por API Key;
+- autenticação por token (JWT ou API Key); existe apenas login por e-mail e senha, sem token;
 - idempotência;
 - rate limiting;
 - versionamento da API;

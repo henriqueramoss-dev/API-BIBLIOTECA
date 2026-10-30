@@ -50,7 +50,7 @@ cd biblioteca-api
 mvn test
 ```
 
-São 13 testes de integração (a API sobe numa porta aleatória, não precisa estar rodando). Demora cerca de 1 minuto.
+São 21 testes de integração (a API sobe numa porta aleatória, não precisa estar rodando). Demora cerca de 1 minuto.
 
 ### Postman
 

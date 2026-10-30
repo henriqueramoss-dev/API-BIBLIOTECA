@@ -68,10 +68,11 @@ O sistema **não pede** dados pessoais sensíveis (origem racial ou étnica, rel
 ## 3. O que o sistema NÃO coleta
 
 - **Cookies:** nenhum.
-- **Armazenamento no navegador ou no celular** (`localStorage`, `sessionStorage` etc.): nenhum. Ao fechar o site ou o app, nada fica guardado neles.
+- **Armazenamento no navegador ou no celular:** o **site** não guarda nada. O **app** guarda no aparelho, e só nele, três coisas: a sua escolha de tema (claro, escuro ou automático), a escolha de receber lembretes de devolução e, depois de entrar, o `id`, o nome e o e-mail da conta. A **senha não é guardada no aparelho**. Tudo isso é apagado ao tocar em **Sair**, exceto o tema e a escolha de lembretes.
 - **Ferramentas de análise, publicidade, rastreamento ou relatórios de erro** de terceiros: nenhuma.
 - **Localização, contatos, câmera, microfone ou fotos:** o app não pede nenhuma dessas permissões.
-- **Login e senha:** a API ainda **não tem autenticação**. A tela "Entrar" é demonstrativa e **não guarda nem confere senha**; "Criar conta" apenas cadastra um usuário e o seu perfil na API.
+- **Login e senha:** a senha é opcional no cadastro; quando informada, a API guarda **somente o hash (BCrypt)**, nunca a senha, e nunca a devolve. O login confere e-mail e senha, mas a API ainda **não emite token**, então não há controle de acesso às outras rotas (seção 8).
+- **Notificações:** o app só mostra lembretes **locais**, agendados no próprio aparelho a partir dos seus empréstimos ativos, depois que você ativa a opção e dá a permissão. Nenhum serviço externo de notificações é usado e nenhum dado sai do aparelho para isso.
 
 ---
 
@@ -147,7 +148,8 @@ E tem **limitações que impedem o uso com dados reais**:
 
 | Limitação | Consequência |
 |---|---|
-| Sem autenticação nem permissões | Quem alcançar a API consegue ler, alterar e excluir tudo |
+| Login sem token nem permissões | Quem alcançar a API consegue ler, alterar e excluir tudo, inclusive trocar a senha de quem ainda não tem uma |
+| Sem limite de tentativas de login | Dá para testar senhas sem parar |
 | Tráfego em HTTP, sem criptografia | Os dados podem ser lidos por quem estiver na mesma rede |
 | CPF e demais dados guardados sem criptografia | Quem acessar o banco lê os dados |
 | O CPF completo é devolvido pelas rotas de `/usuarios` | Quem alcançar a API lê o CPF de todos os usuários. Ele não é repetido dentro de empréstimos e perfis |

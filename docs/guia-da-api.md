@@ -11,11 +11,11 @@ A API é REST, fala **JSON** e roda por padrão em `http://localhost:8080`. A do
 | Identificadores | Números inteiros gerados pela API (`id`); o `id` enviado no corpo é ignorado na criação |
 | Relacionamentos na entrada | Por **ID**: `categoriaId`, `autoresIds`, `usuarioId`, `livroId` |
 | Relacionamentos na saída | Objetos completos dentro do registro, mais links HATEOAS |
-| Autenticação | Nenhuma (veja [Segurança e limitações](seguranca-e-limitacoes.md)) |
+| Autenticação | Login por e-mail e senha em `POST /auth/login`. **Não há token**: as demais rotas continuam abertas (veja [Segurança e limitações](seguranca-e-limitacoes.md)) |
 
 ## Endpoints
 
-São **40 endpoints** em 6 recursos. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
+São **42 endpoints**: 40 em 6 recursos e 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`). Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
 
 | Método | Rota | O que faz | Respostas |
 |---|---|---|---|
@@ -27,6 +27,9 @@ São **40 endpoints** em 6 recursos. Todo recurso tem o CRUD completo (listar, b
 | PUT | `/livros/{id}` | Atualizar | 200, 400, 404, 409 |
 | DELETE | `/livros/{id}` | Excluir | 204, 404, 409 |
 | GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | 200, 400, 404 |
+| **Autenticação e senha** | | | |
+| POST | `/auth/login` | Entrar (confere e-mail e senha e devolve o usuário) | 200, 400, 401 |
+| PUT | `/usuarios/{id}/senha` | Trocar a senha do usuário | 204, 400, 404 |
 | **Autores** | | | |
 | GET | `/autores` | Listar autores | 200, 400, 404 |
 | POST | `/autores` | Cadastrar autor | 201, 400 |
@@ -249,6 +252,30 @@ curl -X POST http://localhost:8080/emprestimos -H "Content-Type: application/jso
   "status": "ATIVO", "usuarioId": 1, "livroId": 1
 }'
 ```
+
+### Senha e login
+
+A senha é opcional no cadastro do usuário (de 8 a 72 caracteres). A API guarda só o hash BCrypt e nunca devolve a senha.
+
+```bash
+# Cadastrar já com senha
+curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
+  "nome": "Ana Souza", "email": "ana@email.com", "cpf": "52998224725",
+  "tipo": "ALUNO", "senha": "minhaSenha123"
+}'
+
+# Entrar: 200 com o usuário, ou 401 "E-mail ou senha incorretos."
+curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d '{
+  "email": "ana@email.com", "senha": "minhaSenha123"
+}'
+
+# Trocar a senha: 204; senha atual errada devolve 400 com "campos.senhaAtual"
+curl -X PUT http://localhost:8080/usuarios/1/senha -H "Content-Type: application/json" -d '{
+  "senhaAtual": "minhaSenha123", "novaSenha": "outraSenha456"
+}'
+```
+
+Regras: a nova senha deve ser diferente da atual; usuário **sem senha** (criado sem o campo `senha`) não consegue entrar, mas pode definir a primeira senha por `PUT /usuarios/{id}/senha` (sem `senhaAtual`). `PUT /usuarios/{id}` não altera a senha.
 
 ### 4. Consultar
 

@@ -154,6 +154,7 @@ public class OpenApiConfig {
     private Map<String, Object> exemplo(String codigo, String descricao, boolean recebeCorpo) {
         String titulo = switch (codigo) {
             case "400" -> recebeCorpo ? "Dados inválidos" : "Requisição inválida";
+            case "401" -> "Não autorizado";
             case "404" -> "Não encontrado";
             case "405" -> "Método não permitido";
             case "409" -> "Conflito de dados";

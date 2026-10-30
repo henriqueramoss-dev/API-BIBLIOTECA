@@ -21,14 +21,16 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 
 | Limitação | Risco | O que seria preciso |
 |---|---|---|
-| **Sem autenticação nem permissões** | Quem alcançar a API lê, altera e exclui tudo. A tela "Entrar" do app é demonstrativa e aceita qualquer senha | Login (por exemplo, Spring Security com JWT), senha guardada com hash (BCrypt), perfis de acesso (aluno × bibliotecário) |
+| **Login sem token nem permissões** | A senha é conferida (hash BCrypt) em `POST /auth/login`, mas a API **não emite token**: todas as outras rotas continuam abertas, e qualquer um que alcance a API lê, altera e exclui tudo, inclusive a senha de usuários que ainda não têm uma (`PUT /usuarios/{id}/senha`) | Token (por exemplo, Spring Security com JWT) exigido em todas as rotas e perfis de acesso (aluno × bibliotecário) |
+| **Sem limite de tentativas de login** | Dá para testar senhas sem parar | Bloqueio temporário após várias falhas e rate limiting |
+| **Sessão guardada no aparelho** | O app guarda no aparelho o `id`, o nome e o e-mail de quem entrou (não a senha). Como a API não valida token, isso só serve para mostrar a conta e agendar lembretes | Token com prazo de validade, guardado em armazenamento seguro |
 | **Tráfego em HTTP puro** | Os dados podem ser lidos por quem estiver na mesma rede | HTTPS (certificado) |
 | **Dados sem criptografia no banco** (CPF, telefone, endereço) | Quem acessar o banco lê tudo | Banco com acesso restrito e, para os campos mais sensíveis, criptografia |
 | **Banco em memória** | Os dados somem ao reiniciar a API | Um banco persistente (PostgreSQL, MySQL) com cópias de segurança |
 | **Sem limite de requisições** | Uso abusivo ou sobrecarga | Rate limiting |
 | **CORS não protege a API** | O CORS só controla navegadores; qualquer programa (curl, Postman, o app) acessa a API sem restrição | Autenticação |
 | **Sem registro de acessos (auditoria)** | Não se sabe quem alterou o quê | Logs de auditoria |
-| **Poucos testes automatizados** | Há 13 testes de integração e a coleção do Postman, mas não há testes de unidade nem medição de cobertura | Mais testes, rodando a cada alteração (CI) |
+| **Poucos testes automatizados** | Há 21 testes de integração e a coleção do Postman, mas não há testes de unidade nem medição de cobertura | Mais testes, rodando a cada alteração (CI) |
 | **CPF visível para qualquer um** | As rotas de `/usuarios` devolvem o CPF completo de todos os usuários, e a API não exige login | Autenticação e, se possível, não devolver o CPF (ou devolver mascarado) |
 | **CPF de teste pode ser de gente real** | A API só aceita CPFs com dígitos verificadores corretos, e um CPF assim pode pertencer a uma pessoa de verdade | Usar sempre CPFs de teste (ex.: `12345678909`) |
 | **Status do empréstimo manual** | Um empréstimo vencido não vira `ATRASADO` sozinho | Tarefa agendada que atualiza o status |
@@ -44,7 +46,7 @@ Se você habilitar o módulo para depurar, faça só no seu computador e remova 
 
 Checklist mínimo:
 
-- [ ] Autenticação e controle de permissões na API
+- [ ] Token de acesso e controle de permissões na API (hoje só existe o login)
 - [ ] HTTPS
 - [ ] Banco persistente, com acesso restrito e cópias de segurança
 - [ ] Revisão do que é guardado: precisa mesmo de CPF, endereço e data de nascimento? Guardar menos dados é mais seguro

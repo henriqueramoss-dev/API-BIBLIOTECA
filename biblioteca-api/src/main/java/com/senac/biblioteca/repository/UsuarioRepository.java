@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 /**
  * Camada de acesso aos dados da entidade Usuario.
  *
@@ -19,4 +21,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * e minúsculas, e devolve o resultado de forma paginada.
      */
     Page<Usuario> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+
+    // Usada no login: procura o usuário pelo e-mail, ignorando maiúsculas e minúsculas.
+    Optional<Usuario> findByEmailIgnoreCase(String email);
 }

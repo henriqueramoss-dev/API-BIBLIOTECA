@@ -3,9 +3,11 @@ package com.senac.biblioteca.controller;
 import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.assembler.UsuarioModelAssembler;
 import com.senac.biblioteca.config.Paginas;
+import com.senac.biblioteca.dto.TrocaSenhaRequest;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
+import com.senac.biblioteca.service.AutenticacaoService;
 import com.senac.biblioteca.service.EmprestimoService;
 import com.senac.biblioteca.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +46,7 @@ public class UsuarioController {
     private final EmprestimoService emprestimoService;
     private final EmprestimoModelAssembler emprestimoAssembler;
     private final PagedResourcesAssembler<Emprestimo> emprestimoPagedAssembler;
+    private final AutenticacaoService autenticacaoService;
 
     public UsuarioController(
         UsuarioService service,
@@ -51,7 +54,8 @@ public class UsuarioController {
         PagedResourcesAssembler<Usuario> pagedResourcesAssembler,
         EmprestimoService emprestimoService,
         EmprestimoModelAssembler emprestimoAssembler,
-        PagedResourcesAssembler<Emprestimo> emprestimoPagedAssembler
+        PagedResourcesAssembler<Emprestimo> emprestimoPagedAssembler,
+        AutenticacaoService autenticacaoService
     ) {
         this.service = service;
         this.assembler = assembler;
@@ -59,6 +63,7 @@ public class UsuarioController {
         this.emprestimoService = emprestimoService;
         this.emprestimoAssembler = emprestimoAssembler;
         this.emprestimoPagedAssembler = emprestimoPagedAssembler;
+        this.autenticacaoService = autenticacaoService;
     }
 
     // GET /usuarios: lista usuários usando page, size e sort.
@@ -100,7 +105,8 @@ public class UsuarioController {
     @PostMapping
     @Operation(
         summary = "Cadastrar usuário",
-        description = "Cria um novo usuário na biblioteca. E-mail e CPF não podem se repetir."
+        description = "Cria um novo usuário na biblioteca. E-mail e CPF não podem se repetir. "
+            + "O campo senha é opcional; quando enviado, só o hash dele é guardado e ele nunca é devolvido."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
@@ -118,7 +124,7 @@ public class UsuarioController {
     @PutMapping("/{id}")
     @Operation(
         summary = "Atualizar usuário",
-        description = "Atualiza nome, e-mail, CPF, matrícula e tipo de um usuário existente."
+        description = "Atualiza nome, e-mail, CPF, matrícula e tipo de um usuário existente. A senha não muda por aqui (use PUT /usuarios/{id}/senha)."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso"),
@@ -134,6 +140,27 @@ public class UsuarioController {
             .map(assembler::toModel)
             .map(ResponseEntity::ok)
             .orElseThrow(() -> RecursoNaoEncontradoException.usuario(id));
+    }
+
+    // PUT /usuarios/{id}/senha: troca a senha de um usuário.
+    @PutMapping("/{id}/senha")
+    @Operation(
+        summary = "Trocar senha",
+        description = "Troca a senha do usuário. Quando ele já tem senha, a senha atual é obrigatória e precisa estar correta. "
+            + "A nova senha deve ter de 8 a 72 caracteres e ser diferente da atual. "
+            + "Se o usuário ainda não tem senha, esta rota define a primeira."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Nova senha inválida ou senha atual incorreta"),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    })
+    public ResponseEntity<Void> trocarSenha(
+        @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
+        @Valid @RequestBody TrocaSenhaRequest item
+    ) {
+        autenticacaoService.trocarSenha(id, item);
+        return ResponseEntity.noContent().build();
     }
 
     // DELETE /usuarios/{id}: remove um usuário existente.

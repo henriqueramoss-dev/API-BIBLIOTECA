@@ -286,4 +286,143 @@ class BibliotecaApiTest {
         assertThat(get("/usuarios/" + usuario + "/emprestimos").corpo()).doesNotContain("\"cpf\"");
         assertThat(get("/perfis/buscar?telefone=11999990000&size=100").corpo()).contains("\"usuario\"").doesNotContain("\"cpf\"");
     }
+
+    // ---------------------------------------------------------------- senha e login
+
+    private record Conta(long id, String email) {
+    }
+
+    /** Cria um usuário; a senha é opcional (null cria um usuário sem senha). */
+    private Conta criarUsuarioComSenha(String senha) throws Exception {
+        String email = unico() + "@email.com";
+        String campoSenha = senha == null ? "" : ",\"senha\":\"" + senha + "\"";
+        Resposta r = post("/usuarios", "{\"nome\":\"Leitor Senha\",\"email\":\"" + email + "\",\"cpf\":\"" + cpfValido()
+            + "\",\"tipo\":\"ALUNO\"" + campoSenha + "}");
+        assertThat(r.status()).as(r.corpo()).isEqualTo(201);
+        return new Conta(id(r), email);
+    }
+
+    private Resposta login(String email, String senha) throws Exception {
+        return post("/auth/login", "{\"email\":\"" + email + "\",\"senha\":\"" + senha + "\"}");
+    }
+
+    private Resposta trocarSenha(long id, String atual, String nova) throws Exception {
+        String atualJson = atual == null ? "" : "\"senhaAtual\":\"" + atual + "\",";
+        return chamar("PUT", "/usuarios/" + id + "/senha", "{" + atualJson + "\"novaSenha\":\"" + nova + "\"}");
+    }
+
+    @Test
+    void senhaNuncaEhDevolvidaPelaApi() throws Exception {
+        Conta conta = criarUsuarioComSenha("senhaSegura1");
+
+        for (String caminho : new String[] {"/usuarios/" + conta.id(), "/usuarios?size=100", "/usuarios/buscar?nome=Leitor&size=100"}) {
+            assertThat(get(caminho).corpo()).as(caminho).doesNotContain("senha").doesNotContain("$2a$").doesNotContain("$2b$");
+        }
+
+        assertThat(login(conta.email(), "senhaSegura1").corpo()).doesNotContain("senha").doesNotContain("$2");
+    }
+
+    @Test
+    void loginComSenhaCorretaDevolveOUsuarioEIgnoraMaiusculasNoEmail() throws Exception {
+        Conta conta = criarUsuarioComSenha("senhaSegura1");
+
+        Resposta r = login(conta.email().toUpperCase(), "senhaSegura1");
+
+        assertThat(r.status()).as(r.corpo()).isEqualTo(200);
+        assertThat(id(r)).isEqualTo(conta.id());
+        assertThat(r.corpo()).contains("\"nome\":\"Leitor Senha\"");
+    }
+
+    @Test
+    void loginRecusaSenhaErradaEmailInexistenteEUsuarioSemSenhaComAMesmaMensagem() throws Exception {
+        Conta comSenha = criarUsuarioComSenha("senhaSegura1");
+        Conta semSenha = criarUsuarioComSenha(null);
+
+        for (Resposta r : new Resposta[] {
+            login(comSenha.email(), "senhaErrada1"),
+            login(unico() + "@nao-existe.com", "senhaSegura1"),
+            login(semSenha.email(), "qualquerSenha1")
+        }) {
+            assertThat(r.status()).as(r.corpo()).isEqualTo(401);
+            assertThat(r.corpo()).contains("E-mail ou senha incorretos.").contains("\"status\":401");
+        }
+
+        Resposta vazio = post("/auth/login", "{\"email\":\"\",\"senha\":\"\"}");
+        assertThat(vazio.status()).isEqualTo(400);
+        assertThat(vazio.corpo()).contains("\"email\"").contains("\"senha\"");
+    }
+
+    @Test
+    void senhaCurtaNoCadastroEhRecusada() throws Exception {
+        Resposta r = post("/usuarios", "{\"nome\":\"Leitor\",\"email\":\"" + unico() + "@email.com\",\"cpf\":\"" + cpfValido()
+            + "\",\"tipo\":\"ALUNO\",\"senha\":\"curta\"}");
+
+        assertThat(r.status()).isEqualTo(400);
+        assertThat(r.corpo()).contains("\"senha\":\"A senha deve ter de 8 a 72 caracteres\"");
+    }
+
+    @Test
+    void trocarSenhaExigeASenhaAtualEValidaANova() throws Exception {
+        Conta conta = criarUsuarioComSenha("senhaSegura1");
+
+        Resposta errada = trocarSenha(conta.id(), "outraSenha99", "novaSenha456");
+        assertThat(errada.status()).isEqualTo(400);
+        assertThat(errada.corpo()).contains("\"senhaAtual\":\"A senha atual está incorreta.\"");
+
+        Resposta semAtual = trocarSenha(conta.id(), null, "novaSenha456");
+        assertThat(semAtual.status()).isEqualTo(400);
+        assertThat(semAtual.corpo()).contains("\"senhaAtual\":\"Informe a senha atual.\"");
+
+        Resposta curta = trocarSenha(conta.id(), "senhaSegura1", "curta");
+        assertThat(curta.status()).isEqualTo(400);
+        assertThat(curta.corpo()).contains("\"novaSenha\"");
+
+        Resposta igual = trocarSenha(conta.id(), "senhaSegura1", "senhaSegura1");
+        assertThat(igual.status()).isEqualTo(400);
+        assertThat(igual.corpo()).contains("\"novaSenha\":\"A nova senha deve ser diferente da atual.\"");
+
+        // Nenhuma tentativa acima mudou a senha.
+        assertThat(login(conta.email(), "senhaSegura1").status()).isEqualTo(200);
+    }
+
+    @Test
+    void trocarSenhaFazAAntigaDeixarDeValerEANovaPassarAValer() throws Exception {
+        Conta conta = criarUsuarioComSenha("senhaSegura1");
+
+        Resposta r = trocarSenha(conta.id(), "senhaSegura1", "novaSenha456");
+
+        assertThat(r.status()).isEqualTo(204);
+        assertThat(login(conta.email(), "senhaSegura1").status()).isEqualTo(401);
+        assertThat(login(conta.email(), "novaSenha456").status()).isEqualTo(200);
+        assertThat(trocarSenha(999999, "x", "novaSenha456").status()).isEqualTo(404);
+    }
+
+    @Test
+    void usuarioSemSenhaPodeDefinirAPrimeiraEAtualizarDadosNaoMudaASenha() throws Exception {
+        Conta conta = criarUsuarioComSenha(null);
+
+        assertThat(trocarSenha(conta.id(), null, "primeiraSenha1").status()).isEqualTo(204);
+        assertThat(login(conta.email(), "primeiraSenha1").status()).isEqualTo(200);
+
+        // PUT /usuarios/{id} atualiza os dados, inclusive se o corpo trouxer uma "senha": ela é ignorada.
+        Resposta atualizado = chamar("PUT", "/usuarios/" + conta.id(), "{\"nome\":\"Nome Novo\",\"email\":\"" + conta.email()
+            + "\",\"cpf\":\"" + cpfDe(conta.id()) + "\",\"tipo\":\"PROFESSOR\",\"senha\":\"outraSenha789\"}");
+        assertThat(atualizado.status()).as(atualizado.corpo()).isEqualTo(200);
+        assertThat(login(conta.email(), "primeiraSenha1").status()).isEqualTo(200);
+        assertThat(login(conta.email(), "outraSenha789").status()).isEqualTo(401);
+    }
+
+    private String cpfDe(long usuario) throws Exception {
+        Matcher m = Pattern.compile("\"cpf\":\"(\\d{11})\"").matcher(get("/usuarios/" + usuario).corpo());
+        assertThat(m.find()).isTrue();
+        return m.group(1);
+    }
+
+    @Test
+    void swaggerDocumentaLoginETrocaDeSenhaSemExporOHash() throws Exception {
+        String api = get("/v3/api-docs").corpo();
+
+        assertThat(api).contains("/auth/login").contains("/usuarios/{id}/senha").contains("TrocaSenhaRequest").contains("LoginRequest");
+        assertThat(api).doesNotContain("senhaHash");
+    }
 }

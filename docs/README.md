@@ -12,7 +12,7 @@ Sistema de **gestão de acervo e empréstimos** de uma biblioteca, feito como pr
 |---|---|---|
 | **API** | pasta `biblioteca-api` deste repositório | Java 21, Spring Boot 4.1.2, Spring Data JPA, H2, Springdoc OpenAPI, Spring HATEOAS |
 | **Site** | pasta `biblioteca-web` deste repositório | React 18, Vite, TypeScript |
-| **App** | repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE) | React Native, Expo SDK 54, Expo Router |
+| **App** | repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE) | React Native, Expo SDK 54, React Navigation |
 
 ## Por onde começar
 

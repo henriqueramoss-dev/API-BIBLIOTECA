@@ -1,6 +1,7 @@
 package com.senac.biblioteca.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.senac.biblioteca.enums.TipoUsuario;
 import com.senac.biblioteca.validation.Cpf;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -56,6 +57,24 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Schema(description = "Tipo de usuário", example = "ALUNO")
     private TipoUsuario tipo;
+
+    // Senha em texto puro: só chega pelo JSON do POST /usuarios (WRITE_ONLY), nunca é gravada nem devolvida.
+    // O Service transforma esta senha em hash (BCrypt) e guarda o hash em senhaHash.
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(min = 8, max = 72, message = "A senha deve ter de 8 a 72 caracteres")
+    @Schema(
+        description = "Senha de acesso (opcional, de 8 a 72 caracteres). Só é lida no cadastro e nunca é devolvida. "
+            + "Para trocá-la depois, use PUT /usuarios/{id}/senha.",
+        accessMode = Schema.AccessMode.WRITE_ONLY,
+        example = "minhaSenha123"
+    )
+    private String senha;
+
+    // Hash BCrypt da senha (60 caracteres). @JsonIgnore: nunca aparece nas respostas nem nas requisições.
+    @JsonIgnore
+    @Column(length = 60)
+    private String senhaHash;
 
     // Relacionamento One-to-One: um usuário possui um único perfil.
     @JsonIgnore
@@ -122,6 +141,22 @@ public class Usuario {
 
     public void setTipo(TipoUsuario tipo) {
         this.tipo = tipo;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public String getSenhaHash() {
+        return senhaHash;
+    }
+
+    public void setSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
     }
 
     public Perfil getPerfil() {

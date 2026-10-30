@@ -12,7 +12,7 @@ O sistema permite cadastrar, consultar, atualizar e excluir **usuários, perfis,
 
 ## 2. Quem pode usar
 
-O projeto é voltado a estudantes, professores e avaliadores. Não há criação de contas com senha: qualquer pessoa que consiga acessar a API consegue usar o sistema (veja a seção 7).
+O projeto é voltado a estudantes, professores e avaliadores. Qualquer pessoa que consiga acessar a API consegue usar o sistema, porque as rotas ainda não exigem token (veja a seção 7).
 
 ## 3. Uso permitido
 
@@ -57,9 +57,9 @@ Estas regras são aplicadas pela API e valem para o site e para o app:
 
 ## 7. Login e acesso
 
-A API **ainda não tem autenticação**. A tela "Entrar" do app é **demonstrativa**: aceita qualquer e-mail e senha e **não guarda nem confere a senha**. "Criar conta" cadastra um usuário e um perfil, mas não cria credenciais.
+"Criar conta" cadastra um usuário com **senha** (de 8 a 72 caracteres), e a tela "Entrar" confere e-mail e senha. A senha pode ser trocada na tela **Configurações** do app. A API guarda apenas o hash da senha. Guarde bem a sua senha: não há recuperação por e-mail.
 
-Isso significa que **não existe controle de quem pode ler ou alterar os dados**. Por isso o sistema só deve rodar em ambiente local e de testes.
+Mas a API **ainda não emite token**: depois do login, as demais rotas continuam abertas a qualquer um que alcance a API. Isso significa que **não existe controle de quem pode ler ou alterar os dados**. Não reutilize aqui uma senha que você usa em outros serviços. Por isso o sistema só deve rodar em ambiente local e de testes.
 
 ## 8. Ambiente de execução
 

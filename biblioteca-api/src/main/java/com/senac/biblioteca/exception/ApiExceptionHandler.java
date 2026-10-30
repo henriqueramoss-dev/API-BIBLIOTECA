@@ -193,6 +193,18 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata o login com e-mail ou senha incorretos.
+     *
+     * Retorna HTTP 401 - Unauthorized, sempre com a mesma mensagem.
+     */
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ErroResposta> tratarCredenciaisInvalidas(CredenciaisInvalidasException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.UNAUTHORIZED, "Não autorizado", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resposta);
+    }
+
+    /**
      * Trata endereços que não existem na API.
      *
      * Exemplo: GET /livross (com erro de digitação).

@@ -92,6 +92,7 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 | cpf * | texto | exatamente 11 dígitos, sem pontos ou traço, com **dígitos verificadores corretos**, **único**. Só aparece nas rotas de `/usuarios` |
 | matricula | texto | até 20 |
 | tipo * | enum | `ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE` |
+| senha | texto | só no cadastro (`POST /usuarios`), de 8 a 72 caracteres; **nunca é devolvida**. O banco guarda apenas o hash BCrypt (coluna `senha_hash`) |
 
 ### Perfil
 

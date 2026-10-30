@@ -60,7 +60,7 @@ Java 21, Spring Boot 4.1.2, Springdoc 3.2.0, Maven. As dependências estão em `
 
 | Tipo | Onde | O que cobre |
 |---|---|---|
-| **Integração (Java)** | `biblioteca-api/src/test/java/.../BibliotecaApiTest.java` | 13 testes que sobem a API de verdade (porta aleatória, H2 em memória) e chamam os endpoints por HTTP: os arquivos do Swagger carregam, o 405 traz `Allow`, os erros 415 e 406 usam o formato padrão, os limites de paginação, as regras do empréstimo, o código da categoria em maiúsculas e a validação e a exposição do CPF |
+| **Integração (Java)** | `biblioteca-api/src/test/java/.../BibliotecaApiTest.java` | 21 testes que sobem a API de verdade (porta aleatória, H2 em memória) e chamam os endpoints por HTTP: os arquivos do Swagger carregam, o 405 traz `Allow`, os erros 415 e 406 usam o formato padrão, os limites de paginação, as regras do empréstimo, o código da categoria em maiúsculas e a validação e a exposição do CPF |
 | **Coleção Postman** | `biblioteca-api/postman/` | 60 requisições com testes de status: CRUD das 6 entidades, consultas, rotas de navegação e erros 400, 404, 405 e 409 |
 
 Para rodar os testes em Java: `cd biblioteca-api && mvn test`.
@@ -86,15 +86,16 @@ src/
 
 ## App (`REACT-NATIVE`)
 
-React Native + Expo (SDK 54) com Expo Router (cada arquivo da pasta `app/` é uma tela).
+React Native + Expo (SDK 54) com React Navigation e styled-components, organizado como o projeto fingo (uma pasta por tela, com `index.jsx` e `style.js`).
 
 ```
-app/                 telas: abertura, login, criar conta, painel, listagens, formulário, detalhes do livro
-components/          lista, campos de formulário, seletor de opções, etiqueta de status
-services/
-  biblioteca-api.ts  cliente HTTP (paginação HATEOAS, erros da API)
+App.js               navegação (React Navigation)
+src/screens/         telas: abertura, login, criar conta, painel, configurações, listagens, formulário, detalhes do livro
+src/components/      lista, campos de formulário, seletor de opções, etiqueta de status
+src/services/
+  biblioteca-api.ts  cliente HTTP (paginação HATEOAS, login, troca de senha, erros da API)
   resources.ts       descrição de cada entidade (a mesma ideia do site)
-contexts/            tema claro/escuro
+src/contexts/        tema claro/escuro, conta logada e preferências (guardados no aparelho)
 ```
 
 O site e o app usam o mesmo visual (azul-marinho e fundo creme) e descrições de entidades equivalentes: `resources.ts` é praticamente o mesmo arquivo nos dois.
