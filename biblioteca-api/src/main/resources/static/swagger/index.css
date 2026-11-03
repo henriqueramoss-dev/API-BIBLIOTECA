@@ -43,7 +43,7 @@
     --icone-autores: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 4l5 5-10 10H5v-5L15 4Z'/%3E%3C/svg%3E");
     --icone-categorias: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12V4h8l10 10-8 8L3 12Zm5-4h.01'/%3E%3C/svg%3E");
     --icone-usuarios: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0'/%3E%3C/svg%3E");
-    --icone-perfis: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v14H4zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 5a3 3 0 0 1 6 0m3-7h3m-3 4h3'/%3E%3C/svg%3E");
+    --icone-carteirinhas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5h16v14H4zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 5a3 3 0 0 1 6 0m3-7h3m-3 4h3'/%3E%3C/svg%3E");
     --icone-emprestimos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h13l-4-4M17 17H4l4 4'/%3E%3C/svg%3E");
 }
 
@@ -295,7 +295,7 @@ body {
 .swagger-ui h3#operations-tag-Categorias::after { -webkit-mask-image: var(--icone-categorias); mask-image: var(--icone-categorias); }
 .swagger-ui h3[id="operations-tag-Empréstimos"]::after { -webkit-mask-image: var(--icone-emprestimos); mask-image: var(--icone-emprestimos); }
 .swagger-ui h3#operations-tag-Livros::after { -webkit-mask-image: var(--icone-livro); mask-image: var(--icone-livro); }
-.swagger-ui h3#operations-tag-Perfis::after { -webkit-mask-image: var(--icone-perfis); mask-image: var(--icone-perfis); }
+.swagger-ui h3#operations-tag-Carteirinhas::after { -webkit-mask-image: var(--icone-carteirinhas); mask-image: var(--icone-carteirinhas); }
 .swagger-ui h3[id="operations-tag-Usuários"]::after { -webkit-mask-image: var(--icone-usuarios); mask-image: var(--icone-usuarios); }
 
 .swagger-ui .opblock-tag svg { fill: var(--cor-texto-suave); }

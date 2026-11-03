@@ -31,6 +31,13 @@ export interface Usuario {
   cpf: string;
   matricula?: string | null;
   tipo: TipoUsuario;
+  // Dados pessoais (antes ficavam no Perfil). Só vêm nas rotas de /usuarios.
+  telefone?: string;
+  endereco?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  dataNascimento?: string;
 }
 export interface Livro {
   id: number;
@@ -42,14 +49,15 @@ export interface Livro {
   categoria: Categoria;
   autores: Autor[];
 }
-export interface Perfil {
+export type StatusCarteirinha = 'ATIVA' | 'SUSPENSA' | 'CANCELADA';
+
+export interface Carteirinha {
   id: number;
-  telefone: string;
-  endereco: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-  dataNascimento: string;
+  numero: string;
+  dataEmissao: string;
+  dataValidade: string;
+  status: StatusCarteirinha;
+  limiteEmprestimos: number;
   usuario: Usuario;
 }
 export interface Emprestimo {
@@ -63,7 +71,7 @@ export interface Emprestimo {
   livro: Livro;
 }
 
-export type ResourceKey = 'livros' | 'autores' | 'categorias' | 'usuarios' | 'perfis' | 'emprestimos';
+export type ResourceKey = 'livros' | 'autores' | 'categorias' | 'usuarios' | 'carteirinhas' | 'emprestimos';
 
 export type FormValues = Record<string, string | string[]>;
 
@@ -106,6 +114,12 @@ export const STATUS_OPTIONS: Option[] = [
   { value: 'ATIVO', label: 'Ativo' },
   { value: 'DEVOLVIDO', label: 'Devolvido' },
   { value: 'ATRASADO', label: 'Atrasado' },
+];
+
+export const STATUS_CARTEIRINHA_OPTIONS: Option[] = [
+  { value: 'ATIVA', label: 'Ativa' },
+  { value: 'SUSPENSA', label: 'Suspensa' },
+  { value: 'CANCELADA', label: 'Cancelada' },
 ];
 
 export const TIPO_USUARIO_OPTIONS: Option[] = [
@@ -260,40 +274,6 @@ const usuarios: Resource<Usuario> = {
     { name: 'cpf', label: 'CPF', type: 'digits', required: true, length: 11, placeholder: '12345678909' },
     { name: 'matricula', label: 'Matrícula', type: 'text', maxLength: 20, placeholder: '2026001' },
     { name: 'tipo', label: 'Tipo', type: 'enum', required: true, options: TIPO_USUARIO_OPTIONS },
-  ],
-  title: (u) => u.nome,
-  subtitle: (u) => u.email,
-  details: (u) => [
-    { label: 'Tipo', value: TIPO_USUARIO_OPTIONS.find((o) => o.value === u.tipo)?.label ?? '—' },
-    { label: 'CPF', value: u.cpf ?? '—' },
-    { label: 'Matrícula', value: u.matricula || '—' },
-  ],
-  toForm: (u) => ({
-    nome: u?.nome ?? '',
-    email: u?.email ?? '',
-    cpf: u?.cpf ?? '',
-    matricula: u?.matricula ?? '',
-    tipo: u?.tipo ?? 'ALUNO',
-  }),
-  toPayload: (v) => ({
-    nome: str(v.nome),
-    email: str(v.email),
-    cpf: str(v.cpf),
-    matricula: opt(v.matricula),
-    tipo: str(v.tipo) || null,
-  }),
-};
-
-const perfis: Resource<Perfil> = {
-  key: 'perfis',
-  label: 'Perfis',
-  singular: 'Perfil',
-  newLabel: 'Novo perfil',
-  emptyLabel: 'Nenhum perfil cadastrado.',
-  embeddedKey: 'perfilList',
-  search: { param: 'telefone', label: 'Buscar por telefone' },
-  fields: [
-    { name: 'usuarioId', label: 'Usuário', type: 'relation', required: true, resource: 'usuarios' },
     { name: 'telefone', label: 'Telefone', type: 'text', required: true, maxLength: 20, placeholder: '11999999999' },
     { name: 'endereco', label: 'Endereço', type: 'text', required: true, maxLength: 200, placeholder: 'Rua Exemplo, 100' },
     { name: 'cidade', label: 'Cidade', type: 'text', required: true, maxLength: 80, placeholder: 'São Paulo' },
@@ -301,30 +281,88 @@ const perfis: Resource<Perfil> = {
     { name: 'cep', label: 'CEP', type: 'digits', required: true, length: 8, placeholder: '01001000' },
     { name: 'dataNascimento', label: 'Data de nascimento', type: 'date', required: true },
   ],
-  title: (p) => p.usuario?.nome ?? `Perfil #${p.id}`,
-  subtitle: (p) => p.telefone,
-  details: (p) => [
-    { label: 'Endereço', value: p.endereco },
-    { label: 'Cidade', value: p.cidade ? `${p.cidade}/${p.estado}` : '—' },
-    { label: 'Nascimento', value: formatDate(p.dataNascimento) },
+  title: (u) => u.nome,
+  subtitle: (u) => u.email,
+  details: (u) => [
+    { label: 'Tipo', value: TIPO_USUARIO_OPTIONS.find((o) => o.value === u.tipo)?.label ?? '—' },
+    { label: 'CPF', value: u.cpf ?? '—' },
+    { label: 'Matrícula', value: u.matricula || '—' },
+    { label: 'Telefone', value: u.telefone || '—' },
+    { label: 'Cidade', value: u.cidade ? `${u.cidade}/${u.estado}` : '—' },
   ],
-  toForm: (p) => ({
-    usuarioId: p?.usuario ? String(p.usuario.id) : '',
-    telefone: p?.telefone ?? '',
-    endereco: p?.endereco ?? '',
-    cidade: p?.cidade ?? '',
-    estado: p?.estado ?? '',
-    cep: p?.cep ?? '',
-    dataNascimento: p?.dataNascimento ?? '',
+  toForm: (u) => ({
+    nome: u?.nome ?? '',
+    email: u?.email ?? '',
+    cpf: u?.cpf ?? '',
+    matricula: u?.matricula ?? '',
+    tipo: u?.tipo ?? 'ALUNO',
+    telefone: u?.telefone ?? '',
+    endereco: u?.endereco ?? '',
+    cidade: u?.cidade ?? '',
+    estado: u?.estado ?? '',
+    cep: u?.cep ?? '',
+    dataNascimento: u?.dataNascimento ?? '',
   }),
   toPayload: (v) => ({
-    usuarioId: num(v.usuarioId),
+    nome: str(v.nome),
+    email: str(v.email),
+    cpf: str(v.cpf),
+    matricula: opt(v.matricula),
+    tipo: str(v.tipo) || null,
     telefone: str(v.telefone),
     endereco: str(v.endereco),
     cidade: str(v.cidade),
     estado: str(v.estado).toUpperCase(),
     cep: str(v.cep),
     dataNascimento: str(v.dataNascimento) || null,
+  }),
+};
+
+const carteirinhas: Resource<Carteirinha> = {
+  key: 'carteirinhas',
+  label: 'Carteirinhas',
+  singular: 'Carteirinha',
+  newLabel: 'Nova carteirinha',
+  emptyLabel: 'Nenhuma carteirinha cadastrada.',
+  embeddedKey: 'carteirinhaList',
+  search: { param: 'numero', label: 'Buscar por número' },
+  fields: [
+    { name: 'usuarioId', label: 'Usuário', type: 'relation', required: true, resource: 'usuarios' },
+    { name: 'numero', label: 'Número', type: 'text', required: true, maxLength: 20, placeholder: 'CB-000123' },
+    { name: 'dataEmissao', label: 'Data de emissão', type: 'date', required: true },
+    { name: 'dataValidade', label: 'Data de validade', type: 'date', required: true },
+    { name: 'status', label: 'Status', type: 'enum', required: true, options: STATUS_CARTEIRINHA_OPTIONS },
+    { name: 'limiteEmprestimos', label: 'Limite de empréstimos (1 a 10)', type: 'number', required: true, maxLength: 2, placeholder: '3' },
+  ],
+  title: (c) => c.numero,
+  subtitle: (c) => c.usuario?.nome ?? '',
+  details: (c) => [
+    { label: 'Emissão', value: formatDate(c.dataEmissao) },
+    { label: 'Validade', value: formatDate(c.dataValidade) },
+    { label: 'Limite', value: `${c.limiteEmprestimos} livro(s)` },
+  ],
+  badge: (c) => {
+    const tone = { ATIVA: 'ok', SUSPENSA: 'warn', CANCELADA: 'danger' } as const;
+    return {
+      text: STATUS_CARTEIRINHA_OPTIONS.find((o) => o.value === c.status)?.label ?? c.status,
+      tone: tone[c.status] ?? 'warn',
+    };
+  },
+  toForm: (c) => ({
+    usuarioId: c?.usuario ? String(c.usuario.id) : '',
+    numero: c?.numero ?? '',
+    dataEmissao: c?.dataEmissao ?? '',
+    dataValidade: c?.dataValidade ?? '',
+    status: c?.status ?? 'ATIVA',
+    limiteEmprestimos: c ? String(c.limiteEmprestimos) : '3',
+  }),
+  toPayload: (v) => ({
+    usuarioId: num(v.usuarioId),
+    numero: str(v.numero).toUpperCase(),
+    dataEmissao: str(v.dataEmissao) || null,
+    dataValidade: str(v.dataValidade) || null,
+    status: str(v.status) || null,
+    limiteEmprestimos: num(v.limiteEmprestimos),
   }),
 };
 
@@ -376,9 +414,9 @@ const emprestimos: Resource<Emprestimo> = {
   }),
 };
 
-export const RESOURCES: Record<ResourceKey, Resource> = { livros, autores, categorias, usuarios, perfis, emprestimos };
+export const RESOURCES: Record<ResourceKey, Resource> = { livros, autores, categorias, usuarios, carteirinhas, emprestimos };
 
-export const RESOURCE_ORDER: ResourceKey[] = ['emprestimos', 'livros', 'autores', 'categorias', 'usuarios', 'perfis'];
+export const RESOURCE_ORDER: ResourceKey[] = ['emprestimos', 'livros', 'autores', 'categorias', 'usuarios', 'carteirinhas'];
 
 export function isResourceKey(key: string | undefined): key is ResourceKey {
   return !!key && key in RESOURCES;
@@ -411,6 +449,14 @@ export function validate(resource: Resource, values: FormValues): Record<string,
     const ini = str(values.dataEmprestimo);
     const dev = str(values.dataDevolucao);
     if (ini && dev && dev < ini) errors.dataDevolucao = 'A devolução deve ser depois do empréstimo.';
+  }
+  if (resource.key === 'carteirinhas') {
+    if (!errors.numero && !/^[A-Za-z0-9-]{4,20}$/.test(str(values.numero))) errors.numero = 'Use de 4 a 20 caracteres: letras, números e hífen.';
+    const limite = Number(str(values.limiteEmprestimos));
+    if (!errors.limiteEmprestimos && (limite < 1 || limite > 10)) errors.limiteEmprestimos = 'O limite deve ser de 1 a 10.';
+    const emissao = str(values.dataEmissao);
+    const validade = str(values.dataValidade);
+    if (!errors.dataValidade && emissao && validade && validade < emissao) errors.dataValidade = 'A validade não pode ser anterior à emissão.';
   }
   return errors;
 }

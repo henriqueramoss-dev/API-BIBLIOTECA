@@ -7,7 +7,7 @@ const paths = {
   autores: 'M15 4l5 5-10 10H5v-5L15 4Z',
   categorias: 'M3 12V4h8l10 10-8 8L3 12Zm5-4h.01',
   usuarios: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 0 1 16 0',
-  perfis: 'M4 5h16v14H4zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 5a3 3 0 0 1 6 0m3-7h3m-3 4h3',
+  carteirinhas: 'M4 5h16v14H4zM9 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm-3 5a3 3 0 0 1 6 0m3-7h3m-3 4h3',
   emprestimos: 'M7 7h13l-4-4M17 17H4l4 4',
   menu: 'M4 6h16M4 12h16M4 18h16',
   plus: 'M12 5v14M5 12h14',

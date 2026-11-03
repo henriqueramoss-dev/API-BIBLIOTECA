@@ -48,7 +48,8 @@ public class Emprestimo {
     // Many-to-One: um usuário pode possuir vários empréstimos.
     @NotNull(message = "O usuário é obrigatório")
     // O CPF do usuário não é repetido aqui: ele só aparece nas rotas de /usuarios.
-    @JsonIgnoreProperties("cpf")
+    // Os dados pessoais do usuário não são repetidos aqui: só aparecem nas rotas de /usuarios.
+    @JsonIgnoreProperties({"cpf", "telefone", "endereco", "cidade", "estado", "cep", "dataNascimento"})
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

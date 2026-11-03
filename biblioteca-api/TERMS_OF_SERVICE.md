@@ -8,7 +8,7 @@ Estes termos valem para o uso do sistema **Biblioteca — Gestão de Acervo e Em
 
 A Biblioteca é um **projeto acadêmico** (curso de Sistemas para Internet, Senac), criado para demonstrar a construção de uma API REST com Java e Spring Boot e de telas que a consomem.
 
-O sistema permite cadastrar, consultar, atualizar e excluir **usuários, perfis, autores, categorias, livros e empréstimos**.
+O sistema permite cadastrar, consultar, atualizar e excluir **usuários, carteirinhas, autores, categorias, livros e empréstimos**.
 
 ## 2. Quem pode usar
 
@@ -47,11 +47,12 @@ Estas regras são aplicadas pela API e valem para o site e para o app:
 | Regra | Efeito |
 |---|---|
 | E-mail, CPF, ISBN e código de categoria **não podem se repetir** | A API recusa o cadastro com erro 409 |
-| Cada usuário tem **no máximo um perfil** | Um segundo perfil para o mesmo usuário é recusado (409) |
+| Cada usuário tem **no máximo uma carteirinha**, e o número da carteirinha não pode se repetir | Uma segunda carteirinha para o mesmo usuário, ou um número repetido, é recusado (409) |
 | O **CPF** deve ter 11 dígitos, sem pontos ou traço, e dígitos verificadores corretos; o **CEP**, 8 dígitos; o **estado**, a sigla com 2 letras | Valores inválidos são recusados (400) |
+| Em uma **carteirinha**, a validade não pode ser anterior à emissão e o limite de empréstimos vai de 1 a 10 | Valores fora disso são recusados (400) |
 | O **código da categoria** é gravado em maiúsculas | `rom` e `ROM` são o mesmo código |
 | Em um **empréstimo**, as datas de devolução não podem ser anteriores à data do empréstimo; o status `DEVOLVIDO` exige a data de devolução e só ele pode tê-la | Dados que se contradizem são recusados (400) |
-| Registros **em uso não podem ser excluídos** | Um livro com empréstimos, uma categoria ou um autor com livros e um usuário com empréstimos não podem ser excluídos (409). Excluir um usuário apaga também o perfil dele |
+| Registros **em uso não podem ser excluídos** | Um livro com empréstimos, uma categoria ou um autor com livros e um usuário com empréstimos não podem ser excluídos (409). Excluir um usuário apaga também a carteirinha dele |
 | As listagens têm **no máximo 100 registros por página** | Valores maiores são recusados (400); páginas que não existem retornam 404 |
 | O status de um empréstimo é **ativo, devolvido ou atrasado** | O status não muda sozinho com o passar do tempo: quem registra escolhe o valor |
 

@@ -42,14 +42,16 @@ Todos os dados abaixo são **informados por você** ao cadastrar um registro, no
 | CPF | Sim | 11 dígitos com dígitos verificadores corretos; não pode se repetir |
 | Matrícula | Não | |
 | Tipo (aluno, professor, funcionário ou visitante) | Sim | |
+| Telefone | Sim | |
+| Endereço, cidade, estado e CEP | Sim | |
+| Data de nascimento | Sim | |
 
-### Perfil (complemento do usuário)
+### Carteirinha
 
 | Dado | Obrigatório |
 |---|---|
-| Telefone | Sim |
-| Endereço, cidade, estado e CEP | Sim |
-| Data de nascimento | Sim |
+| Número, datas de emissão e de validade, status e limite de empréstimos | Sim |
+| Usuário dono da carteirinha | Sim |
 
 ### Empréstimos
 
@@ -80,7 +82,7 @@ O sistema **não pede** dados pessoais sensíveis (origem racial ou étnica, rel
 
 | Finalidade | Dados |
 |---|---|
-| Cadastrar leitores e controlar empréstimos de livros | Usuário, perfil e empréstimos |
+| Cadastrar leitores e controlar empréstimos de livros | Usuário, carteirinha e empréstimos |
 | Demonstrar o projeto em atividades e avaliações acadêmicas | Todos (fictícios) |
 | Evitar cadastros duplicados | E-mail, CPF, ISBN e código da categoria |
 
@@ -127,9 +129,9 @@ Você pode, a qualquer momento:
 | Direito | Como exercer no sistema |
 |---|---|
 | Confirmar que existem dados seus | Procure pelo nome no site/app ou use `GET /usuarios/buscar?nome=` |
-| Acessar os dados | Abra o registro (`GET /usuarios/{id}` e `GET /perfis/{id}`) |
+| Acessar os dados | Abra o registro (`GET /usuarios/{id}` e `GET /carteirinhas/{id}`) |
 | Corrigir dados incompletos ou errados | Edite o registro no site/app ou use `PUT` |
-| Excluir os dados (eliminação e retirada do consentimento) | Botão de excluir no site/app ou `DELETE /usuarios/{id}`. Excluir o usuário apaga também o perfil dele. Se houver empréstimos, exclua-os antes (`DELETE /emprestimos/{id}`) |
+| Excluir os dados (eliminação e retirada do consentimento) | Botão de excluir no site/app ou `DELETE /usuarios/{id}`. Excluir o usuário apaga também a carteirinha dele. Se houver empréstimos, exclua-os antes (`DELETE /emprestimos/{id}`) |
 | Receber os dados em formato estruturado (portabilidade) | As respostas da API já são JSON |
 | Saber com quem os dados são compartilhados | Seção 5 deste documento |
 | Pedir anonimização ou bloqueio de dados desnecessários | Edite ou exclua o registro |
@@ -155,7 +157,7 @@ E tem **limitações que impedem o uso com dados reais**:
 | Sem limite de tentativas de login | Dá para testar senhas sem parar |
 | Tráfego em HTTP, sem criptografia | Os dados podem ser lidos por quem estiver na mesma rede |
 | CPF e demais dados guardados sem criptografia | Quem acessar o banco lê os dados |
-| O CPF completo é devolvido pelas rotas de `/usuarios` | Quem alcançar a API lê o CPF de todos os usuários. Ele não é repetido dentro de empréstimos e perfis |
+| O CPF completo é devolvido pelas rotas de `/usuarios` | Quem alcançar a API lê o CPF de todos os usuários. Ele e os demais dados pessoais (telefone, endereço, CEP e data de nascimento) não são repetidos dentro de empréstimos e carteirinhas |
 | Se o console do H2 for habilitado (hoje ele **não** está disponível, veja o README) | Quem tiver acesso à API conseguiria consultar o banco diretamente |
 | Sem limite de requisições | Não há proteção contra uso abusivo |
 

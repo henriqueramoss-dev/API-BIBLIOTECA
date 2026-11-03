@@ -58,6 +58,12 @@ public class UsuarioService {
                 usuario.setCpf(dados.getCpf());
                 usuario.setMatricula(dados.getMatricula());
                 usuario.setTipo(dados.getTipo());
+                usuario.setTelefone(dados.getTelefone());
+                usuario.setEndereco(dados.getEndereco());
+                usuario.setCidade(dados.getCidade());
+                usuario.setEstado(dados.getEstado());
+                usuario.setCep(dados.getCep());
+                usuario.setDataNascimento(dados.getDataNascimento());
                 return repository.save(usuario);
             });
     }

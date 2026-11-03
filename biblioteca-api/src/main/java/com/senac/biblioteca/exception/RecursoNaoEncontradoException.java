@@ -31,8 +31,8 @@ public class RecursoNaoEncontradoException extends RuntimeException {
         return new RecursoNaoEncontradoException("Livro com ID " + id + " não encontrado.");
     }
 
-    public static RecursoNaoEncontradoException perfil(Long id) {
-        return new RecursoNaoEncontradoException("Perfil com ID " + id + " não encontrado.");
+    public static RecursoNaoEncontradoException carteirinha(Long id) {
+        return new RecursoNaoEncontradoException("Carteirinha com ID " + id + " não encontrada.");
     }
 
     public static RecursoNaoEncontradoException usuario(Long id) {

@@ -28,6 +28,10 @@ class BibliotecaApiTest {
 
     private final HttpClient http = HttpClient.newHttpClient();
 
+    // Dados pessoais que agora fazem parte do usuário (antes ficavam no perfil).
+    private static final String PESSOAIS = "\"telefone\":\"11999990000\",\"endereco\":\"Rua A, 10\",\"cidade\":\"São Paulo\","
+        + "\"estado\":\"SP\",\"cep\":\"01001000\",\"dataNascimento\":\"2000-01-01\"";
+
     // ---------------------------------------------------------------- utilitários
 
     private record Resposta(int status, String corpo, HttpResponse<String> http) {
@@ -98,7 +102,7 @@ class BibliotecaApiTest {
 
     private long criarUsuario() throws Exception {
         return id(post("/usuarios", "{\"nome\":\"Leitor " + unico() + "\",\"email\":\"" + unico() + "@email.com\","
-            + "\"cpf\":\"" + cpfValido() + "\",\"tipo\":\"ALUNO\"}"));
+            + "\"cpf\":\"" + cpfValido() + "\",\"tipo\":\"ALUNO\"," + PESSOAIS + "}"));
     }
 
     private String emprestimo(long usuario, long livro, String status, String devolucao, String emprestimoEm, String prevista) {
@@ -261,7 +265,7 @@ class BibliotecaApiTest {
 
     @Test
     void cpfInvalidoEhRecusadoECpfValidoEhAceito() throws Exception {
-        String corpo = "{\"nome\":\"Leitor\",\"email\":\"%s@email.com\",\"cpf\":\"%s\",\"tipo\":\"ALUNO\"}";
+        String corpo = "{\"nome\":\"Leitor\",\"email\":\"%s@email.com\",\"cpf\":\"%s\",\"tipo\":\"ALUNO\"," + PESSOAIS + "}";
 
         for (String cpf : new String[] {"11122233344", "00000000000", "11111111111", "123", "123.456.789-09"}) {
             Resposta r = post("/usuarios", corpo.formatted(unico(), cpf));
@@ -274,17 +278,133 @@ class BibliotecaApiTest {
     }
 
     @Test
-    void cpfSoApareceNasRotasDeUsuarios() throws Exception {
+    void dadosPessoaisSoApareceNasRotasDeUsuarios() throws Exception {
         long usuario = criarUsuario();
         long livro = criarLivro();
         long emprestimo = id(post("/emprestimos", emprestimo(usuario, livro, "ATIVO", null, "2026-10-01", "2026-10-15")));
-        post("/perfis", "{\"telefone\":\"11999990000\",\"endereco\":\"Rua A\",\"cidade\":\"São Paulo\",\"estado\":\"SP\","
-            + "\"cep\":\"01001000\",\"dataNascimento\":\"2000-01-01\",\"usuarioId\":" + usuario + "}");
+        long carteirinha = id(post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", 3, usuario)));
 
-        assertThat(get("/usuarios/" + usuario).corpo()).contains("\"cpf\"");
-        assertThat(get("/emprestimos/" + emprestimo).corpo()).contains("\"usuario\"").doesNotContain("\"cpf\"");
-        assertThat(get("/usuarios/" + usuario + "/emprestimos").corpo()).doesNotContain("\"cpf\"");
-        assertThat(get("/perfis/buscar?telefone=11999990000&size=100").corpo()).contains("\"usuario\"").doesNotContain("\"cpf\"");
+        assertThat(get("/usuarios/" + usuario).corpo()).contains("\"cpf\"").contains("\"telefone\"").contains("\"dataNascimento\"");
+
+        for (String caminho : new String[] {"/emprestimos/" + emprestimo, "/usuarios/" + usuario + "/emprestimos", "/carteirinhas/" + carteirinha}) {
+            assertThat(get(caminho).corpo()).as(caminho)
+                .doesNotContain("\"cpf\"").doesNotContain("\"telefone\"").doesNotContain("\"endereco\"")
+                .doesNotContain("\"cep\"").doesNotContain("\"dataNascimento\"");
+        }
+
+        assertThat(get("/emprestimos/" + emprestimo).corpo()).contains("\"usuario\"");
+        assertThat(get("/carteirinhas/" + carteirinha).corpo()).contains("\"usuario\"");
+    }
+
+    // ---------------------------------------------------------------- usuário com perfil fundido e carteirinha
+
+    private String carteirinha(String numero, String emissao, String validade, String status, int limite, long usuario) {
+        return "{\"numero\":\"" + numero + "\",\"dataEmissao\":\"" + emissao + "\",\"dataValidade\":\"" + validade
+            + "\",\"status\":\"" + status + "\",\"limiteEmprestimos\":" + limite + ",\"usuarioId\":" + usuario + "}";
+    }
+
+    @Test
+    void usuarioExigeOsDadosPessoaisQueAntesFicavamNoPerfil() throws Exception {
+        Resposta semPessoais = post("/usuarios", "{\"nome\":\"Leitor\",\"email\":\"" + unico() + "@email.com\",\"cpf\":\""
+            + cpfValido() + "\",\"tipo\":\"ALUNO\"}");
+
+        assertThat(semPessoais.status()).isEqualTo(400);
+        for (String campo : new String[] {"telefone", "endereco", "cidade", "estado", "cep", "dataNascimento"}) {
+            assertThat(semPessoais.corpo()).as(campo).contains("\"" + campo + "\"");
+        }
+
+        Resposta invalido = post("/usuarios", "{\"nome\":\"Leitor\",\"email\":\"" + unico() + "@email.com\",\"cpf\":\"" + cpfValido()
+            + "\",\"tipo\":\"ALUNO\",\"telefone\":\"1\",\"endereco\":\"Rua\",\"cidade\":\"SP\",\"estado\":\"sp\",\"cep\":\"123\","
+            + "\"dataNascimento\":\"2000-01-01\"}");
+        assertThat(invalido.status()).isEqualTo(400);
+        assertThat(invalido.corpo()).contains("\"estado\"").contains("\"cep\"");
+
+        // A rota de perfis não existe mais.
+        assertThat(get("/perfis").status()).isEqualTo(404);
+    }
+
+    @Test
+    void atualizarUsuarioAlteraTambemOsDadosPessoais() throws Exception {
+        long usuario = criarUsuario();
+        String atual = get("/usuarios/" + usuario).corpo();
+        Matcher email = Pattern.compile("\"email\":\"([^\"]+)\"").matcher(atual);
+        assertThat(email.find()).isTrue();
+
+        Resposta r = chamar("PUT", "/usuarios/" + usuario, "{\"nome\":\"Leitor Novo\",\"email\":\"" + email.group(1) + "\",\"cpf\":\""
+            + cpfDe(usuario) + "\",\"tipo\":\"ALUNO\",\"telefone\":\"21988887777\",\"endereco\":\"Av. Nova, 5\",\"cidade\":\"Niterói\","
+            + "\"estado\":\"RJ\",\"cep\":\"24000000\",\"dataNascimento\":\"1999-12-31\"}");
+
+        assertThat(r.status()).as(r.corpo()).isEqualTo(200);
+        assertThat(r.corpo()).contains("\"telefone\":\"21988887777\"").contains("\"cidade\":\"Niterói\"").contains("\"dataNascimento\":\"1999-12-31\"");
+    }
+
+    @Test
+    void carteirinhaEhCriadaComNumeroEmMaiusculasELigadaAoUsuario() throws Exception {
+        long usuario = criarUsuario();
+        String numero = "cb-" + unico();
+
+        Resposta r = post("/carteirinhas", carteirinha(numero, "2026-01-01", "2027-01-01", "ATIVA", 3, usuario));
+
+        assertThat(r.status()).as(r.corpo()).isEqualTo(201);
+        assertThat(r.cabecalho("Location")).contains("/carteirinhas/");
+        assertThat(r.corpo()).contains("\"numero\":\"" + numero.toUpperCase() + "\"").contains("\"status\":\"ATIVA\"").contains("\"usuario\"");
+        assertThat(get("/usuarios/" + usuario).corpo()).contains("\"carteirinha\"");
+
+        long id = id(r);
+        assertThat(get("/carteirinhas/" + id).status()).isEqualTo(200);
+        assertThat(get("/carteirinhas/buscar?numero=" + numero.substring(0, 6).toLowerCase() + "&size=100").corpo()).contains(numero.toUpperCase());
+        assertThat(get("/carteirinhas?size=100").corpo()).contains("\"carteirinhas\"");
+    }
+
+    @Test
+    void carteirinhaRecusaDadosInvalidos() throws Exception {
+        long usuario = criarUsuario();
+
+        Resposta datas = post("/carteirinhas", carteirinha("CB-" + unico(), "2026-06-01", "2026-01-01", "ATIVA", 3, usuario));
+        assertThat(datas.status()).isEqualTo(400);
+        assertThat(datas.corpo()).contains("\"dataValidade\"").contains("anterior à data de emissão");
+
+        for (int limite : new int[] {0, 11}) {
+            Resposta r = post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", limite, usuario));
+            assertThat(r.status()).as("limite " + limite).isEqualTo(400);
+            assertThat(r.corpo()).contains("\"limiteEmprestimos\"");
+        }
+
+        assertThat(post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "VENCIDA", 3, usuario)).status()).isEqualTo(400);
+        assertThat(post("/carteirinhas", carteirinha("x", "2026-01-01", "2027-01-01", "ATIVA", 3, usuario)).corpo()).contains("\"numero\"");
+        assertThat(post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", 3, 999999)).status()).isEqualTo(400);
+    }
+
+    @Test
+    void cadaUsuarioTemUmaCarteirinhaEONumeroNaoSeRepete() throws Exception {
+        long primeiro = criarUsuario();
+        long segundo = criarUsuario();
+        String numero = "CB-" + unico();
+
+        assertThat(post("/carteirinhas", carteirinha(numero, "2026-01-01", "2027-01-01", "ATIVA", 3, primeiro)).status()).isEqualTo(201);
+
+        Resposta mesmoUsuario = post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", 3, primeiro));
+        assertThat(mesmoUsuario.status()).as(mesmoUsuario.corpo()).isEqualTo(409);
+
+        Resposta mesmoNumero = post("/carteirinhas", carteirinha(numero.toLowerCase(), "2026-01-01", "2027-01-01", "ATIVA", 3, segundo));
+        assertThat(mesmoNumero.status()).as(mesmoNumero.corpo()).isEqualTo(409);
+    }
+
+    @Test
+    void carteirinhaPodeSerAtualizadaEExcluidaEAcompanhaOUsuarioNaExclusao() throws Exception {
+        long usuario = criarUsuario();
+        long id = id(post("/carteirinhas", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", 3, usuario)));
+
+        Resposta r = chamar("PUT", "/carteirinhas/" + id, carteirinha("CB-" + unico(), "2026-01-01", "2028-01-01", "SUSPENSA", 5, usuario));
+        assertThat(r.status()).as(r.corpo()).isEqualTo(200);
+        assertThat(r.corpo()).contains("\"status\":\"SUSPENSA\"").contains("\"limiteEmprestimos\":5");
+
+        assertThat(chamar("DELETE", "/usuarios/" + usuario, null).status()).isEqualTo(204);
+        assertThat(get("/carteirinhas/" + id).status()).isEqualTo(404);
+
+        assertThat(get("/carteirinhas/999999").corpo()).contains("Carteirinha com ID 999999 não encontrada.");
+        assertThat(chamar("PUT", "/carteirinhas/999999", carteirinha("CB-" + unico(), "2026-01-01", "2027-01-01", "ATIVA", 3, criarUsuario())).status()).isEqualTo(404);
+        assertThat(chamar("DELETE", "/carteirinhas/999999", null).status()).isEqualTo(404);
     }
 
     // ---------------------------------------------------------------- senha e login
@@ -297,7 +417,7 @@ class BibliotecaApiTest {
         String email = unico() + "@email.com";
         String campoSenha = senha == null ? "" : ",\"senha\":\"" + senha + "\"";
         Resposta r = post("/usuarios", "{\"nome\":\"Leitor Senha\",\"email\":\"" + email + "\",\"cpf\":\"" + cpfValido()
-            + "\",\"tipo\":\"ALUNO\"" + campoSenha + "}");
+            + "\",\"tipo\":\"ALUNO\"," + PESSOAIS + campoSenha + "}");
         assertThat(r.status()).as(r.corpo()).isEqualTo(201);
         return new Conta(id(r), email);
     }
@@ -355,7 +475,7 @@ class BibliotecaApiTest {
     @Test
     void senhaCurtaNoCadastroEhRecusada() throws Exception {
         Resposta r = post("/usuarios", "{\"nome\":\"Leitor\",\"email\":\"" + unico() + "@email.com\",\"cpf\":\"" + cpfValido()
-            + "\",\"tipo\":\"ALUNO\",\"senha\":\"curta\"}");
+            + "\",\"tipo\":\"ALUNO\"," + PESSOAIS + ",\"senha\":\"curta\"}");
 
         assertThat(r.status()).isEqualTo(400);
         assertThat(r.corpo()).contains("\"senha\":\"A senha deve ter de 8 a 72 caracteres\"");
@@ -406,7 +526,7 @@ class BibliotecaApiTest {
 
         // PUT /usuarios/{id} atualiza os dados, inclusive se o corpo trouxer uma "senha": ela é ignorada.
         Resposta atualizado = chamar("PUT", "/usuarios/" + conta.id(), "{\"nome\":\"Nome Novo\",\"email\":\"" + conta.email()
-            + "\",\"cpf\":\"" + cpfDe(conta.id()) + "\",\"tipo\":\"PROFESSOR\",\"senha\":\"outraSenha789\"}");
+            + "\",\"cpf\":\"" + cpfDe(conta.id()) + "\",\"tipo\":\"PROFESSOR\"," + PESSOAIS + ",\"senha\":\"outraSenha789\"}");
         assertThat(atualizado.status()).as(atualizado.corpo()).isEqualTo(200);
         assertThat(login(conta.email(), "primeiraSenha1").status()).isEqualTo(200);
         assertThat(login(conta.email(), "outraSenha789").status()).isEqualTo(401);
@@ -424,5 +544,13 @@ class BibliotecaApiTest {
 
         assertThat(api).contains("/auth/login").contains("/usuarios/{id}/senha").contains("TrocaSenhaRequest").contains("LoginRequest");
         assertThat(api).doesNotContain("senhaHash");
+    }
+
+    @Test
+    void swaggerDocumentaCarteirinhasEJaNaoTemPerfis() throws Exception {
+        String api = get("/v3/api-docs").corpo();
+
+        assertThat(api).contains("\"/carteirinhas\"").contains("\"/carteirinhas/{id}\"").contains("\"/carteirinhas/buscar\"").contains("SUSPENSA");
+        assertThat(api).doesNotContain("\"/perfis").doesNotContain("PerfilRequest");
     }
 }

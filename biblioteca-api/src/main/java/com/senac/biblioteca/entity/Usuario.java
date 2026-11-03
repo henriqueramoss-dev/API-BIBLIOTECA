@@ -9,13 +9,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entidade que representa uma pessoa cadastrada na biblioteca.
+ * Entidade que representa uma pessoa cadastrada na biblioteca, com os dados de contato e de nascimento.
+ * (Antes esses dados ficavam em uma entidade Perfil separada; hoje o cadastro é um só.)
  * @Entity informa ao JPA que a classe será persistida no banco de dados.
  */
 @Entity
@@ -58,6 +61,35 @@ public class Usuario {
     @Schema(description = "Tipo de usuário", example = "ALUNO")
     private TipoUsuario tipo;
 
+    @NotBlank(message = "O telefone é obrigatório")
+    @Size(max = 20, message = "O telefone deve ter no máximo 20 caracteres")
+    @Schema(description = "Telefone do usuário", example = "11999999999")
+    private String telefone;
+
+    @NotBlank(message = "O endereço é obrigatório")
+    @Size(max = 200, message = "O endereço deve ter no máximo 200 caracteres")
+    @Schema(description = "Endereço do usuário", example = "Rua Exemplo, 100")
+    private String endereco;
+
+    @NotBlank(message = "A cidade é obrigatória")
+    @Size(max = 80, message = "A cidade deve ter no máximo 80 caracteres")
+    @Schema(description = "Cidade", example = "São Paulo")
+    private String cidade;
+
+    @NotBlank(message = "O estado é obrigatório")
+    @Pattern(regexp = "[A-Z]{2}", message = "O estado deve ser a sigla com 2 letras maiúsculas (ex.: SP)")
+    @Schema(description = "Sigla do estado", example = "SP")
+    private String estado;
+
+    @NotBlank(message = "O CEP é obrigatório")
+    @Pattern(regexp = "\\d{8}", message = "O CEP deve ter 8 dígitos, sem traço")
+    @Schema(description = "CEP (somente números)", example = "01001000")
+    private String cep;
+
+    @NotNull(message = "A data de nascimento é obrigatória")
+    @Schema(description = "Data de nascimento", example = "2000-05-10")
+    private LocalDate dataNascimento;
+
     // Senha em texto puro: só chega pelo JSON do POST /usuarios (WRITE_ONLY), nunca é gravada nem devolvida.
     // O Service transforma esta senha em hash (BCrypt) e guarda o hash em senhaHash.
     @Transient
@@ -76,10 +108,10 @@ public class Usuario {
     @Column(length = 60)
     private String senhaHash;
 
-    // Relacionamento One-to-One: um usuário possui um único perfil.
+    // Relacionamento One-to-One: um usuário possui uma única carteirinha da biblioteca.
     @JsonIgnore
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Perfil perfil;
+    private Carteirinha carteirinha;
 
     // Relacionamento One-to-Many: um usuário pode possuir vários empréstimos.
     @JsonIgnore
@@ -159,12 +191,60 @@ public class Usuario {
         this.senhaHash = senhaHash;
     }
 
-    public Perfil getPerfil() {
-        return perfil;
+    public String getTelefone() {
+        return telefone;
     }
 
-    public void setPerfil(Perfil perfil) {
-        this.perfil = perfil;
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(String endereco) {
+        this.endereco = endereco;
+    }
+
+    public String getCidade() {
+        return cidade;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getCep() {
+        return cep;
+    }
+
+    public void setCep(String cep) {
+        this.cep = cep;
+    }
+
+    public LocalDate getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public void setDataNascimento(LocalDate dataNascimento) {
+        this.dataNascimento = dataNascimento;
+    }
+
+    public Carteirinha getCarteirinha() {
+        return carteirinha;
+    }
+
+    public void setCarteirinha(Carteirinha carteirinha) {
+        this.carteirinha = carteirinha;
     }
 
     public List<Emprestimo> getEmprestimos() {

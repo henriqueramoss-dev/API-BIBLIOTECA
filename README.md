@@ -49,7 +49,7 @@ Responsabilidade de cada pacote:
 - `repository`: realiza o acesso aos dados com Spring Data JPA;
 - `service`: concentra as regras de negócio e valida os relacionamentos;
 - `controller`: recebe as requisições HTTP e disponibiliza os endpoints REST;
-- `dto`: dados de entrada que referenciam outros registros por ID (livro, perfil e empréstimo);
+- `dto`: dados de entrada que referenciam outros registros por ID (livro, carteirinha e empréstimo);
 - `assembler`: monta as respostas HATEOAS (`EntityModel`) com os links de cada recurso;
 - `enums`: armazena valores fixos utilizados pelas entidades;
 - `exception`: tratamento de erros da API;
@@ -73,20 +73,28 @@ Principais dados:
 - cpf * (11 dígitos, único)
 - matricula
 - tipo * (`ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE`)
-
-### Perfil
-
-Armazena informações complementares do usuário.
-
-Principais dados:
-
-- id
 - telefone *
 - endereco *
 - cidade *
 - estado * (sigla com 2 letras, ex.: SP)
 - cep * (8 dígitos)
 - data de nascimento *
+- senha (opcional, só na entrada; nunca é devolvida)
+
+(Os dados de contato e de nascimento ficavam em uma entidade Perfil; hoje fazem parte do usuário.)
+
+### Carteirinha
+
+Carteirinha da biblioteca de um usuário (cada usuário tem no máximo uma).
+
+Principais dados:
+
+- id
+- numero * (único, gravado em maiúsculas)
+- data de emissão *
+- data de validade * (não pode ser anterior à emissão)
+- status * (`ATIVA`, `SUSPENSA` ou `CANCELADA`)
+- limite de empréstimos * (de 1 a 10, informativo)
 - usuario * (relacionamento)
 
 ### Autor
@@ -161,10 +169,10 @@ O projeto utiliza os três tipos de relacionamento exigidos na atividade.
 ### One-to-One
 
 ```text
-Usuario 1 -------- 1 Perfil
+Usuario 1 -------- 1 Carteirinha
 ```
 
-Cada usuário possui um único perfil e cada perfil pertence a um único usuário.
+Cada usuário possui uma única carteirinha e cada carteirinha pertence a um único usuário.
 
 ### One-to-Many
 
@@ -288,7 +296,7 @@ Endpoints por entidade:
 | Categorias | 7 | `GET /categorias/buscar?nome=`, `GET /categorias/{id}/livros` |
 | Usuários | 8 | `GET /usuarios/buscar?nome=`, `GET /usuarios/{id}/emprestimos`, `PUT /usuarios/{id}/senha` |
 | Autenticação | 1 | `POST /auth/login` |
-| Perfis | 6 | `GET /perfis/buscar?telefone=` |
+| Carteirinhas | 6 | `GET /carteirinhas/buscar?numero=` |
 | Empréstimos | 6 | `GET /emprestimos/buscar?status=` |
 
 O `POST` retorna `201 Created` com o endereço do novo registro no cabeçalho `Location`.
@@ -336,7 +344,7 @@ A API utilizará códigos HTTP adequados para cada operação.
 | Exclusão realizada | 204 No Content |
 | Dados inválidos, ID relacionado inexistente, parâmetro ausente ou ordenação inválida | 400 Bad Request |
 | Registro ou endereço não encontrado | 404 Not Found |
-| Valor duplicado (e-mail, ISBN, perfil) ou registro em uso ao excluir | 409 Conflict |
+| Valor duplicado (e-mail, ISBN, número de carteirinha, segunda carteirinha do mesmo usuário) ou registro em uso ao excluir | 409 Conflict |
 | Erro interno | 500 Internal Server Error |
 
 Todos os erros voltam com uma mensagem explicando o problema, no mesmo formato.
@@ -456,8 +464,8 @@ traz links para os recursos relacionados, permitindo navegar pela API:
 |---|---|
 | Livro | `categoria`, `autores`, `emprestimos` (histórico do livro) |
 | Empréstimo | `usuario`, `livro` |
-| Perfil | `usuario` |
-| Usuário | `perfil` (quando existir), `emprestimos` |
+| Carteirinha | `usuario` |
+| Usuário | `carteirinha` (quando existir), `emprestimos` |
 | Autor | `livros` |
 | Categoria | `livros` |
 
@@ -547,7 +555,7 @@ http://localhost:8080
 | H2 | Sim |
 | Spring Data JPA | Sim |
 | Mínimo de 5 entidades | 6 entidades |
-| One-to-One | Usuario x Perfil |
+| One-to-One | Usuario x Carteirinha |
 | One-to-Many | Categoria x Livro / Usuario x Emprestimo / Livro x Emprestimo |
 | Many-to-Many | Livro x Autor |
 | Bean Validation | Sim |
@@ -584,7 +592,7 @@ A pasta `biblioteca-web` contém as telas web da biblioteca, feitas com **React 
 Telas disponíveis:
 
 - **Início**: totais de cada cadastro, empréstimos por status e empréstimos recentes;
-- **Listagem** de empréstimos, livros, autores, categorias, usuários e perfis, com busca (endpoints `/buscar`), paginação e exclusão;
+- **Listagem** de empréstimos, livros, autores, categorias, usuários e carteirinhas, com busca (endpoints `/buscar`), paginação e exclusão;
 - **Formulário** de cadastro e edição de cada entidade, com validação dos campos e exibição dos erros devolvidos pela API.
 
 Como executar (com a API já rodando em `http://localhost:8080`):

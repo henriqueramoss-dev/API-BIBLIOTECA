@@ -52,15 +52,15 @@ São **42 endpoints**: 40 em 6 recursos e 2 de senha e login (`POST /auth/login`
 | GET | `/usuarios/buscar?nome=` | Buscar por nome | 200, 400, 404 |
 | GET | `/usuarios/{id}` | Buscar por ID | 200, 400, 404 |
 | PUT | `/usuarios/{id}` | Atualizar | 200, 400, 404, 409 |
-| DELETE | `/usuarios/{id}` | Excluir (apaga também o perfil) | 204, 404, 409 |
+| DELETE | `/usuarios/{id}` | Excluir (apaga também a carteirinha) | 204, 404, 409 |
 | GET | `/usuarios/{id}/emprestimos` | Empréstimos do usuário | 200, 400, 404 |
-| **Perfis** | | | |
-| GET | `/perfis` | Listar perfis | 200, 400, 404 |
-| POST | `/perfis` | Cadastrar perfil | 201, 400, 409 |
-| GET | `/perfis/buscar?telefone=` | Buscar por telefone | 200, 400, 404 |
-| GET | `/perfis/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/perfis/{id}` | Atualizar | 200, 400, 404, 409 |
-| DELETE | `/perfis/{id}` | Excluir | 204, 404 |
+| **Carteirinhas** | | | |
+| GET | `/carteirinhas` | Listar carteirinhas | 200, 400, 404 |
+| POST | `/carteirinhas` | Cadastrar carteirinha | 201, 400, 409 |
+| GET | `/carteirinhas/buscar?numero=` | Buscar por número | 200, 400, 404 |
+| GET | `/carteirinhas/{id}` | Buscar por ID | 200, 400, 404 |
+| PUT | `/carteirinhas/{id}` | Atualizar | 200, 400, 404, 409 |
+| DELETE | `/carteirinhas/{id}` | Excluir | 204, 404 |
 | **Empréstimos** | | | |
 | GET | `/emprestimos` | Listar empréstimos | 200, 400, 404 |
 | POST | `/emprestimos` | Cadastrar empréstimo | 201, 400 |
@@ -108,7 +108,7 @@ Formato da resposta (HATEOAS, `PagedModel`):
 }
 ```
 
-A chave dentro de `_embedded` é o nome do recurso mais `List`: `livroList`, `autorList`, `categoriaList`, `usuarioList`, `perfilList` e `emprestimoList`.
+A chave dentro de `_embedded` é o nome do recurso mais `List`: `livroList`, `autorList`, `categoriaList`, `usuarioList`, `carteirinhaList` e `emprestimoList`.
 
 ## Links (HATEOAS)
 
@@ -119,8 +119,8 @@ Cada registro traz `_links` para as operações e para os recursos relacionados:
 | Livro | `categoria`, `autores`, `emprestimos` (histórico do livro) |
 | Autor | `livros` |
 | Categoria | `livros` |
-| Usuário | `perfil` (quando existe), `emprestimos` |
-| Perfil | `usuario` |
+| Usuário | `carteirinha` (quando existe), `emprestimos` |
+| Carteirinha | `usuario` |
 | Empréstimo | `usuario`, `livro` |
 
 Exemplo, `GET /categorias/4`:
@@ -205,7 +205,7 @@ Os exemplos usam `curl`. A ordem importa: um livro precisa de uma categoria, um 
 
 > **CPF nos exemplos.** `12345678909` é um CPF de teste com dígitos corretos. Nunca cadastre o CPF de uma pessoa real.
 >
-> **Onde o CPF aparece.** Ele é devolvido pelas rotas de `/usuarios`, mas **não** dentro de empréstimos, perfis e demais respostas em que o usuário vem aninhado.
+> **Onde o CPF aparece.** Ele é devolvido pelas rotas de `/usuarios`, mas **não** dentro de empréstimos, carteirinhas e demais respostas em que o usuário vem aninhado.
 
 ### 1. Cadastrar uma categoria e um autor
 
@@ -233,18 +233,20 @@ curl -X POST http://localhost:8080/livros -H "Content-Type: application/json" -d
 }'
 ```
 
-### 3. Cadastrar um usuário, o perfil dele e um empréstimo
+### 3. Cadastrar um usuário, a carteirinha dele e um empréstimo
 
 ```bash
 curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
   "nome": "Henrique Ramos", "email": "henrique@email.com",
-  "cpf": "12345678909", "matricula": "2026001", "tipo": "ALUNO"
-}'
-
-curl -X POST http://localhost:8080/perfis -H "Content-Type: application/json" -d '{
+  "cpf": "12345678909", "matricula": "2026001", "tipo": "ALUNO",
   "telefone": "11999990000", "endereco": "Rua das Flores, 10",
   "cidade": "São Paulo", "estado": "SP", "cep": "01001000",
-  "dataNascimento": "2000-05-10", "usuarioId": 1
+  "dataNascimento": "2000-05-10"
+}'
+
+curl -X POST http://localhost:8080/carteirinhas -H "Content-Type: application/json" -d '{
+  "numero": "CB-000123", "dataEmissao": "2026-02-01", "dataValidade": "2027-02-01",
+  "status": "ATIVA", "limiteEmprestimos": 3, "usuarioId": 1
 }'
 
 curl -X POST http://localhost:8080/emprestimos -H "Content-Type: application/json" -d '{
@@ -304,7 +306,7 @@ curl -X PUT http://localhost:8080/emprestimos/1 -H "Content-Type: application/js
 curl -X DELETE http://localhost:8080/emprestimos/1     # 204 No Content
 ```
 
-**Ordem de exclusão:** um registro em uso não pode ser excluído (erro 409). Exclua primeiro quem depende dele: empréstimo → livro → autor e categoria → usuário (que leva o perfil junto).
+**Ordem de exclusão:** um registro em uso não pode ser excluído (erro 409). Exclua primeiro quem depende dele: empréstimo → livro → autor e categoria → usuário (que leva a carteirinha junto).
 
 ## Campos e regras de cada recurso
 

@@ -14,7 +14,7 @@
       "value": "1"
     },
     {
-      "key": "perfilId",
+      "key": "carteirinhaId",
       "value": "1"
     },
     {
@@ -74,7 +74,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Henrique Ramos\",\n  \"email\": \"henrique@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Henrique Ramos\",\n  \"email\": \"henrique@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,7 +173,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Henrique Ramos Atualizado\",\n  \"email\": \"henrique.atualizado@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Henrique Ramos Atualizado\",\n  \"email\": \"henrique.atualizado@email.com\",\n  \"cpf\": \"12345678909\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -214,7 +214,7 @@
             "url": "{{baseUrl}}/usuarios",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Leitor Senha\",\n  \"email\": \"{{senhaEmail}}\",\n  \"cpf\": \"{{senhaCpf}}\",\n  \"tipo\": \"ALUNO\",\n  \"senha\": \"senhaInicial1\"\n}",
+              "raw": "{\n  \"nome\": \"Leitor Senha\",\n  \"email\": \"{{senhaEmail}}\",\n  \"cpf\": \"{{senhaCpf}}\",\n  \"tipo\": \"ALUNO\",\n  \"senha\": \"senhaInicial1\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -603,10 +603,10 @@
       ]
     },
     {
-      "name": "Perfis",
+      "name": "Carteirinhas",
       "item": [
         {
-          "name": "Criar perfil",
+          "name": "Criar carteirinha",
           "request": {
             "method": "POST",
             "header": [
@@ -617,14 +617,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
+              "raw": "{\n  \"numero\": \"CB-000123\",\n  \"dataEmissao\": \"2026-02-01\",\n  \"dataValidade\": \"2027-02-01\",\n  \"status\": \"ATIVA\",\n  \"limiteEmprestimos\": 3,\n  \"usuarioId\": {{usuarioId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             },
-            "url": "{{baseUrl}}/perfis"
+            "url": "{{baseUrl}}/carteirinhas"
           },
           "event": [
             {
@@ -637,7 +637,7 @@
                   "});",
                   "if (pm.response.code === 201) {",
                   "    const json = pm.response.json();",
-                  "    if (json.id) pm.collectionVariables.set(\"perfilId\", json.id);",
+                  "    if (json.id) pm.collectionVariables.set(\"carteirinhaId\", json.id);",
                   "}"
                 ]
               }
@@ -645,10 +645,10 @@
           ]
         },
         {
-          "name": "Listar perfis",
+          "name": "Listar carteirinhas",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/perfis?page=0&size=10"
+            "url": "{{baseUrl}}/carteirinhas?page=0&size=10"
           },
           "event": [
             {
@@ -665,10 +665,10 @@
           ]
         },
         {
-          "name": "Buscar perfil por ID",
+          "name": "Buscar carteirinha por ID",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/perfis/{{perfilId}}"
+            "url": "{{baseUrl}}/carteirinhas/{{carteirinhaId}}"
           },
           "event": [
             {
@@ -685,10 +685,10 @@
           ]
         },
         {
-          "name": "Buscar perfis por telefone",
+          "name": "Buscar carteirinhas por numero",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/perfis/buscar?telefone=1199&page=0&size=10"
+            "url": "{{baseUrl}}/carteirinhas/buscar?numero=CB-0001&page=0&size=10"
           },
           "event": [
             {
@@ -705,7 +705,7 @@
           ]
         },
         {
-          "name": "Atualizar perfil",
+          "name": "Atualizar carteirinha",
           "request": {
             "method": "PUT",
             "header": [
@@ -716,14 +716,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\",\n  \"usuarioId\": {{usuarioId}}\n}",
+              "raw": "{\n  \"numero\": \"CB-000123\",\n  \"dataEmissao\": \"2026-02-01\",\n  \"dataValidade\": \"2027-02-01\",\n  \"status\": \"ATIVA\",\n  \"limiteEmprestimos\": 3,\n  \"usuarioId\": {{usuarioId}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             },
-            "url": "{{baseUrl}}/perfis/{{perfilId}}"
+            "url": "{{baseUrl}}/carteirinhas/{{carteirinhaId}}"
           },
           "event": [
             {
@@ -1406,7 +1406,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\",\n  \"cpf\": \"11144477735\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"email-invalido\",\n  \"cpf\": \"11144477735\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1550,7 +1550,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"cpf.invalido@email.com\",\n  \"cpf\": \"11122233344\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Teste\",\n  \"email\": \"cpf.invalido@email.com\",\n  \"cpf\": \"11122233344\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1798,7 +1798,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"52998224725\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Usuario Conflito\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"52998224725\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1834,7 +1834,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"39053344705\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\"\n}",
+              "raw": "{\n  \"nome\": \"Outro Usuario\",\n  \"email\": \"conflito.postman@biblioteca.local\",\n  \"cpf\": \"39053344705\",\n  \"matricula\": \"2026001\",\n  \"tipo\": \"ALUNO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"2000-05-10\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1978,10 +1978,10 @@
           ]
         },
         {
-          "name": "Excluir perfil",
+          "name": "Excluir carteirinha",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/perfis/{{perfilId}}"
+            "url": "{{baseUrl}}/carteirinhas/{{carteirinhaId}}"
           },
           "event": [
             {

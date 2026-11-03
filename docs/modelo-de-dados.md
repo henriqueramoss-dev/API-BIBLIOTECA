@@ -6,7 +6,7 @@ A API tem **6 entidades**, **3 relacionamentos de cada tipo** exigido (um-para-u
 
 ```mermaid
 erDiagram
-    USUARIO  ||--o| PERFIL      : "tem um"
+    USUARIO  ||--o| CARTEIRINHA : "tem uma"
     USUARIO  ||--o{ EMPRESTIMO  : "faz"
     LIVRO    ||--o{ EMPRESTIMO  : "é emprestado em"
     CATEGORIA ||--o{ LIVRO      : "classifica"
@@ -19,15 +19,21 @@ erDiagram
         string cpf UK
         string matricula
         enum tipo
-    }
-    PERFIL {
-        long id PK
         string telefone
         string endereco
         string cidade
         string estado
         string cep
         date dataNascimento
+        string senha_hash
+    }
+    CARTEIRINHA {
+        long id PK
+        string numero UK
+        date dataEmissao
+        date dataValidade
+        enum status
+        int limiteEmprestimos
         long usuario_id FK
     }
     AUTOR {
@@ -73,7 +79,7 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 
 | Tipo | Entidades | Detalhe |
 |---|---|---|
-| Um-para-um | Usuário ↔ Perfil | Cada usuário tem no máximo um perfil. Excluir o usuário exclui o perfil |
+| Um-para-um | Usuário ↔ Carteirinha | Cada usuário tem no máximo uma carteirinha. Excluir o usuário exclui a carteirinha |
 | Um-para-muitos | Categoria → Livros | Todo livro pertence a uma categoria |
 | Um-para-muitos | Usuário → Empréstimos | |
 | Um-para-muitos | Livro → Empréstimos | O histórico do livro |
@@ -92,19 +98,26 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 | cpf * | texto | exatamente 11 dígitos, sem pontos ou traço, com **dígitos verificadores corretos**, **único**. Só aparece nas rotas de `/usuarios` |
 | matricula | texto | até 20 |
 | tipo * | enum | `ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE` |
-| senha | texto | só no cadastro (`POST /usuarios`), de 8 a 72 caracteres; **nunca é devolvida**. O banco guarda apenas o hash BCrypt (coluna `senha_hash`) |
-
-### Perfil
-
-| Campo | Tipo | Regras |
-|---|---|---|
 | telefone * | texto | até 20 |
 | endereco * | texto | até 200 |
 | cidade * | texto | até 80 |
 | estado * | texto | sigla com 2 letras maiúsculas (ex.: `SP`) |
 | cep * | texto | exatamente 8 dígitos, sem traço |
 | dataNascimento * | data | |
-| usuarioId * | número | ID de um usuário existente que ainda não tem perfil (só na entrada; na saída vem o objeto `usuario`) |
+| senha | texto | só no cadastro (`POST /usuarios`), de 8 a 72 caracteres; **nunca é devolvida**. O banco guarda apenas o hash BCrypt (coluna `senha_hash`) |
+
+O telefone, o endereço, a cidade, o estado, o CEP e a data de nascimento ficavam em uma entidade Perfil; hoje fazem parte do usuário e só aparecem nas rotas de `/usuarios`.
+
+### Carteirinha
+
+| Campo | Tipo | Regras |
+|---|---|---|
+| numero * | texto | de 4 a 20 caracteres (letras, números e hífen), gravado em maiúsculas, **único** |
+| dataEmissao * | data | |
+| dataValidade * | data | não pode ser anterior à emissão |
+| status * | enum | `ATIVA`, `SUSPENSA` ou `CANCELADA` |
+| limiteEmprestimos * | número | de 1 a 10 (informativo: a API não bloqueia empréstimos por causa dele) |
+| usuarioId * | número | ID de um usuário existente que ainda não tem carteirinha (só na entrada; na saída vem o objeto `usuario`) |
 
 ### Autor
 
@@ -167,7 +180,7 @@ O status **não muda sozinho** com o passar do tempo: quem registra o empréstim
 | Autor | livros | **409** |
 | Livro | empréstimos | **409** |
 | Usuário | empréstimos | **409** |
-| Usuário | só o perfil | exclui o usuário **e** o perfil |
-| Empréstimo, perfil | — | exclui normalmente |
+| Usuário | só a carteirinha | exclui o usuário **e** a carteirinha |
+| Empréstimo, carteirinha | — | exclui normalmente |
 
 Ordem para limpar tudo: empréstimos → livros → autores e categorias → usuários.

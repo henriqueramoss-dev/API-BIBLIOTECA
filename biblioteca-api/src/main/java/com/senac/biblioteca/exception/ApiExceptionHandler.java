@@ -66,7 +66,7 @@ public class ApiExceptionHandler {
      * Exemplos:
      * - e-mail de usuário duplicado;
      * - ISBN de livro duplicado;
-     * - tentativa de criar um segundo perfil para o mesmo usuário;
+     * - número de carteirinha duplicado ou segunda carteirinha para o mesmo usuário;
      * - exclusão de um registro que ainda está sendo utilizado por outro.
      *
      * Retorna HTTP 409 - Conflict, pois a requisição é válida,

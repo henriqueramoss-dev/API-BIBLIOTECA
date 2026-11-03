@@ -22,7 +22,7 @@ Pacote base: `com.senac.biblioteca`.
 | `service` | Regras de negócio: confere se as categorias, autores, usuários e livros referenciados existem, atualiza os campos e decide quando devolver "não encontrado" |
 | `repository` | Acesso ao banco (Spring Data JPA). Tem as consultas personalizadas, como `findByTituloContainingIgnoreCase`, e carrega os relacionamentos junto (`@EntityGraph`) |
 | `entity` | Classes mapeadas para tabelas (JPA), com as validações (Bean Validation) |
-| `dto` | Objetos de entrada que usam IDs no lugar de objetos (`LivroRequest`, `PerfilRequest`, `EmprestimoRequest`) e o formato dos erros (`ErroResposta`) |
+| `dto` | Objetos de entrada que usam IDs no lugar de objetos (`LivroRequest`, `CarteirinhaRequest`, `EmprestimoRequest`) e o formato dos erros (`ErroResposta`) |
 | `enums` | `StatusEmprestimo`, `TipoUsuario` e `StatusLivro` (sem uso) |
 | `assembler` | Transforma cada entidade em `EntityModel` com os links HATEOAS |
 | `exception` | Exceções do projeto e o `ApiExceptionHandler`, que converte cada erro em uma resposta padronizada |
@@ -60,7 +60,7 @@ Java 21, Spring Boot 4.1.2, Springdoc 3.2.0, Maven. As dependências estão em `
 
 | Tipo | Onde | O que cobre |
 |---|---|---|
-| **Integração (Java)** | `biblioteca-api/src/test/java/.../BibliotecaApiTest.java` | 21 testes que sobem a API de verdade (porta aleatória, H2 em memória) e chamam os endpoints por HTTP: os arquivos do Swagger carregam, o 405 traz `Allow`, os erros 415 e 406 usam o formato padrão, os limites de paginação, as regras do empréstimo, o código da categoria em maiúsculas e a validação e a exposição do CPF |
+| **Integração (Java)** | `biblioteca-api/src/test/java/.../BibliotecaApiTest.java` | 28 testes que sobem a API de verdade (porta aleatória, H2 em memória) e chamam os endpoints por HTTP: os arquivos do Swagger carregam, o 405 traz `Allow`, os erros 415 e 406 usam o formato padrão, os limites de paginação, as regras do empréstimo, o código da categoria em maiúsculas e a validação e a exposição do CPF |
 | **Coleção Postman** | `biblioteca-api/postman/` | 60 requisições com testes de status: CRUD das 6 entidades, consultas, rotas de navegação e erros 400, 404, 405 e 409 |
 
 Para rodar os testes em Java: `cd biblioteca-api && mvn test`.

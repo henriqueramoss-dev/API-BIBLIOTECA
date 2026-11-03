@@ -37,7 +37,7 @@ import java.util.Map;
             API REST desenvolvida para o gerenciamento de uma biblioteca.
 
             A aplicação permite cadastrar, consultar, atualizar e excluir
-            usuários, perfis, autores, categorias, livros e empréstimos.
+            usuários, carteirinhas, autores, categorias, livros e empréstimos.
 
             As rotas de listagem utilizam paginação, os dados de entrada são
             validados com Bean Validation e as respostas utilizam códigos HTTP
