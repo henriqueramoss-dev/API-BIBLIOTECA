@@ -597,6 +597,8 @@ npm run dev
 
 O site abre em `http://localhost:5173`. Para usar outro endereço da API, copie `.env.example` para `.env` e altere `VITE_API_URL`.
 
+As capas dos livros vêm do [Open Library](https://openlibrary.org), buscadas pelo ISBN; quando não existe capa, o site mostra uma capa ilustrada. Para desligar as capas reais (nenhuma consulta externa), use `VITE_CAPAS_REAIS=false` no `.env`.
+
 A classe `config/CorsConfig.java` libera o acesso à API a partir de `localhost` e da rede local (`192.168.*`), necessário para o navegador aceitar as requisições do front-end.
 
 O aplicativo mobile (React Native / Expo) está no repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE).

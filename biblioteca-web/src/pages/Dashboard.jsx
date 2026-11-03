@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { list } from '../api/client';
 import { RESOURCE_ORDER, RESOURCES, STATUS_OPTIONS } from '../api/resources';
 import { Icon } from '../components/Icon';
+import { Estante } from '../components/ilustracoes';
 
 // Página inicial: contadores, atalhos e os empréstimos mais recentes.
 // Arquivo em JavaScript (.jsx): usa só o básico do React (useState e useEffect).
@@ -35,15 +36,19 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Início</h1>
+      <section className="hero">
+        <div className="hero-text">
+          <p className="hero-eyebrow">BEM-VINDO À BIBLIOTECA</p>
+          <h1>Seus livros e empréstimos em um só lugar</h1>
           <p className="muted">Visão geral do acervo e dos empréstimos.</p>
+          <Link className="btn primary" to="/emprestimos/novo">
+            <Icon name="plus" /> Novo empréstimo
+          </Link>
         </div>
-        <Link className="btn primary" to="/emprestimos/novo">
-          <Icon name="plus" /> Novo empréstimo
-        </Link>
-      </div>
+        <div className="hero-art">
+          <Estante width={300} />
+        </div>
+      </section>
 
       {error && <div className="alert">{error}</div>}
 

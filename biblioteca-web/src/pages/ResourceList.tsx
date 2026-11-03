@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { ApiError, list, Page, remove } from '../api/client';
-import { isResourceKey, RESOURCES } from '../api/resources';
+import { isResourceKey, Livro, RESOURCES } from '../api/resources';
 import { Icon } from '../components/Icon';
+import CapaDoLivro from '../components/CapaDoLivro';
+import { PilhaDeLivros } from '../components/ilustracoes';
 
 const PAGE_SIZE = 10;
 
@@ -109,7 +111,11 @@ export default function ResourceList() {
         {loading && !data ? (
           <p className="empty">Carregando…</p>
         ) : data && data.items.length === 0 ? (
-          <p className="empty">{term ? 'Nenhum resultado para a busca.' : resource.emptyLabel}</p>
+          <div className="empty-state">
+            <PilhaDeLivros width={170} />
+            <p>{term ? 'Nenhum resultado para a busca.' : resource.emptyLabel}</p>
+            {!term && <Link className="btn primary" to={`/${resource.key}/novo`}><Icon name="plus" /> {resource.newLabel}</Link>}
+          </div>
         ) : (
           <table>
             <thead>
@@ -128,8 +134,13 @@ export default function ResourceList() {
                   <tr key={item.id}>
                     <td className="muted">{item.id}</td>
                     <td>
-                      <Link to={`/${resource.key}/${item.id}`} className="row-title">{resource.title(item)}</Link>
-                      <div className="muted small">{resource.subtitle(item)}</div>
+                      <div className="title-cell">
+                        {resource.key === 'livros' && <CapaDoLivro livro={item as Livro} width={34} />}
+                        <div>
+                          <Link to={`/${resource.key}/${item.id}`} className="row-title">{resource.title(item)}</Link>
+                          <div className="muted small">{resource.subtitle(item)}</div>
+                        </div>
+                      </div>
                     </td>
                     {resource.details(item).map((d) => <td key={d.label} data-label={d.label}>{d.value}</td>)}
                     {badge && <td><span className={`badge ${badge.tone}`}>{badge.text}</span></td>}

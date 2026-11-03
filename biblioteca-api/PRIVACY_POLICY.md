@@ -92,15 +92,18 @@ Os dados **não são usados** para publicidade, perfilamento, venda, decisões a
 
 ## 5. Com quem os dados são compartilhados
 
-**Com ninguém.** Os dados vão do site ou do app direto para a API e ficam nela. Eles não são enviados a servidores do projeto, nem a terceiros, nem vendidos.
+**Com ninguém.** Os dados cadastrados vão do site ou do app direto para a API e ficam nela. Eles não são enviados a servidores do projeto, nem a terceiros, nem vendidos.
 
-Há **um único contato com terceiro**, e ele **não envolve dados cadastrados**:
+Há **dois contatos com terceiros**, e **nenhum deles envolve dados cadastrados** (nomes, CPF, e-mails, empréstimos):
 
 | Quem | Quando | O que o terceiro recebe |
 |---|---|---|
 | Google Fonts (`fonts.googleapis.com`) | Ao abrir a documentação da API (`/swagger-ui.html`), que carrega fontes de lá | O endereço IP e o navegador de quem abriu a página, como em qualquer carregamento de fonte externa |
+| Open Library (`covers.openlibrary.org`) | Ao mostrar a **capa de um livro**, no site e no app | O **ISBN** do livro, o endereço IP e o navegador ou aparelho de quem está vendo a lista. Se o livro não tiver capa lá, o app mostra uma capa ilustrada |
 
-O site e o app não fazem esse carregamento.
+As capas reais podem ser **desligadas**: no app, em **Configurações → Capas dos livros**; no site, com `VITE_CAPAS_REAIS=false` no arquivo `.env`. Desligadas, nenhuma consulta ao Open Library é feita e só as capas ilustradas aparecem.
+
+O site e o app não carregam fontes externas.
 
 Se quem executa o sistema decidir publicá-lo na internet (hospedar a API e o banco em um serviço de nuvem), esse serviço passará a hospedar os dados, e este documento precisará ser revisto.
 

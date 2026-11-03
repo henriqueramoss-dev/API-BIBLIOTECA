@@ -34,6 +34,7 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 | **CPF visível para qualquer um** | As rotas de `/usuarios` devolvem o CPF completo de todos os usuários, e a API não exige login | Autenticação e, se possível, não devolver o CPF (ou devolver mascarado) |
 | **CPF de teste pode ser de gente real** | A API só aceita CPFs com dígitos verificadores corretos, e um CPF assim pode pertencer a uma pessoa de verdade | Usar sempre CPFs de teste (ex.: `12345678909`) |
 | **Status do empréstimo manual** | Um empréstimo vencido não vira `ATRASADO` sozinho | Tarefa agendada que atualiza o status |
+| **Capas pelo Open Library** | Ao mostrar a capa de um livro, o navegador ou o app pede a imagem a `covers.openlibrary.org`, que recebe o ISBN e o IP de quem vê a lista | Desligar as capas reais (app: Configurações; site: `VITE_CAPAS_REAIS=false`) ou guardar as imagens na própria API |
 | **Fonte externa no Swagger** | Ao abrir `/swagger-ui.html`, o navegador pede fontes ao Google Fonts (o IP de quem abre vai ao Google) | Hospedar as fontes dentro do projeto |
 
 ## Console do H2

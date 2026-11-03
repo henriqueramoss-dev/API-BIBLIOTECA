@@ -15,6 +15,9 @@ O site (`biblioteca-web`) mistura os dois de propósito, para ficar mais fácil 
 | `src/components/Icon.jsx` | A "tag" `<Icon name="livros" />` que desenha os ícones |
 | `src/pages/Dashboard.jsx` | Página inicial (contadores e empréstimos recentes) |
 | `src/App.jsx` | Menu lateral, barra de topo e rotas |
+| `src/components/ilustracoes/` | Desenhos em SVG (estante, livro aberto, pilha de livros, faixa de lombadas e capa ilustrada), os mesmos do app |
+| `src/components/CapaDoLivro.jsx` | Capa real do livro (pelo ISBN, no Open Library) ou, se não houver, a capa ilustrada |
+| `src/utils/capas.js` | Monta o endereço da capa a partir do ISBN |
 
 ## Arquivos em TypeScript
 

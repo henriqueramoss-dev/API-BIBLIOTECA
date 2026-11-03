@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { RESOURCE_ORDER, RESOURCES } from './api/resources';
 import { Icon } from './components/Icon';
+import { Estante, FaixaDeLombadas } from './components/ilustracoes';
 import Dashboard from './pages/Dashboard';
 import ResourceForm from './pages/ResourceForm';
 import ResourceList from './pages/ResourceList';
@@ -18,6 +19,7 @@ export default function App() {
         <div className="brand">
           <Icon name="book" /> Biblioteca
         </div>
+        <p className="brand-sub">Acervo e empréstimos</p>
         <nav>
           <NavLink to="/" end>
             <Icon name="home" /> Início
@@ -28,6 +30,9 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
+        <div className="sidebar-art">
+          <Estante width={212} />
+        </div>
       </aside>
 
       <div className="main">
@@ -37,6 +42,9 @@ export default function App() {
           </button>
           <span className="topbar-title">Biblioteca</span>
         </header>
+        <div className="shelf-banner">
+          <FaixaDeLombadas height={44} />
+        </div>
         <main className="content" key={location.pathname}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
