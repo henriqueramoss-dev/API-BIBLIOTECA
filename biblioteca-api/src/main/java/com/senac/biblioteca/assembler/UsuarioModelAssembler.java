@@ -2,7 +2,7 @@ package com.senac.biblioteca.assembler;
 
 import com.senac.biblioteca.controller.UsuarioController;
 import com.senac.biblioteca.entity.Usuario;
-import com.senac.biblioteca.controller.PerfilController;
+import com.senac.biblioteca.controller.CarteirinhaController;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,8 @@ public class UsuarioModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
-     * perfil -> navega para o perfil do usuário, quando ele existir
+     * emprestimos -> navega para os empréstimos deste usuário
+     * carteirinha -> navega para a carteirinha do usuário, quando ela existir
      * usuarios -> retorna para a listagem paginada do recurso
      */
     @Override
@@ -35,11 +36,12 @@ public class UsuarioModelAssembler
             linkTo(UsuarioController.class).slash(item.getId()).withSelfRel(),
             linkTo(UsuarioController.class).slash(item.getId()).withRel("update"),
             linkTo(UsuarioController.class).slash(item.getId()).withRel("delete"),
+            linkTo(UsuarioController.class).slash(item.getId()).slash("emprestimos").withRel("emprestimos"),
             linkTo(UsuarioController.class).withRel("usuarios")
         );
 
-        if (item.getPerfil() != null) {
-            model.add(linkTo(PerfilController.class).slash(item.getPerfil().getId()).withRel("perfil"));
+        if (item.getCarteirinha() != null) {
+            model.add(linkTo(CarteirinhaController.class).slash(item.getCarteirinha().getId()).withRel("carteirinha"));
         }
 
         return model;

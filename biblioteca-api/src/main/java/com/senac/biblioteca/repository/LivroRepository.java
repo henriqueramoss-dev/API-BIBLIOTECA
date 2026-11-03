@@ -38,4 +38,16 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
      */
     @EntityGraph(attributePaths = {"categoria", "autores"})
     Page<Livro> findByTituloContainingIgnoreCase(String titulo, Pageable pageable);
+
+    /**
+     * Livros de uma categoria (navegação /categorias/{id}/livros).
+     */
+    @EntityGraph(attributePaths = {"categoria", "autores"})
+    Page<Livro> findByCategoriaId(Long categoriaId, Pageable pageable);
+
+    /**
+     * Livros de um autor (navegação /autores/{id}/livros).
+     */
+    @EntityGraph(attributePaths = {"categoria", "autores"})
+    Page<Livro> findByAutoresId(Long autorId, Pageable pageable);
 }

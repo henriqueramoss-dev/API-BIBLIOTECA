@@ -134,6 +134,18 @@ function FieldInput({ field, value, error, onChange }: {
       );
       break;
     }
+    case 'digits':
+      input = (
+        <input id={id} type="text" inputMode="numeric" value={str} placeholder={field.placeholder}
+          onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, field.length))} />
+      );
+      break;
+    case 'uf':
+      input = (
+        <input id={id} type="text" value={str} maxLength={2} placeholder={field.placeholder}
+          onChange={(e) => onChange(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} />
+      );
+      break;
     default:
       input = (
         <input id={id} type={field.type === 'number' ? 'text' : field.type} inputMode={field.type === 'number' ? 'numeric' : undefined}

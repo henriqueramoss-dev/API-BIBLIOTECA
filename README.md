@@ -13,7 +13,7 @@ O projeto contempla **somente os Requisitos Técnicos - Parte 1** da atividade.
 ## 2. Tecnologias utilizadas
 
 - Java 21
-- Spring Boot
+- Spring Boot 4.1.2 (versão estável mais recente)
 - Maven
 - Spring Web MVC
 - Spring Data JPA
@@ -49,7 +49,7 @@ Responsabilidade de cada pacote:
 - `repository`: realiza o acesso aos dados com Spring Data JPA;
 - `service`: concentra as regras de negócio e valida os relacionamentos;
 - `controller`: recebe as requisições HTTP e disponibiliza os endpoints REST;
-- `dto`: dados de entrada que referenciam outros registros por ID (livro, perfil e empréstimo);
+- `dto`: dados de entrada que referenciam outros registros por ID (livro, carteirinha e empréstimo);
 - `assembler`: monta as respostas HATEOAS (`EntityModel`) com os links de cada recurso;
 - `enums`: armazena valores fixos utilizados pelas entidades;
 - `exception`: tratamento de erros da API;
@@ -59,7 +59,7 @@ Responsabilidade de cada pacote:
 
 ## 4. Entidades do sistema
 
-A API será composta pelas seguintes entidades:
+A API será composta pelas seguintes entidades. Cada uma possui pelo menos 5 dados cadastrais próprios (além do `id` e dos relacionamentos). Campos marcados com * são obrigatórios.
 
 ### Usuario
 
@@ -68,19 +68,34 @@ Representa o usuário cadastrado na biblioteca.
 Principais dados:
 
 - id
-- nome
-- email
+- nome *
+- email * (único)
+- cpf * (11 dígitos, único)
+- matricula
+- tipo * (`ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE`)
+- telefone *
+- endereco *
+- cidade *
+- estado * (sigla com 2 letras, ex.: SP)
+- cep * (8 dígitos)
+- data de nascimento *
+- senha (opcional, só na entrada; nunca é devolvida)
 
-### Perfil
+(Os dados de contato e de nascimento ficavam em uma entidade Perfil; hoje fazem parte do usuário.)
 
-Armazena informações complementares do usuário.
+### Carteirinha
+
+Carteirinha da biblioteca de um usuário (cada usuário tem no máximo uma).
 
 Principais dados:
 
 - id
-- telefone
-- endereco
-- data de nascimento
+- numero * (único, gravado em maiúsculas)
+- data de emissão *
+- data de validade * (não pode ser anterior à emissão)
+- status * (`ATIVA`, `SUSPENSA` ou `CANCELADA`)
+- limite de empréstimos * (de 1 a 10, informativo)
+- usuario * (relacionamento)
 
 ### Autor
 
@@ -89,11 +104,24 @@ Representa o autor de um ou mais livros.
 Principais dados:
 
 - id
-- nome
+- nome *
+- nacionalidade *
+- data de nascimento
+- gênero literário
+- biografia
 
 ### Categoria
 
 Representa a categoria de um livro.
+
+Principais dados:
+
+- id
+- nome *
+- codigo * (único, ex.: ROM)
+- descricao
+- localizacao (ex.: Estante A)
+- publico alvo
 
 Exemplos:
 
@@ -109,11 +137,13 @@ Representa um livro cadastrado na biblioteca.
 Principais dados:
 
 - id
-- titulo
-- isbn
-- ano de publicação
-- categoria
-- autores
+- titulo *
+- isbn * (único)
+- ano de publicação *
+- editora *
+- número de páginas *
+- categoria * (relacionamento)
+- autores (relacionamento)
 
 ### Emprestimo
 
@@ -122,11 +152,13 @@ Representa o empréstimo de um livro para um usuário.
 Principais dados:
 
 - id
-- usuario
-- livro
-- data do empréstimo
-- data prevista para devolução
-- status
+- data do empréstimo *
+- data prevista para devolução *
+- data de devolução
+- status *
+- observacao
+- usuario * (relacionamento)
+- livro * (relacionamento)
 
 ---
 
@@ -137,10 +169,10 @@ O projeto utiliza os três tipos de relacionamento exigidos na atividade.
 ### One-to-One
 
 ```text
-Usuario 1 -------- 1 Perfil
+Usuario 1 -------- 1 Carteirinha
 ```
 
-Cada usuário possui um único perfil e cada perfil pertence a um único usuário.
+Cada usuário possui uma única carteirinha e cada carteirinha pertence a um único usuário.
 
 ### One-to-Many
 
@@ -255,6 +287,20 @@ Exemplo:
 GET /usuarios/buscar?nome=Henrique
 ```
 
+Endpoints por entidade:
+
+| Entidade | Endpoints | Consultas personalizadas |
+|---|---:|---|
+| Livros | 7 | `GET /livros/buscar?titulo=`, `GET /livros/{id}/emprestimos` |
+| Autores | 7 | `GET /autores/buscar?nome=`, `GET /autores/{id}/livros` |
+| Categorias | 7 | `GET /categorias/buscar?nome=`, `GET /categorias/{id}/livros` |
+| Usuários | 8 | `GET /usuarios/buscar?nome=`, `GET /usuarios/{id}/emprestimos`, `PUT /usuarios/{id}/senha` |
+| Autenticação | 1 | `POST /auth/login` |
+| Carteirinhas | 6 | `GET /carteirinhas/buscar?numero=` |
+| Empréstimos | 6 | `GET /emprestimos/buscar?status=` |
+
+O `POST` retorna `201 Created` com o endereço do novo registro no cabeçalho `Location`.
+
 ---
 
 ## 9. Paginação
@@ -273,6 +319,18 @@ Também poderá ser utilizado ordenamento:
 GET /livros?page=0&size=10&sort=titulo,asc
 ```
 
+Limites da paginação (configurados em `config/PaginacaoConfig.java`):
+
+| Situação | Resposta |
+|---|---|
+| Sem `page`/`size` | Página 0 com 10 registros |
+| `size` entre 1 e 100 | Normal |
+| `size` acima de 100, menor que 1 ou que não é número | `400` — "O tamanho da página (size) deve ser entre 1 e 100. Valor informado: 100000." |
+| `page` negativa ou que não é número | `400` — "A página (page) deve ser um número a partir de 0." |
+| `page` depois da última página | `404` — "A página 100000 não existe. Esta listagem tem 1 página (de 0 a 0)." |
+
+Uma listagem sem nenhum registro continua respondendo `200` na página 0.
+
 ---
 
 ## 10. Códigos HTTP
@@ -285,9 +343,21 @@ A API utilizará códigos HTTP adequados para cada operação.
 | Recurso criado | 201 Created |
 | Exclusão realizada | 204 No Content |
 | Dados inválidos, ID relacionado inexistente, parâmetro ausente ou ordenação inválida | 400 Bad Request |
-| Recurso não encontrado | 404 Not Found |
-| Valor duplicado (e-mail, ISBN, perfil) ou registro em uso ao excluir | 409 Conflict |
+| Registro ou endereço não encontrado | 404 Not Found |
+| Valor duplicado (e-mail, ISBN, número de carteirinha, segunda carteirinha do mesmo usuário) ou registro em uso ao excluir | 409 Conflict |
 | Erro interno | 500 Internal Server Error |
+
+Todos os erros voltam com uma mensagem explicando o problema, no mesmo formato.
+Exemplo de `GET /livros/999` quando o livro não existe:
+
+```json
+{
+  "timestamp": "2026-10-27T16:53:52.564",
+  "status": 404,
+  "erro": "Não encontrado",
+  "mensagem": "Livro com ID 999 não encontrado."
+}
+```
 
 ---
 
@@ -316,6 +386,13 @@ Além disso, a documentação será feita diretamente nos controllers usando:
 ```
 
 Os campos das entidades utilizam `@Schema` para fornecer descrições e exemplos.
+
+A interface do Swagger tem um tema próprio, com a mesma identidade visual do site
+(azul-marinho, fundo creme e os mesmos ícones): a apresentação da API imita uma ficha
+catalográfica, cada grupo de endpoints tem o ícone da entidade e cada endpoint lembra
+a lombada de um livro, com a cor do método HTTP. Os arquivos ficam em
+`resources/static/swagger/` (`index.css`, `index.html` e `favicon.svg`) e são ligados ao
+Swagger pela classe `config/SwaggerUiConfig.java`.
 
 Exemplo:
 
@@ -385,10 +462,15 @@ traz links para os recursos relacionados, permitindo navegar pela API:
 
 | Recurso | Links relacionados |
 |---|---|
-| Livro | `categoria`, `autores` |
+| Livro | `categoria`, `autores`, `emprestimos` (histórico do livro) |
 | Empréstimo | `usuario`, `livro` |
-| Perfil | `usuario` |
-| Usuário | `perfil` (quando existir) |
+| Carteirinha | `usuario` |
+| Usuário | `carteirinha` (quando existir), `emprestimos` |
+| Autor | `livros` |
+| Categoria | `livros` |
+
+Assim é possível navegar nos dois sentidos: do livro para a categoria e da categoria
+para os seus livros, do empréstimo para o usuário e do usuário para os seus empréstimos.
 
 Exemplo de um empréstimo:
 
@@ -424,17 +506,9 @@ spring.datasource.password=
 
 Console do H2:
 
-```text
-http://localhost:8080/h2-console
-```
-
-Dados de acesso:
-
-```text
-JDBC URL: jdbc:h2:mem:biblioteca
-User Name: sa
-Password: vazio
-```
+> **O console web do H2 não está disponível neste projeto.** A partir do Spring Boot 4 ele saiu do pacote padrão e fica no módulo separado `spring-boot-h2console`, que não está no `pom.xml` (por isso `http://localhost:8080/h2-console` responde 404, apesar das linhas `spring.h2.console.*` do `application.properties`). Para consultar os dados, use a própria API (Swagger ou Postman).
+>
+> Para habilitá-lo apenas em testes locais, adicione ao `pom.xml` a dependência `org.springframework.boot:spring-boot-h2console` e reinicie a API. Dados de acesso: JDBC URL `jdbc:h2:mem:biblioteca`, usuário `sa`, senha vazia. Não deixe o console habilitado fora do seu computador: ele dá acesso direto ao banco.
 
 ---
 
@@ -475,24 +549,24 @@ http://localhost:8080
 
 | Requisito | Implementação no projeto |
 |---|---|
-| Spring Boot | Sim |
+| Spring Boot (versão mais recente) | 4.1.2 |
 | Java 17 ou superior | Java 21 |
 | Maven ou Gradle | Maven |
 | H2 | Sim |
 | Spring Data JPA | Sim |
 | Mínimo de 5 entidades | 6 entidades |
-| One-to-One | Usuario x Perfil |
-| One-to-Many | Categoria x Livro / Usuario x Emprestimo |
+| One-to-One | Usuario x Carteirinha |
+| One-to-Many | Categoria x Livro / Usuario x Emprestimo / Livro x Emprestimo |
 | Many-to-Many | Livro x Autor |
 | Bean Validation | Sim |
-| Enum | StatusEmprestimo |
+| Enum | StatusEmprestimo (Emprestimo) e TipoUsuario (Usuario) |
 | CRUD completo | Sim, para todas as entidades |
-| 5 endpoints por entidade | Sim |
-| Pageable | Sim |
-| Consulta personalizada | Uma por entidade |
-| Status HTTP | Sim |
-| Swagger/OpenAPI | Sim |
-| HATEOAS | Sim |
+| 5 endpoints por entidade | 6 ou 7 por entidade (40 no total) |
+| Pageable | Sim, em todas as listagens e consultas |
+| Consulta personalizada | Pelo menos uma por entidade |
+| Status HTTP | 200, 201 (com `Location`), 204, 400, 404, 405 (com `Allow`), 406, 409, 415 e 500, todos com mensagem |
+| Swagger/OpenAPI | Todos os endpoints com descrição, exemplos e códigos de resposta (inclusive o formato dos erros) |
+| HATEOAS | `EntityModel` e `PagedModel`, links `self`, `update`, `delete` e de navegação entre recursos |
 
 ---
 
@@ -502,7 +576,7 @@ Este projeto está limitado aos requisitos da **Parte 1** da atividade.
 
 Não fazem parte desta etapa:
 
-- autenticação por API Key;
+- autenticação por token (JWT ou API Key); existe apenas login por e-mail e senha, sem token;
 - idempotência;
 - rate limiting;
 - versionamento da API;
@@ -518,7 +592,7 @@ A pasta `biblioteca-web` contém as telas web da biblioteca, feitas com **React 
 Telas disponíveis:
 
 - **Início**: totais de cada cadastro, empréstimos por status e empréstimos recentes;
-- **Listagem** de empréstimos, livros, autores, categorias, usuários e perfis, com busca (endpoints `/buscar`), paginação e exclusão;
+- **Listagem** de empréstimos, livros, autores, categorias, usuários e carteirinhas, com busca (endpoints `/buscar`), paginação e exclusão;
 - **Formulário** de cadastro e edição de cada entidade, com validação dos campos e exibição dos erros devolvidos pela API.
 
 Como executar (com a API já rodando em `http://localhost:8080`):
@@ -531,15 +605,30 @@ npm run dev
 
 O site abre em `http://localhost:5173`. Para usar outro endereço da API, copie `.env.example` para `.env` e altere `VITE_API_URL`.
 
+As capas dos livros vêm do [Open Library](https://openlibrary.org), buscadas pelo ISBN; quando não existe capa, o site mostra uma capa ilustrada. Para desligar as capas reais (nenhuma consulta externa), use `VITE_CAPAS_REAIS=false` no `.env`.
+
 A classe `config/CorsConfig.java` libera o acesso à API a partir de `localhost` e da rede local (`192.168.*`), necessário para o navegador aceitar as requisições do front-end.
 
 O aplicativo mobile (React Native / Expo) está no repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE).
 
 ---
 
+## Documentação, termos e privacidade
+
+| Documento | Conteúdo |
+|---|---|
+| [Documentação do projeto](docs/README.md) | Índice com os guias abaixo |
+| [Guia de instalação](docs/guia-de-instalacao.md) | Como rodar a API, o site e o app |
+| [Guia da API](docs/guia-da-api.md) | Endpoints, paginação, erros e exemplos |
+| [Modelo de dados](docs/modelo-de-dados.md) | Entidades, campos e regras |
+| [Arquitetura](docs/arquitetura.md) | Como o código está organizado |
+| [Segurança e limitações](docs/seguranca-e-limitacoes.md) | O que falta para uso real |
+| [Termos de Serviço](biblioteca-api/TERMS_OF_SERVICE.md) | Regras de uso do sistema |
+| [Política de Privacidade](biblioteca-api/PRIVACY_POLICY.md) | Quais dados são tratados e os direitos do titular (LGPD) |
+
 ## Termos de uso
 
-Esta API foi desenvolvida para fins acadêmicos no curso de Sistemas para Internet.
+Esta API foi desenvolvida para fins acadêmicos no curso de Sistemas para Internet. A versão completa está nos [Termos de Serviço](biblioteca-api/TERMS_OF_SERVICE.md).
 
 Condições de uso:
 

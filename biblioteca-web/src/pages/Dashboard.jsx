@@ -1,49 +1,54 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { list } from '../api/client';
-import { Emprestimo, RESOURCE_ORDER, RESOURCES, STATUS_OPTIONS, StatusEmprestimo } from '../api/resources';
+import { RESOURCE_ORDER, RESOURCES, STATUS_OPTIONS } from '../api/resources';
 import { Icon } from '../components/Icon';
+import { Estante } from '../components/ilustracoes';
 
-type Counts = Partial<Record<string, number>>;
-
+// Página inicial: contadores, atalhos e os empréstimos mais recentes.
+// Arquivo em JavaScript (.jsx): usa só o básico do React (useState e useEffect).
 export default function Dashboard() {
-  const [counts, setCounts] = useState<Counts>({});
-  const [status, setStatus] = useState<Partial<Record<StatusEmprestimo, number>>>({});
-  const [recentes, setRecentes] = useState<Emprestimo[]>([]);
-  const [error, setError] = useState<string>();
+  const [counts, setCounts] = useState({});
+  const [status, setStatus] = useState({});
+  const [recentes, setRecentes] = useState([]);
+  const [error, setError] = useState();
 
   useEffect(() => {
     const emp = RESOURCES.emprestimos;
     Promise.all([
       ...RESOURCE_ORDER.map((k) =>
-        list(k, RESOURCES[k].embeddedKey, { size: 1 }).then((p) => [k, p.totalElements] as const),
+        list(k, RESOURCES[k].embeddedKey, { size: 1 }).then((p) => [k, p.totalElements]),
       ),
     ])
       .then((entries) => setCounts(Object.fromEntries(entries)))
-      .catch((e: Error) => setError(e.message));
+      .catch((e) => setError(e.message));
 
     Promise.all(
       STATUS_OPTIONS.map((o) =>
-        list(emp.key, emp.embeddedKey, { size: 1, search: { status: o.value } }).then((p) => [o.value, p.totalElements] as const),
+        list(emp.key, emp.embeddedKey, { size: 1, search: { status: o.value } }).then((p) => [o.value, p.totalElements]),
       ),
     ).then((entries) => setStatus(Object.fromEntries(entries))).catch(() => {});
 
-    list<Emprestimo>(emp.key, emp.embeddedKey, { size: 5, sort: 'id,desc' })
+    list(emp.key, emp.embeddedKey, { size: 5, sort: 'id,desc' })
       .then((p) => setRecentes(p.items))
       .catch(() => {});
   }, []);
 
   return (
     <>
-      <div className="page-header">
-        <div>
-          <h1>Início</h1>
+      <section className="hero">
+        <div className="hero-text">
+          <p className="hero-eyebrow">BEM-VINDO À BIBLIOTECA</p>
+          <h1>Seus livros e empréstimos em um só lugar</h1>
           <p className="muted">Visão geral do acervo e dos empréstimos.</p>
+          <Link className="btn primary" to="/emprestimos/novo">
+            <Icon name="plus" /> Novo empréstimo
+          </Link>
         </div>
-        <Link className="btn primary" to="/emprestimos/novo">
-          <Icon name="plus" /> Novo empréstimo
-        </Link>
-      </div>
+        <div className="hero-art">
+          <Estante width={300} />
+        </div>
+      </section>
 
       {error && <div className="alert">{error}</div>}
 
@@ -51,7 +56,7 @@ export default function Dashboard() {
         {STATUS_OPTIONS.map((o) => (
           <Link key={o.value} to={`/emprestimos?status=${o.value}`} className={`stat tone-${o.value.toLowerCase()}`}>
             <span className="stat-label">Empréstimos {o.label.toLowerCase()}s</span>
-            <span className="stat-value">{status[o.value as StatusEmprestimo] ?? '–'}</span>
+            <span className="stat-value">{status[o.value] ?? '–'}</span>
           </Link>
         ))}
       </section>
@@ -78,7 +83,7 @@ export default function Dashboard() {
         ) : (
           <ul className="recent">
             {recentes.map((e) => {
-              const badge = RESOURCES.emprestimos.badge!(e)!;
+              const badge = RESOURCES.emprestimos.badge(e);
               return (
                 <li key={e.id}>
                   <Link to={`/emprestimos/${e.id}`}>

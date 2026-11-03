@@ -36,4 +36,16 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
      */
     @EntityGraph(attributePaths = {"usuario", "livro", "livro.categoria", "livro.autores"})
     Page<Emprestimo> findByStatus(StatusEmprestimo status, Pageable pageable);
+
+    /**
+     * Empréstimos de um usuário (navegação /usuarios/{id}/emprestimos).
+     */
+    @EntityGraph(attributePaths = {"usuario", "livro", "livro.categoria", "livro.autores"})
+    Page<Emprestimo> findByUsuarioId(Long usuarioId, Pageable pageable);
+
+    /**
+     * Histórico de empréstimos de um livro (navegação /livros/{id}/emprestimos).
+     */
+    @EntityGraph(attributePaths = {"usuario", "livro", "livro.categoria", "livro.autores"})
+    Page<Emprestimo> findByLivroId(Long livroId, Pageable pageable);
 }

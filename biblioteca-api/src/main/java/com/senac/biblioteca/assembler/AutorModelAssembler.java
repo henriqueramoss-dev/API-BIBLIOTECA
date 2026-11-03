@@ -24,6 +24,7 @@ public class AutorModelAssembler
      * self   -> consulta o próprio recurso
      * update -> indica a rota utilizada para atualização
      * delete -> indica a rota utilizada para exclusão
+     * livros -> navega para os livros deste autor
      * autores -> retorna para a listagem paginada do recurso
      */
     @Override
@@ -33,6 +34,7 @@ public class AutorModelAssembler
             linkTo(AutorController.class).slash(item.getId()).withSelfRel(),
             linkTo(AutorController.class).slash(item.getId()).withRel("update"),
             linkTo(AutorController.class).slash(item.getId()).withRel("delete"),
+            linkTo(AutorController.class).slash(item.getId()).slash("livros").withRel("livros"),
             linkTo(AutorController.class).withRel("autores")
         );
     }

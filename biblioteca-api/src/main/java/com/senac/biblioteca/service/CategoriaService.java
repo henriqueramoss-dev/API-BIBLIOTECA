@@ -42,6 +42,10 @@ public class CategoriaService {
         return repository.findById(id)
             .map(categoria -> {
                 categoria.setNome(dados.getNome());
+                categoria.setCodigo(dados.getCodigo());
+                categoria.setDescricao(dados.getDescricao());
+                categoria.setLocalizacao(dados.getLocalizacao());
+                categoria.setPublicoAlvo(dados.getPublicoAlvo());
                 return repository.save(categoria);
             });
     }

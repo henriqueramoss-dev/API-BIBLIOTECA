@@ -46,6 +46,16 @@ public class Livro {
     @Schema(description = "Ano de publicação", example = "1899")
     private Integer anoPublicacao;
 
+    @NotBlank(message = "A editora é obrigatória")
+    @Size(max = 100, message = "A editora deve ter no máximo 100 caracteres")
+    @Schema(description = "Editora do livro", example = "Companhia das Letras")
+    private String editora;
+
+    @NotNull(message = "O número de páginas é obrigatório")
+    @Min(value = 1, message = "O número de páginas deve ser maior que zero")
+    @Schema(description = "Número de páginas", example = "256")
+    private Integer numeroPaginas;
+
     // Many-to-One: vários livros podem pertencer à mesma categoria.
     @NotNull(message = "A categoria é obrigatória")
     @ManyToOne
@@ -103,6 +113,22 @@ public class Livro {
 
     public void setAnoPublicacao(Integer anoPublicacao) {
         this.anoPublicacao = anoPublicacao;
+    }
+
+    public String getEditora() {
+        return editora;
+    }
+
+    public void setEditora(String editora) {
+        this.editora = editora;
+    }
+
+    public Integer getNumeroPaginas() {
+        return numeroPaginas;
+    }
+
+    public void setNumeroPaginas(Integer numeroPaginas) {
+        this.numeroPaginas = numeroPaginas;
     }
 
     public Categoria getCategoria() {

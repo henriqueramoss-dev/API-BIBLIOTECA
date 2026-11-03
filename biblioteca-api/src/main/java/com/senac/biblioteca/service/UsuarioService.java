@@ -4,6 +4,7 @@ import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,9 +17,11 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository repository;
+    private final PasswordEncoder encoder;
 
-    public UsuarioService(UsuarioRepository repository) {
+    public UsuarioService(UsuarioRepository repository, PasswordEncoder encoder) {
         this.repository = repository;
+        this.encoder = encoder;
     }
 
     // Lista os usuários respeitando a paginação recebida pelo Controller.
@@ -36,15 +39,31 @@ public class UsuarioService {
         // O ID de um novo recurso sempre deve ser gerado pelo banco.
         // Isso também evita erro caso o Swagger envie um ID de exemplo.
         usuario.setId(null);
+
+        // Se veio uma senha, só o hash dela é guardado; a senha em texto puro é descartada.
+        if (usuario.getSenha() != null) {
+            usuario.setSenhaHash(encoder.encode(usuario.getSenha()));
+            usuario.setSenha(null);
+        }
+
         return repository.save(usuario);
     }
 
-    // Atualiza somente se o usuário informado existir.
+    // Atualiza somente se o usuário informado existir. A senha não é alterada aqui (use PUT /usuarios/{id}/senha).
     public Optional<Usuario> atualizar(Long id, Usuario dados) {
         return repository.findById(id)
             .map(usuario -> {
                 usuario.setNome(dados.getNome());
                 usuario.setEmail(dados.getEmail());
+                usuario.setCpf(dados.getCpf());
+                usuario.setMatricula(dados.getMatricula());
+                usuario.setTipo(dados.getTipo());
+                usuario.setTelefone(dados.getTelefone());
+                usuario.setEndereco(dados.getEndereco());
+                usuario.setCidade(dados.getCidade());
+                usuario.setEstado(dados.getEstado());
+                usuario.setCep(dados.getCep());
+                usuario.setDataNascimento(dados.getDataNascimento());
                 return repository.save(usuario);
             });
     }
