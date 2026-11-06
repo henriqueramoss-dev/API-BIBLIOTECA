@@ -4,9 +4,12 @@ import com.senac.biblioteca.assembler.EmprestimoModelAssembler;
 import com.senac.biblioteca.assembler.UsuarioModelAssembler;
 import com.senac.biblioteca.config.Paginas;
 import com.senac.biblioteca.dto.TrocaSenhaRequest;
+import com.senac.biblioteca.entity.ChaveApi;
 import com.senac.biblioteca.entity.Emprestimo;
 import com.senac.biblioteca.entity.Usuario;
+import com.senac.biblioteca.enums.NivelAcesso;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
+import com.senac.biblioteca.seguranca.ChaveApiFilter;
 import com.senac.biblioteca.service.AutenticacaoService;
 import com.senac.biblioteca.service.EmprestimoService;
 import com.senac.biblioteca.service.UsuarioService;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -106,15 +110,18 @@ public class UsuarioController {
     @Operation(
         summary = "Cadastrar usuário",
         description = "Cria um novo usuário na biblioteca. E-mail e CPF não podem se repetir. "
-            + "O campo senha é opcional; quando enviado, só o hash dele é guardado e ele nunca é devolvido."
+            + "O campo senha é opcional; quando enviado, só o hash dele é guardado e ele nunca é devolvido. "
+            + "Sem chave de API (autocadastro), só aceita os tipos ALUNO e VISITANTE; os demais tipos "
+            + "exigem uma chave de nível ESCRITA."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
         @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+        @ApiResponse(responseCode = "403", description = "Tipo de usuário que exige chave de API de nível ESCRITA"),
         @ApiResponse(responseCode = "409", description = "Conflito de dados, como valor duplicado")
     })
-    public ResponseEntity<EntityModel<Usuario>> criar(@Valid @RequestBody Usuario item) {
-        Usuario criado = service.criar(item);
+    public ResponseEntity<EntityModel<Usuario>> criar(@Valid @RequestBody Usuario item, HttpServletRequest request) {
+        Usuario criado = service.criar(item, nivelDoChamador(request));
         EntityModel<Usuario> model = assembler.toModel(criado);
         // 201 Created com o endereço do novo recurso no cabeçalho Location.
         return ResponseEntity.created(model.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(model);
@@ -148,18 +155,20 @@ public class UsuarioController {
         summary = "Trocar senha",
         description = "Troca a senha do usuário. Quando ele já tem senha, a senha atual é obrigatória e precisa estar correta. "
             + "A nova senha deve ter de 8 a 72 caracteres e ser diferente da atual. "
-            + "Se o usuário ainda não tem senha, esta rota define a primeira."
+            + "Se o usuário ainda não tem senha, esta rota define a primeira, o que exige uma chave de API de nível ESCRITA."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Nova senha inválida ou senha atual incorreta"),
+        @ApiResponse(responseCode = "403", description = "Primeira senha sem chave de API de nível ESCRITA"),
         @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     })
     public ResponseEntity<Void> trocarSenha(
         @Parameter(description = "ID do usuário", example = "1") @PathVariable Long id,
-        @Valid @RequestBody TrocaSenhaRequest item
+        @Valid @RequestBody TrocaSenhaRequest item,
+        HttpServletRequest request
     ) {
-        autenticacaoService.trocarSenha(id, item);
+        autenticacaoService.trocarSenha(id, item, nivelDoChamador(request));
         return ResponseEntity.noContent().build();
     }
 
@@ -217,5 +226,10 @@ public class UsuarioController {
     ) {
         Page<Emprestimo> pagina = Paginas.conferir(emprestimoService.listarPorUsuario(id, pageable));
         return ResponseEntity.ok(emprestimoPagedAssembler.toModel(pagina, emprestimoAssembler));
+    }
+
+    // Nível da chave de API usada na requisição (null quando não veio chave).
+    private NivelAcesso nivelDoChamador(HttpServletRequest request) {
+        return ChaveApiFilter.chaveDa(request).map(ChaveApi::getNivel).orElse(null);
     }
 }

@@ -3,6 +3,8 @@ package com.senac.biblioteca.service;
 import com.senac.biblioteca.dto.LoginRequest;
 import com.senac.biblioteca.dto.TrocaSenhaRequest;
 import com.senac.biblioteca.entity.Usuario;
+import com.senac.biblioteca.enums.NivelAcesso;
+import com.senac.biblioteca.exception.AcessoNegadoException;
 import com.senac.biblioteca.exception.CredenciaisInvalidasException;
 import com.senac.biblioteca.exception.RecursoNaoEncontradoException;
 import com.senac.biblioteca.exception.ValidacaoNegocioException;
@@ -13,8 +15,8 @@ import org.springframework.stereotype.Service;
 /**
  * Regras de login e de troca de senha.
  *
- * Importante: a API ainda não emite token nem sessão. O login só confere e-mail e senha e devolve o
- * usuário; as demais rotas continuam abertas (veja docs/seguranca-e-limitacoes.md).
+ * O login só confere e-mail e senha e devolve o usuário; ele não abre sessão. Para acessar as rotas
+ * protegidas, gere uma chave de API (POST /chaves-api) e envie no cabeçalho X-API-Key.
  */
 @Service
 public class AutenticacaoService {
@@ -46,10 +48,21 @@ public class AutenticacaoService {
         return usuario;
     }
 
-    // Troca (ou define pela primeira vez) a senha de um usuário.
-    public void trocarSenha(Long id, TrocaSenhaRequest dados) {
+    /**
+     * Troca (ou define pela primeira vez) a senha de um usuário.
+     *
+     * Trocar exige a senha atual. Definir a primeira senha não tem senha atual para conferir,
+     * então exige uma chave de API de nível ESCRITA (nivelDoChamador; null quando não veio chave).
+     */
+    public void trocarSenha(Long id, TrocaSenhaRequest dados, NivelAcesso nivelDoChamador) {
         Usuario usuario = repository.findById(id)
             .orElseThrow(() -> RecursoNaoEncontradoException.usuario(id));
+
+        if (usuario.getSenhaHash() == null
+            && (nivelDoChamador == null || !nivelDoChamador.permite(NivelAcesso.ESCRITA))) {
+            throw new AcessoNegadoException(
+                "Este usuário ainda não tem senha. Definir a primeira senha exige uma chave de API de nível ESCRITA.");
+        }
 
         if (usuario.getSenhaHash() != null) {
             if (dados.getSenhaAtual() == null || dados.getSenhaAtual().isBlank()) {

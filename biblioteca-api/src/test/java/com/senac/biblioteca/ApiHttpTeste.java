@@ -18,6 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 abstract class ApiHttpTeste {
 
+    /** Chave ADMIN fixa usada nos testes (a API a cadastra ao iniciar, ver ChaveAdminInicial). */
+    static final String CHAVE_ADMIN = "bib_chave_admin_dos_testes_123";
+
+    /** Propriedade que faz a API cadastrar a CHAVE_ADMIN. */
+    static final String PROPRIEDADE_CHAVE_ADMIN = "biblioteca.chave-api.admin-inicial=" + CHAVE_ADMIN;
+
+    /** Dados pessoais obrigatórios no cadastro de usuário. */
+    static final String PESSOAIS = "\"telefone\":\"11999990000\",\"endereco\":\"Rua A, 10\",\"cidade\":\"São Paulo\","
+        + "\"estado\":\"SP\",\"cep\":\"01001000\",\"dataNascimento\":\"2000-01-01\"";
+
     @Value("${local.server.port}")
     private int porta;
 
@@ -59,5 +69,32 @@ abstract class ApiHttpTeste {
 
     String unico() {
         return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    /** Requisição com a chave ADMIN dos testes. */
+    Resposta comAdmin(String metodo, String caminho, String corpo) throws Exception {
+        return chamar(metodo, caminho, corpo, "X-API-Key", CHAVE_ADMIN);
+    }
+
+    /** JSON de um usuário novo, com e-mail e CPF únicos. */
+    String usuarioJson(String email, String tipo, String senha) {
+        return "{\"nome\":\"Usuário " + unico() + "\",\"email\":\"" + email + "\",\"cpf\":\"" + cpfValido() + "\","
+            + "\"tipo\":\"" + tipo + "\"," + (senha == null ? "" : "\"senha\":\"" + senha + "\",") + PESSOAIS + "}";
+    }
+
+    /** Gera um CPF válido (com os dígitos verificadores certos). */
+    String cpfValido() {
+        String base = String.format("%09d", Math.abs(UUID.randomUUID().getMostSignificantBits()) % 900_000_000L + 100_000_000L);
+        String parcial = base + digito(base);
+        return parcial + digito(parcial);
+    }
+
+    private int digito(String numeros) {
+        int soma = 0;
+        for (int i = 0; i < numeros.length(); i++) {
+            soma += (numeros.charAt(i) - '0') * (numeros.length() + 1 - i);
+        }
+        int resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
     }
 }

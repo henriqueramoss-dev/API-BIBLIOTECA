@@ -20,7 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * Cada teste cria os próprios dados, com valores únicos, porque o banco é compartilhado.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// As regras de acesso têm testes próprios (ChaveApiTest); aqui todas as chamadas usam a chave ADMIN.
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = ApiHttpTeste.PROPRIEDADE_CHAVE_ADMIN
+)
 class BibliotecaApiTest {
 
     @Value("${local.server.port}")
@@ -46,6 +50,7 @@ class BibliotecaApiTest {
         if (corpo != null) {
             req.header("Content-Type", "application/json");
         }
+        req.setHeader("X-API-Key", ApiHttpTeste.CHAVE_ADMIN);
         for (int i = 0; i < cabecalhos.length; i += 2) {
             req.setHeader(cabecalhos[i], cabecalhos[i + 1]);
         }

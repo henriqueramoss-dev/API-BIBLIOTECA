@@ -30,13 +30,15 @@ public class CorsConfig {
     /** Cabeçalhos que o site pode enviar. */
     static final List<String> CABECALHOS_PERMITIDOS = List.of(
         "Content-Type",
-        "Accept"
+        "Accept",
+        "X-API-Key"
     );
 
     /** Cabeçalhos da resposta que o JavaScript do site pode ler (os demais ficam ocultos pelo navegador). */
     static final List<String> CABECALHOS_EXPOSTOS = List.of(
         "Location",
-        "Allow"
+        "Allow",
+        "WWW-Authenticate"
     );
 
     private final List<String> origensPermitidas;

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -202,6 +203,34 @@ public class ApiExceptionHandler {
         ErroResposta resposta = criarResposta(HttpStatus.UNAUTHORIZED, "Não autorizado", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resposta);
+    }
+
+    /**
+     * Trata rotas protegidas chamadas sem chave de API ou com uma chave inválida ou revogada.
+     *
+     * Retorna HTTP 401 - Unauthorized, com o cabeçalho WWW-Authenticate dizendo onde a chave vai.
+     */
+    @ExceptionHandler(NaoAutenticadoException.class)
+    public ResponseEntity<ErroResposta> tratarNaoAutenticado(NaoAutenticadoException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.UNAUTHORIZED, "Não autorizado", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.WWW_AUTHENTICATE, "ApiKey header=\"X-API-Key\"")
+            .body(resposta);
+    }
+
+    /**
+     * Trata chaves de API válidas, mas sem permissão para a operação.
+     *
+     * Exemplo: excluir um livro (exige ADMIN) com uma chave de nível LEITURA.
+     *
+     * Retorna HTTP 403 - Forbidden.
+     */
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResposta> tratarAcessoNegado(AcessoNegadoException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.FORBIDDEN, "Acesso negado", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resposta);
     }
 
     /**

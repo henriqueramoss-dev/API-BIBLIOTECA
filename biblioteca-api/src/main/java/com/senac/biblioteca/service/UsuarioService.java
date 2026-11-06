@@ -1,6 +1,9 @@
 package com.senac.biblioteca.service;
 
 import com.senac.biblioteca.entity.Usuario;
+import com.senac.biblioteca.enums.NivelAcesso;
+import com.senac.biblioteca.enums.TipoUsuario;
+import com.senac.biblioteca.exception.AcessoNegadoException;
 import com.senac.biblioteca.repository.UsuarioRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +37,20 @@ public class UsuarioService {
         return repository.findById(id);
     }
 
-    // Salva um novo usuário no banco.
-    public Usuario criar(Usuario usuario) {
+    /**
+     * Salva um novo usuário no banco.
+     *
+     * nivelDoChamador é o nível da chave de API usada (null quando não veio chave). Sem uma chave
+     * de ESCRITA, é um autocadastro e só aceita os tipos ALUNO e VISITANTE: assim ninguém se
+     * cadastra sozinho como FUNCIONARIO para depois gerar uma chave ADMIN.
+     */
+    public Usuario criar(Usuario usuario, NivelAcesso nivelDoChamador) {
+        boolean podeEscrever = nivelDoChamador != null && nivelDoChamador.permite(NivelAcesso.ESCRITA);
+        if (!podeEscrever && usuario.getTipo() != TipoUsuario.ALUNO && usuario.getTipo() != TipoUsuario.VISITANTE) {
+            throw new AcessoNegadoException("Sem uma chave de API de nível ESCRITA, o cadastro só aceita os tipos "
+                + "ALUNO e VISITANTE. Usuários " + usuario.getTipo() + " são cadastrados pela biblioteca.");
+        }
+
         // O ID de um novo recurso sempre deve ser gerado pelo banco.
         // Isso também evita erro caso o Swagger envie um ID de exemplo.
         usuario.setId(null);
