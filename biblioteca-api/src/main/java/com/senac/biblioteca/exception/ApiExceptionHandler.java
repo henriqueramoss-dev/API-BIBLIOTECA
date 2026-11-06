@@ -234,6 +234,20 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata clientes que passaram do limite de requisições por minuto.
+     *
+     * Retorna HTTP 429 - Too Many Requests, com o cabeçalho Retry-After (segundos de espera).
+     */
+    @ExceptionHandler(LimiteDeRequisicoesException.class)
+    public ResponseEntity<ErroResposta> tratarLimiteDeRequisicoes(LimiteDeRequisicoesException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.TOO_MANY_REQUESTS, "Muitas requisições", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getSegundosParaTentarDeNovo()))
+            .body(resposta);
+    }
+
+    /**
      * Trata endereços que não existem na API.
      *
      * Exemplo: GET /livross (com erro de digitação).

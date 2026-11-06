@@ -38,7 +38,11 @@ public class CorsConfig {
     static final List<String> CABECALHOS_EXPOSTOS = List.of(
         "Location",
         "Allow",
-        "WWW-Authenticate"
+        "WWW-Authenticate",
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+        "Retry-After"
     );
 
     private final List<String> origensPermitidas;

@@ -62,6 +62,11 @@ public final class RegrasDeAcesso {
         };
     }
 
+    /** Diz se o caminho é de um recurso da API (e não do Swagger ou de outro endereço). */
+    public static boolean ehRotaDaApi(String caminho) {
+        return recursoDe(caminho) != null;
+    }
+
     private static String recursoDe(String caminho) {
         for (String recurso : RECURSOS) {
             if (caminho.equals(recurso) || caminho.startsWith(recurso + "/")) {

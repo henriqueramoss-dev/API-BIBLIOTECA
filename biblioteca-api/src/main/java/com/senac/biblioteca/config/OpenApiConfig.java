@@ -15,7 +15,9 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -120,7 +122,7 @@ public class OpenApiConfig {
                     return;
                 }
 
-                documentarChaveApi(metodo.name(), rota, operacao);
+                documentarProtecoes(metodo.name(), rota, operacao);
 
                 if (ehListagemPaginada(operacao)) {
                     descreverPaginacao(operacao, paginacao.getTamanhoMaximo());
@@ -138,14 +140,21 @@ public class OpenApiConfig {
     }
 
     /**
-     * Mostra no Swagger quais rotas exigem a chave de API, usando as mesmas regras do ChaveApiFilter.
+     * Documenta o limite de requisições (429) em todas as rotas da API e mostra quais rotas
+     * exigem a chave de API, usando as mesmas regras do ChaveApiFilter.
      * Rotas protegidas ganham o cadeado, o nível exigido na descrição e as respostas 401 e 403.
      * Nas rotas públicas da API a chave é opcional: o Swagger a envia se você tiver clicado em Authorize.
      */
-    private void documentarChaveApi(String metodo, String rota, Operation operacao) {
+    private void documentarProtecoes(String metodo, String rota, Operation operacao) {
         if (!rota.startsWith("/") || rota.startsWith("/v3") || rota.startsWith("/swagger")) {
             return;
         }
+
+        operacao.getResponses().putIfAbsent("429", new ApiResponse()
+            .description("Limite de requisições por minuto atingido (veja o cabeçalho Retry-After)")
+            .addHeaderObject("Retry-After", new Header()
+                .description("Segundos de espera até poder tentar de novo")
+                .schema(new IntegerSchema())));
 
         NivelAcesso exigido = RegrasDeAcesso.nivelExigido(metodo, rota);
         if (exigido == null) {
@@ -203,6 +212,7 @@ public class OpenApiConfig {
             case "404" -> "Não encontrado";
             case "405" -> "Método não permitido";
             case "409" -> "Conflito de dados";
+            case "429" -> "Muitas requisições";
             case "500" -> "Erro interno";
             default -> "Erro";
         };

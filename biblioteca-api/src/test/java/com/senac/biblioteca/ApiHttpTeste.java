@@ -24,6 +24,13 @@ abstract class ApiHttpTeste {
     /** Propriedade que faz a API cadastrar a CHAVE_ADMIN. */
     static final String PROPRIEDADE_CHAVE_ADMIN = "biblioteca.chave-api.admin-inicial=" + CHAVE_ADMIN;
 
+    /**
+     * Limites altos para os testes que fazem muitas requisições seguidas não receberem 429.
+     * O limite em si é testado em LimiteDeRequisicoesTest.
+     */
+    static final String SEM_LIMITE_SEM_CHAVE = "biblioteca.limite.requisicoes-por-minuto.sem-chave=100000";
+    static final String SEM_LIMITE_COM_CHAVE = "biblioteca.limite.requisicoes-por-minuto.com-chave=100000";
+
     /** Dados pessoais obrigatórios no cadastro de usuário. */
     static final String PESSOAIS = "\"telefone\":\"11999990000\",\"endereco\":\"Rua A, 10\",\"cidade\":\"São Paulo\","
         + "\"estado\":\"SP\",\"cep\":\"01001000\",\"dataNascimento\":\"2000-01-01\"";

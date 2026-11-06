@@ -34,24 +34,25 @@ import java.util.Optional;
 @Order(OrdemDosFiltros.CHAVE_API)
 public class ChaveApiFilter extends OncePerRequestFilter {
 
-    public static final String CABECALHO = "X-API-Key";
+    public static final String CABECALHO = ClienteDaRequisicao.CABECALHO_CHAVE;
 
-    private static final String ATRIBUTO = ChaveApiFilter.class.getName() + ".chave";
-
+    private final ClienteDaRequisicao cliente;
     private final ChaveApiService service;
     private final HandlerExceptionResolver resolvedorDeErros;
 
     public ChaveApiFilter(
+        ClienteDaRequisicao cliente,
         ChaveApiService service,
         @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolvedorDeErros
     ) {
+        this.cliente = cliente;
         this.service = service;
         this.resolvedorDeErros = resolvedorDeErros;
     }
 
     /** Chave de API usada na requisição atual, se houver. */
     public static Optional<ChaveApi> chaveDa(HttpServletRequest request) {
-        return Optional.ofNullable((ChaveApi) request.getAttribute(ATRIBUTO));
+        return ClienteDaRequisicao.chaveJaIdentificada(request);
     }
 
     @Override
@@ -68,12 +69,10 @@ public class ChaveApiFilter extends OncePerRequestFilter {
     }
 
     private void autorizar(HttpServletRequest request) {
-        String valor = request.getHeader(CABECALHO);
         ChaveApi chave = null;
 
-        if (valor != null && !valor.isBlank()) {
-            chave = service.identificar(valor).orElseThrow(NaoAutenticadoException::chaveInvalida);
-            request.setAttribute(ATRIBUTO, chave);
+        if (cliente.enviouChave(request)) {
+            chave = cliente.chave(request).orElseThrow(NaoAutenticadoException::chaveInvalida);
             service.registrarUso(chave);
         }
 

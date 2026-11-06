@@ -43,6 +43,7 @@ const DEFAULT_MESSAGES: Record<number, string> = {
   400: 'Dados inválidos. Verifique os campos informados.',
   401: 'A API exigiu uma chave de acesso. Configure VITE_API_KEY no arquivo .env do site.',
   403: 'A chave de API configurada não tem permissão para esta operação.',
+  429: 'Muitas requisições em pouco tempo. Aguarde alguns segundos e tente de novo.',
   404: 'Registro não encontrado.',
   409: 'Operação não permitida: dado duplicado ou registro em uso.',
 };

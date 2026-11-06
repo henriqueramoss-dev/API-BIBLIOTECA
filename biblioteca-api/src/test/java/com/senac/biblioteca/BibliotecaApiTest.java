@@ -23,7 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 // As regras de acesso têm testes próprios (ChaveApiTest); aqui todas as chamadas usam a chave ADMIN.
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ApiHttpTeste.PROPRIEDADE_CHAVE_ADMIN
+    properties = {
+        ApiHttpTeste.PROPRIEDADE_CHAVE_ADMIN,
+        ApiHttpTeste.SEM_LIMITE_SEM_CHAVE,
+        ApiHttpTeste.SEM_LIMITE_COM_CHAVE
+    }
 )
 class BibliotecaApiTest {
 

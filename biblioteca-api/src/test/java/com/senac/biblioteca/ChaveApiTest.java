@@ -10,7 +10,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = ApiHttpTeste.PROPRIEDADE_CHAVE_ADMIN
+    properties = {
+        ApiHttpTeste.PROPRIEDADE_CHAVE_ADMIN,
+        ApiHttpTeste.SEM_LIMITE_SEM_CHAVE,
+        ApiHttpTeste.SEM_LIMITE_COM_CHAVE
+    }
 )
 class ChaveApiTest extends ApiHttpTeste {
 
