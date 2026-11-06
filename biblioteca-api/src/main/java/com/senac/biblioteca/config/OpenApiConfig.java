@@ -1,5 +1,6 @@
 package com.senac.biblioteca.config;
 
+import com.senac.biblioteca.controller.LivroController;
 import com.senac.biblioteca.dto.ErroResposta;
 import com.senac.biblioteca.enums.NivelAcesso;
 import com.senac.biblioteca.seguranca.IdempotenciaFilter;
@@ -25,9 +26,12 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
-import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -101,15 +105,60 @@ public class OpenApiConfig {
     private static final String SUFIXO_PAGINA_INEXISTENTE = " ou página inexistente";
 
     /**
+     * Rotas públicas em que a chave de API é opcional, mas muda o resultado: o cadastro de
+     * usuários FUNCIONARIO/PROFESSOR e a definição da primeira senha exigem chave de ESCRITA.
+     */
+    private static final List<String> CHAVE_OPCIONAL = List.of("POST /usuarios", "PUT /usuarios/{id}/senha");
+
+    /**
+     * Documentação da versão 1 da API (a padrão). No Swagger UI, escolha a versão no seletor do topo.
+     * Cada grupo mostra as rotas da sua versão mais as rotas sem versão, que valem para as duas.
+     */
+    @Bean
+    public GroupedOpenApi versao1() {
+        return documentacaoDaVersao("1", "Versão 1 (padrão)");
+    }
+
+    /** Documentação da versão 2 da API (cabeçalho X-API-Version: 2). */
+    @Bean
+    public GroupedOpenApi versao2() {
+        return documentacaoDaVersao("2", "Versão 2");
+    }
+
+    private GroupedOpenApi documentacaoDaVersao(String versao, String nome) {
+        return GroupedOpenApi.builder()
+            .group("v" + versao)
+            .displayName(nome)
+            .pathsToMatch("/**")
+            .addOpenApiMethodFilter(metodo -> {
+                RequestMapping mapeamento = AnnotatedElementUtils.findMergedAnnotation(metodo, RequestMapping.class);
+                return mapeamento == null || mapeamento.version().isEmpty() || mapeamento.version().equals(versao);
+            })
+            .addOperationCustomizer((operacao, metodo) -> {
+                if (operacao.getParameters() != null) {
+                    operacao.getParameters().stream()
+                        .filter(parametro -> LivroController.CABECALHO_VERSAO.equals(parametro.getName()))
+                        .forEach(parametro -> parametro
+                            .description("Versão da API: 1 (padrão, quando o cabeçalho não é enviado) ou 2.")
+                            .example(versao));
+                }
+                return operacao;
+            })
+            .build();
+    }
+
+    /**
      * Completa a documentação gerada automaticamente:
      *  - o corpo das respostas de erro (4xx e 5xx) passa a usar o esquema ErroResposta, com exemplo;
      *  - as listagens paginadas explicam os limites de "page", "size" e "sort" e documentam o 404
      *    de página inexistente.
      *
+     * É "Global" para valer também na documentação de cada versão (grupos v1 e v2).
+     *
      * Só altera o que existe: partes ausentes da especificação são ignoradas, nunca causam erro.
      */
     @Bean
-    public OpenApiCustomizer respostasDeErro(PaginacaoConfig paginacao) {
+    public GlobalOpenApiCustomizer respostasDeErro(PaginacaoConfig paginacao) {
         return openApi -> {
             if (openApi.getPaths() == null) {
                 return;
@@ -146,7 +195,6 @@ public class OpenApiConfig {
      * Documenta o limite de requisições (429) em todas as rotas da API, o cabeçalho de
      * idempotência nos POSTs e quais rotas exigem a chave de API, usando as mesmas regras dos filtros.
      * Rotas protegidas ganham o cadeado, o nível exigido na descrição e as respostas 401 e 403.
-     * Nas rotas públicas da API a chave é opcional: o Swagger a envia se você tiver clicado em Authorize.
      */
     private void documentarProtecoes(String metodo, String rota, Operation operacao) {
         if (!rota.startsWith("/") || rota.startsWith("/v3") || rota.startsWith("/swagger")) {
@@ -165,7 +213,10 @@ public class OpenApiConfig {
 
         NivelAcesso exigido = RegrasDeAcesso.nivelExigido(metodo, rota);
         if (exigido == null) {
-            operacao.setSecurity(List.of(new SecurityRequirement(), new SecurityRequirement().addList(ESQUEMA_CHAVE_API)));
+            // Rotas públicas em que a chave muda o resultado: o Swagger a envia se você clicou em Authorize.
+            if (CHAVE_OPCIONAL.contains(metodo + " " + rota)) {
+                operacao.setSecurity(List.of(new SecurityRequirement(), new SecurityRequirement().addList(ESQUEMA_CHAVE_API)));
+            }
             return;
         }
 

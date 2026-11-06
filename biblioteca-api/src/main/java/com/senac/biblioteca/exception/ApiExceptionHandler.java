@@ -1,8 +1,10 @@
 package com.senac.biblioteca.exception;
 
 import com.senac.biblioteca.dto.ErroResposta;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.accept.InvalidApiVersionException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -22,6 +25,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
@@ -36,6 +40,13 @@ import java.util.Map;
 public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    /** Versões aceitas no cabeçalho X-API-Version (spring.mvc.apiversion.supported). */
+    private final List<String> versoesSuportadas;
+
+    public ApiExceptionHandler(@Value("${spring.mvc.apiversion.supported}") List<String> versoesSuportadas) {
+        this.versoesSuportadas = versoesSuportadas;
+    }
 
     /**
      * Trata erros de Bean Validation, como campos obrigatórios vazios,
@@ -258,6 +269,27 @@ public class ApiExceptionHandler {
         ErroResposta resposta = criarResposta(ex.getStatus(), ex.getTitulo(), ex.getMessage());
 
         return ResponseEntity.status(ex.getStatus()).body(resposta);
+    }
+
+    /**
+     * Trata versões da API que não existem no cabeçalho X-API-Version.
+     *
+     * Exemplo: X-API-Version: 3 (a API tem as versões 1 e 2).
+     *
+     * Retorna HTTP 400 - Bad Request, dizendo quais versões existem.
+     */
+    @ExceptionHandler(InvalidApiVersionException.class)
+    public ResponseEntity<ErroResposta> tratarVersaoInvalida(InvalidApiVersionException ex, HttpServletRequest request) {
+        // Mostra a versão como o cliente enviou ("3"), e não como o Spring a interpretou ("3.0.0").
+        String enviada = request.getHeader("X-API-Version");
+        ErroResposta resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Versão da API não suportada",
+            "A versão '" + (enviada != null ? enviada.trim() : ex.getVersion()) + "' não existe. Envie o cabeçalho X-API-Version com uma das versões: "
+                + String.join(", ", versoesSuportadas) + " (sem o cabeçalho, vale a versão 1)."
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
     }
 
     /**

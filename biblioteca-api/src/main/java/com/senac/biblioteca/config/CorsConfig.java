@@ -32,7 +32,8 @@ public class CorsConfig {
         "Content-Type",
         "Accept",
         "X-API-Key",
-        "X-Idempotency-Key"
+        "X-Idempotency-Key",
+        "X-API-Version"
     );
 
     /** Cabeçalhos da resposta que o JavaScript do site pode ler (os demais ficam ocultos pelo navegador). */
@@ -44,7 +45,8 @@ public class CorsConfig {
         "X-RateLimit-Remaining",
         "X-RateLimit-Reset",
         "Retry-After",
-        "X-Idempotency-Replayed"
+        "X-Idempotency-Replayed",
+        "X-API-Version"
     );
 
     private final List<String> origensPermitidas;

@@ -1889,6 +1889,86 @@
       ]
     },
     {
+      "name": "Versionamento",
+      "description": "GET /livros/{id} nas versões 1 (padrão) e 2, escolhidas pelo cabeçalho X-API-Version.",
+      "item": [
+        {
+          "name": "Livro sem X-API-Version: versão 1 (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Respondeu na versão 1\", () => pm.expect(pm.response.headers.get(\"X-API-Version\")).to.eql(\"1\"));",
+                  "pm.test(\"Categoria como objeto\", () => pm.expect(pm.response.json().categoria).to.be.an(\"object\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Livro com X-API-Version: 2 (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Version",
+                "value": "2"
+              }
+            ],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Respondeu na versão 2\", () => pm.expect(pm.response.headers.get(\"X-API-Version\")).to.eql(\"2\"));",
+                  "const livro = pm.response.json();",
+                  "pm.test(\"Categoria pelo nome\", () => pm.expect(livro.categoria).to.be.a(\"string\"));",
+                  "pm.test(\"Autores pelo nome\", () => pm.expect(livro.autores.every(a => typeof a === \"string\")).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Versão inexistente (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Version",
+                "value": "3"
+              }
+            ],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem cita as versões disponíveis\", () => pm.expect(pm.response.json().mensagem).to.include(\"1, 2\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Testes de códigos HTTP",
       "description": "Cenários prontos para validar os tratamentos de erro da API. Execute os testes de preparação antes dos testes 409.",
       "item": [
