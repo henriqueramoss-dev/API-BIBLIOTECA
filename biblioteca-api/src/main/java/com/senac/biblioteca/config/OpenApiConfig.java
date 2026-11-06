@@ -2,6 +2,7 @@ package com.senac.biblioteca.config;
 
 import com.senac.biblioteca.dto.ErroResposta;
 import com.senac.biblioteca.enums.NivelAcesso;
+import com.senac.biblioteca.seguranca.IdempotenciaFilter;
 import com.senac.biblioteca.seguranca.RegrasDeAcesso;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
@@ -20,6 +21,8 @@ import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -140,8 +143,8 @@ public class OpenApiConfig {
     }
 
     /**
-     * Documenta o limite de requisições (429) em todas as rotas da API e mostra quais rotas
-     * exigem a chave de API, usando as mesmas regras do ChaveApiFilter.
+     * Documenta o limite de requisições (429) em todas as rotas da API, o cabeçalho de
+     * idempotência nos POSTs e quais rotas exigem a chave de API, usando as mesmas regras dos filtros.
      * Rotas protegidas ganham o cadeado, o nível exigido na descrição e as respostas 401 e 403.
      * Nas rotas públicas da API a chave é opcional: o Swagger a envia se você tiver clicado em Authorize.
      */
@@ -156,6 +159,10 @@ public class OpenApiConfig {
                 .description("Segundos de espera até poder tentar de novo")
                 .schema(new IntegerSchema())));
 
+        if (IdempotenciaFilter.aceitaIdempotencia(metodo, rota)) {
+            documentarIdempotencia(operacao);
+        }
+
         NivelAcesso exigido = RegrasDeAcesso.nivelExigido(metodo, rota);
         if (exigido == null) {
             operacao.setSecurity(List.of(new SecurityRequirement(), new SecurityRequirement().addList(ESQUEMA_CHAVE_API)));
@@ -169,6 +176,28 @@ public class OpenApiConfig {
             new ApiResponse().description("Chave de API ausente, inexistente ou revogada"));
         operacao.getResponses().putIfAbsent("403",
             new ApiResponse().description("A chave de API não tem o nível " + exigido + " exigido por esta operação"));
+    }
+
+    /** Documenta o cabeçalho X-Idempotency-Key e as respostas 409 e 422 nos POSTs que o aceitam. */
+    private void documentarIdempotencia(Operation operacao) {
+        operacao.addParametersItem(new HeaderParameter()
+            .name(IdempotenciaFilter.CABECALHO)
+            .required(false)
+            .description("Opcional. Identificador único desta operação (sugestão: um UUID). Reenviando a mesma "
+                + "requisição com a mesma chave em até 24 horas, a API devolve a resposta original, com o "
+                + "cabeçalho X-Idempotency-Replayed: true, em vez de cadastrar de novo.")
+            .schema(new StringSchema().maxLength(100))
+            .example("3f1c9a52-7d4e-4b8a-9c6f-2e5d8b1a0c47"));
+
+        ApiResponse conflito = operacao.getResponses().get("409");
+        String emAndamento = "Requisição com a mesma X-Idempotency-Key ainda em andamento";
+        if (conflito == null) {
+            operacao.getResponses().addApiResponse("409", new ApiResponse().description(emAndamento));
+        } else if (!conflito.getDescription().contains("X-Idempotency-Key")) {
+            conflito.setDescription(conflito.getDescription() + ", ou " + emAndamento.toLowerCase());
+        }
+        operacao.getResponses().putIfAbsent("422",
+            new ApiResponse().description("X-Idempotency-Key já usada com outra requisição"));
     }
 
     private boolean ehListagemPaginada(Operation operacao) {
@@ -212,6 +241,7 @@ public class OpenApiConfig {
             case "404" -> "Não encontrado";
             case "405" -> "Método não permitido";
             case "409" -> "Conflito de dados";
+            case "422" -> "Chave de idempotência reutilizada";
             case "429" -> "Muitas requisições";
             case "500" -> "Erro interno";
             default -> "Erro";

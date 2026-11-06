@@ -81,6 +81,14 @@
     {
       "key": "chaveGeradaId",
       "value": ""
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "autorIdempotenteId",
+      "value": ""
     }
   ],
   "item": [
@@ -1723,6 +1731,156 @@
                   "pm.test(\"Status 200\", function () {",
                   "    pm.response.to.have.status(200);",
                   "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idempotência",
+      "description": "Envia o mesmo POST duas vezes com o mesmo X-Idempotency-Key: o segundo devolve a resposta do primeiro, sem cadastrar de novo. Com a mesma chave e outro corpo, a API responde 422.",
+      "item": [
+        {
+          "name": "POST com X-Idempotency-Key (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Autor Idempotente\",\n  \"nacionalidade\": \"Brasileira\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Uma chave nova a cada execução da coleção.",
+                  "pm.collectionVariables.set(\"idempotencyKey\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Primeira vez: não é repetição\", () => pm.response.to.not.have.header(\"X-Idempotency-Replayed\"));",
+                  "pm.collectionVariables.set(\"autorIdempotenteId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesmo POST de novo: resposta repetida (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Autor Idempotente\",\n  \"nacionalidade\": \"Brasileira\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Cabeçalho X-Idempotency-Replayed: true\", () => pm.expect(pm.response.headers.get(\"X-Idempotency-Replayed\")).to.eql(\"true\"));",
+                  "pm.test(\"Mesmo autor da primeira resposta\", () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"autorIdempotenteId\"))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesma chave com outro corpo (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Outro Autor\",\n  \"nacionalidade\": \"Portuguesa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir autor idempotente (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/autores/{{autorIdempotenteId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
                 ]
               }
             }

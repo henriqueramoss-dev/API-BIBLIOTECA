@@ -31,7 +31,8 @@ public class CorsConfig {
     static final List<String> CABECALHOS_PERMITIDOS = List.of(
         "Content-Type",
         "Accept",
-        "X-API-Key"
+        "X-API-Key",
+        "X-Idempotency-Key"
     );
 
     /** Cabeçalhos da resposta que o JavaScript do site pode ler (os demais ficam ocultos pelo navegador). */
@@ -42,7 +43,8 @@ public class CorsConfig {
         "X-RateLimit-Limit",
         "X-RateLimit-Remaining",
         "X-RateLimit-Reset",
-        "Retry-After"
+        "Retry-After",
+        "X-Idempotency-Replayed"
     );
 
     private final List<String> origensPermitidas;

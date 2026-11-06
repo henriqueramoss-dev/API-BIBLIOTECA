@@ -248,6 +248,19 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata problemas com o cabeçalho X-Idempotency-Key.
+     *
+     * Retorna HTTP 400 (chave em formato inválido), 409 (requisição com a mesma chave ainda
+     * em andamento) ou 422 (chave já usada com outra requisição).
+     */
+    @ExceptionHandler(IdempotenciaException.class)
+    public ResponseEntity<ErroResposta> tratarIdempotencia(IdempotenciaException ex) {
+        ErroResposta resposta = criarResposta(ex.getStatus(), ex.getTitulo(), ex.getMessage());
+
+        return ResponseEntity.status(ex.getStatus()).body(resposta);
+    }
+
+    /**
      * Trata endereços que não existem na API.
      *
      * Exemplo: GET /livross (com erro de digitação).
