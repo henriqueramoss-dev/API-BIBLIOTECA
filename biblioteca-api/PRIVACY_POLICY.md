@@ -73,7 +73,7 @@ O sistema **não pede** dados pessoais sensíveis (origem racial ou étnica, rel
 - **Armazenamento no navegador ou no celular:** o **site** não guarda nada. O **app** guarda no aparelho, e só nele, três coisas: a sua escolha de tema (claro, escuro ou automático), a escolha de receber lembretes de devolução e, depois de entrar, o `id`, o nome e o e-mail da conta. A **senha não é guardada no aparelho**. Tudo isso é apagado ao tocar em **Sair**, exceto o tema e a escolha de lembretes.
 - **Ferramentas de análise, publicidade, rastreamento ou relatórios de erro** de terceiros: nenhuma.
 - **Localização, contatos, câmera, microfone ou fotos:** o app não pede nenhuma dessas permissões.
-- **Login e senha:** a senha é opcional no cadastro; quando informada, a API guarda **somente o hash (BCrypt)**, nunca a senha, e nunca a devolve. O login confere e-mail e senha, mas a API ainda **não emite token**, então não há controle de acesso às outras rotas (seção 8).
+- **Login e senha:** a senha é opcional no cadastro; quando informada, a API guarda **somente o hash (BCrypt)**, nunca a senha, e nunca a devolve. O login confere e-mail e senha. Para ler dados pessoais e para alterar dados, a API exige uma **chave de API**, da qual o banco guarda só o hash (seção 8).
 - **Notificações:** o app só mostra lembretes **locais**, agendados no próprio aparelho a partir dos seus empréstimos ativos, depois que você ativa a opção e dá a permissão. Nenhum serviço externo de notificações é usado e nenhum dado sai do aparelho para isso.
 
 ---
@@ -146,6 +146,8 @@ Se você não tem acesso ao sistema (por exemplo, seus dados foram cadastrados p
 O sistema tem as seguintes proteções:
 
 - validação de todos os campos recebidos (Bean Validation);
+- chave de API (`X-API-Key`), com níveis de acesso, exigida para ler dados pessoais e para alterar dados;
+- limite de requisições por minuto, que também limita as tentativas de login;
 - acesso do navegador limitado a `localhost` e à rede local (`192.168.*`);
 - mensagens de erro que não revelam detalhes internos.
 
@@ -153,13 +155,11 @@ E tem **limitações que impedem o uso com dados reais**:
 
 | Limitação | Consequência |
 |---|---|
-| Login sem token nem permissões | Quem alcançar a API consegue ler, alterar e excluir tudo, inclusive trocar a senha de quem ainda não tem uma |
-| Sem limite de tentativas de login | Dá para testar senhas sem parar |
+| Qualquer chave de API, inclusive a de nível LEITURA que todo usuário com senha pode gerar, lê os dados pessoais de todos os usuários | Os dados não ficam restritos ao próprio dono |
 | Tráfego em HTTP, sem criptografia | Os dados podem ser lidos por quem estiver na mesma rede |
 | CPF e demais dados guardados sem criptografia | Quem acessar o banco lê os dados |
-| O CPF completo é devolvido pelas rotas de `/usuarios` | Quem alcançar a API lê o CPF de todos os usuários. Ele e os demais dados pessoais (telefone, endereço, CEP e data de nascimento) não são repetidos dentro de empréstimos e carteirinhas |
+| O CPF completo é devolvido pelas rotas de `/usuarios` | Quem tiver uma chave de API lê o CPF de todos os usuários. Ele e os demais dados pessoais (telefone, endereço, CEP e data de nascimento) não são repetidos dentro de empréstimos e carteirinhas |
 | Se o console do H2 for habilitado (hoje ele **não** está disponível, veja o README) | Quem tiver acesso à API conseguiria consultar o banco diretamente |
-| Sem limite de requisições | Não há proteção contra uso abusivo |
 
 Veja `docs/seguranca-e-limitacoes.md` para o que seria necessário antes de uma publicação real.
 

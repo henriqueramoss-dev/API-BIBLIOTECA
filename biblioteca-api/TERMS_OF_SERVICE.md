@@ -60,7 +60,7 @@ Estas regras são aplicadas pela API e valem para o site e para o app:
 
 "Criar conta" cadastra um usuário com **senha** (de 8 a 72 caracteres), e a tela "Entrar" confere e-mail e senha. A senha pode ser trocada na tela **Configurações** do app. A API guarda apenas o hash da senha. Guarde bem a sua senha: não há recuperação por e-mail.
 
-Mas a API **ainda não emite token**: depois do login, as demais rotas continuam abertas a qualquer um que alcance a API. Isso significa que **não existe controle de quem pode ler ou alterar os dados**. Não reutilize aqui uma senha que você usa em outros serviços. Por isso o sistema só deve rodar em ambiente local e de testes.
+Para ler dados pessoais e para alterar dados, a API exige uma **chave de API** (cabeçalho `X-API-Key`), gerada com o seu e-mail e senha. Guarde a sua chave como guarda a senha e revogue-a se ela vazar. Ainda assim, qualquer chave, mesmo a de nível mais baixo, lê os dados pessoais de **todos** os usuários, não só os seus. Não reutilize aqui uma senha que você usa em outros serviços. Por isso o sistema só deve rodar em ambiente local e de testes.
 
 ## 8. Ambiente de execução
 

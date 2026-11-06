@@ -39,9 +39,21 @@ java -jar target/biblioteca-0.0.1-SNAPSHOT.jar
 
 > O banco é **H2 em memória**: ele começa vazio e **tudo é apagado quando a API é encerrada**. Para ter dados de exemplo, cadastre pelo Swagger, pelo site ou rode a coleção do Postman.
 
+### Chave de administrador
+
+Cadastrar, alterar, excluir e ver dados pessoais exige uma **chave de API** no cabeçalho `X-API-Key` (veja [Recursos avançados](recursos-avancados.md)). Ao iniciar, a API mostra no log uma chave de administrador:
+
+```text
+Chave de API de administrador gerada para esta execução:
+
+    bib_3kF9xQ2mVb7Lp0sT1uWcYd4eHg5iJk6lMn8oPq9rSt0
+```
+
+Ela muda a cada início. Para fixar uma chave no seu computador, defina a variável de ambiente `BIBLIOTECA_CHAVE_ADMIN` (mínimo de 16 caracteres) antes de iniciar a API; no IntelliJ, em **Run → Edit Configurations → Environment variables**.
+
 ### Swagger
 
-Abra <http://localhost:8080/swagger-ui.html>. Clique em um endpoint, depois em **Try it out** e **Execute**.
+Abra <http://localhost:8080/swagger-ui.html>. Clique em **Authorize**, cole a chave de administrador e confirme. Depois, clique em um endpoint, em **Try it out** e **Execute**. As rotas com cadeado exigem a chave. No topo da página, o seletor **Versão da API** troca entre a documentação da versão 1 e da versão 2.
 
 ### Testes automatizados
 
@@ -50,14 +62,15 @@ cd biblioteca-api
 mvn test
 ```
 
-São 28 testes de integração (a API sobe numa porta aleatória, não precisa estar rodando). Demora cerca de 1 minuto.
+São 73 testes (68 de integração, em que a API sobe numa porta aleatória e não precisa estar rodando, e 5 de unidade). Demora cerca de 1 minuto.
 
 ### Postman
 
 1. Importe `biblioteca-api/postman/Biblioteca-API.postman_collection.json`.
-2. Com a API rodando, use **Run collection** sem mudar a ordem das pastas.
+2. Clique na coleção, abra a aba **Variables** e cole a chave de administrador (mostrada no log da API) na variável `apiKey`.
+3. Com a API rodando, use **Run collection** sem mudar a ordem das pastas.
 
-A coleção tem 60 requisições, cada uma com seu teste, e pode ser executada várias vezes seguidas: a última pasta ("Exclusões") apaga o que foi criado.
+A coleção tem 89 requisições, cada uma com seu teste, e pode ser executada várias vezes seguidas: a última pasta ("Exclusões") apaga o que foi criado.
 
 ## 2. Site
 
@@ -77,11 +90,21 @@ Para usar outro endereço da API, copie `.env.example` para `.env` e troque a li
 VITE_API_URL=http://localhost:8080
 ```
 
+Sem chave de API, o site só consegue consultar o catálogo (livros, autores e categorias). Para cadastrar, alterar e excluir, coloque uma chave no `.env`:
+
+```bash
+VITE_API_KEY=bib_cole_aqui_a_chave
+```
+
+Tudo que começa com `VITE_` fica visível no navegador: use isso só no seu computador.
+
 Para gerar a versão final do site: `npm run build` (o resultado fica em `dist/`).
 
 ## 3. App mobile
 
 O app está no repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE). Com a API rodando:
+
+> **Chave de API:** o catálogo, o login e o autocadastro continuam abertos, mas as telas que mostram empréstimos e dados de usuários usam rotas que agora exigem a chave `X-API-Key`. Para elas funcionarem, o app precisa, depois do login, gerar uma chave de LEITURA em `POST /chaves-api` (com o mesmo e-mail e senha) e enviá-la nas requisições. Veja [Recursos avançados](recursos-avancados.md#gerar-e-gerenciar-chaves).
 
 ```bash
 git clone https://github.com/henriqueramoss-dev/REACT-NATIVE.git

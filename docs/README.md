@@ -20,6 +20,7 @@ Sistema de **gestão de acervo e empréstimos** de uma biblioteca, feito como pr
 |---|---|
 | Rodar a API, o site e o app | [Guia de instalação](guia-de-instalacao.md) |
 | Chamar a API (endpoints, paginação, erros, exemplos) | [Guia da API](guia-da-api.md) |
+| Usar a chave de API, o limite de requisições, a idempotência, o CORS e o versionamento | [Recursos avançados](recursos-avancados.md) |
 | Entender as entidades e os campos | [Modelo de dados](modelo-de-dados.md) |
 | Entender como o código está organizado | [Arquitetura](arquitetura.md) |
 | Saber o que falta para usar de verdade | [Segurança e limitações](seguranca-e-limitacoes.md) |
@@ -30,7 +31,7 @@ Sistema de **gestão de acervo e empréstimos** de uma biblioteca, feito como pr
 | O quê | Endereço |
 |---|---|
 | Documentação interativa (Swagger) | <http://localhost:8080/swagger-ui.html> |
-| Especificação OpenAPI (JSON) | <http://localhost:8080/v3/api-docs> |
+| Especificação OpenAPI (JSON) | <http://localhost:8080/v3/api-docs/v1> e <http://localhost:8080/v3/api-docs/v2> (uma por versão) |
 | Site | <http://localhost:5173> |
 | Coleção do Postman | `biblioteca-api/postman/Biblioteca-API.postman_collection.json` |
 

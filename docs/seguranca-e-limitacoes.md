@@ -15,23 +15,29 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 | CPF e demais dados pessoais devolvidos só pelas rotas de `/usuarios` (não dentro de empréstimos e carteirinhas) | `@JsonIgnoreProperties` |
 | Limite de 100 registros por página | `PaginacaoConfig` |
 | Erros padronizados, sem mostrar detalhes internos (o erro 500 só diz que houve um erro inesperado) | `ApiExceptionHandler` |
-| Navegador só acessa a API a partir de `localhost`, `127.0.0.1` e `192.168.*` | `CorsConfig` |
+| Navegador só acessa a API a partir de `localhost`, `127.0.0.1` e `192.168.*` (configurável), com métodos e cabeçalhos listados um a um | `CorsConfig` |
+| Chave de API (`X-API-Key`) com níveis LEITURA, ESCRITA e ADMIN para ler dados pessoais e para alterar dados. O banco guarda só o hash SHA-256 das chaves, e elas podem ser revogadas | `ChaveApiFilter`, `RegrasDeAcesso`, `ChaveApiService` |
+| Autocadastro limitado a `ALUNO` e `VISITANTE`; só funcionários geram chaves de ESCRITA ou ADMIN; definir a primeira senha de alguém exige chave de ESCRITA | `UsuarioService`, `ChaveApiService`, `AutenticacaoService` |
+| Limite de requisições por minuto (por chave ou por IP), que também limita as tentativas de login | `LimiteDeRequisicoesFilter` |
+| Reenvio seguro de `POST` com `X-Idempotency-Key` (evita cadastros duplicados) | `IdempotenciaFilter` |
 
 ## O que NÃO existe
 
 | Limitação | Risco | O que seria preciso |
 |---|---|---|
-| **Login sem token nem permissões** | A senha é conferida (hash BCrypt) em `POST /auth/login`, mas a API **não emite token**: todas as outras rotas continuam abertas, e qualquer um que alcance a API lê, altera e exclui tudo, inclusive a senha de usuários que ainda não têm uma (`PUT /usuarios/{id}/senha`) | Token (por exemplo, Spring Security com JWT) exigido em todas as rotas e perfis de acesso (aluno × bibliotecário) |
-| **Sem limite de tentativas de login** | Dá para testar senhas sem parar | Bloqueio temporário após várias falhas e rate limiting |
-| **Sessão guardada no aparelho** | O app guarda no aparelho o `id`, o nome e o e-mail de quem entrou (não a senha). Como a API não valida token, isso só serve para mostrar a conta e agendar lembretes | Token com prazo de validade, guardado em armazenamento seguro |
+| **Chave de LEITURA vê os dados de todos** | Qualquer usuário com senha gera uma chave de LEITURA e, com ela, consulta os dados pessoais (inclusive CPF) de todos os usuários, carteirinhas e empréstimos, não só os dele | Filtrar os dados pelo dono da chave (o aluno só vê o que é dele) |
+| **Chave de administrador inicial** | Sem `BIBLIOTECA_CHAVE_ADMIN`, a chave ADMIN é gerada a cada início e aparece no log; quem lê o log tem acesso total | Definir a chave por variável de ambiente, guardada num cofre de segredos, e restringir o acesso aos logs |
+| **Chaves sem prazo de validade** | Uma chave vale até ser revogada | Prazo de validade e renovação |
+| **Limite de tentativas de login só por minuto** | O limite de requisições por IP dificulta, mas não bloqueia, quem testa senhas devagar | Bloqueio temporário da conta após várias falhas |
+| **Sessão guardada no aparelho** | O app guarda no aparelho o `id`, o nome e o e-mail de quem entrou (não a senha). Para acessar as rotas protegidas, o app precisa gerar uma chave de API (`POST /chaves-api`) e guardá-la | Guardar a chave em armazenamento seguro do aparelho (ex.: `expo-secure-store`) |
 | **Tráfego em HTTP puro** | Os dados podem ser lidos por quem estiver na mesma rede | HTTPS (certificado) |
 | **Dados sem criptografia no banco** (CPF, telefone, endereço) | Quem acessar o banco lê tudo | Banco com acesso restrito e, para os campos mais sensíveis, criptografia |
 | **Banco em memória** | Os dados somem ao reiniciar a API | Um banco persistente (PostgreSQL, MySQL) com cópias de segurança |
-| **Sem limite de requisições** | Uso abusivo ou sobrecarga | Rate limiting |
-| **CORS não protege a API** | O CORS só controla navegadores; qualquer programa (curl, Postman, o app) acessa a API sem restrição | Autenticação |
+| **Limite de requisições e idempotência na memória** | As contagens e as respostas guardadas somem ao reiniciar; com mais de uma instância da API, cada uma teria as suas | Guardar num lugar compartilhado (ex.: Redis) |
+| **CORS não protege a API** | O CORS só controla navegadores; qualquer programa (curl, Postman, o app) acessa as rotas públicas sem restrição | A chave de API protege as demais rotas |
 | **Sem registro de acessos (auditoria)** | Não se sabe quem alterou o quê | Logs de auditoria |
-| **Poucos testes automatizados** | Há 28 testes de integração e a coleção do Postman, mas não há testes de unidade nem medição de cobertura | Mais testes, rodando a cada alteração (CI) |
-| **CPF visível para qualquer um** | As rotas de `/usuarios` devolvem o CPF completo de todos os usuários, e a API não exige login | Autenticação e, se possível, não devolver o CPF (ou devolver mascarado) |
+| **Poucos testes de unidade** | Há 68 testes de integração, 5 de unidade e a coleção do Postman, rodando no CI, mas não há medição de cobertura | Mais testes de unidade e medição de cobertura |
+| **CPF visível para qualquer chave** | As rotas de `/usuarios` devolvem o CPF completo de todos os usuários para qualquer chave de API, inclusive de LEITURA | Filtrar pelo dono da chave e, se possível, não devolver o CPF (ou devolver mascarado) |
 | **CPF de teste pode ser de gente real** | A API só aceita CPFs com dígitos verificadores corretos, e um CPF assim pode pertencer a uma pessoa de verdade | Usar sempre CPFs de teste (ex.: `12345678909`) |
 | **Status do empréstimo manual** | Um empréstimo vencido não vira `ATRASADO` sozinho | Tarefa agendada que atualiza o status |
 | **Capas pelo Open Library** | Ao mostrar a capa de um livro, o navegador ou o app pede a imagem a `covers.openlibrary.org`, que recebe o ISBN e o IP de quem vê a lista | Desligar as capas reais (app: Configurações; site: `VITE_CAPAS_REAIS=false`) ou guardar as imagens na própria API |
@@ -47,13 +53,15 @@ Se você habilitar o módulo para depurar, faça só no seu computador e remova 
 
 Checklist mínimo:
 
-- [ ] Token de acesso e controle de permissões na API (hoje só existe o login)
+- [x] Chave de acesso e níveis de permissão na API (`X-API-Key`)
+- [ ] Filtrar os dados pessoais pelo dono da chave
+- [ ] Definir a chave de administrador por variável de ambiente (`BIBLIOTECA_CHAVE_ADMIN`) guardada num cofre de segredos
 - [ ] HTTPS
 - [ ] Banco persistente, com acesso restrito e cópias de segurança
 - [ ] Revisão do que é guardado: precisa mesmo de CPF, endereço e data de nascimento? Guardar menos dados é mais seguro
 - [ ] Criptografia dos dados pessoais mais sensíveis
 - [ ] CORS restrito aos endereços reais do site
-- [ ] Limite de requisições
+- [x] Limite de requisições (em memória; com várias instâncias, usar um armazenamento compartilhado)
 - [ ] Console do H2 desligado
 - [ ] Fontes e demais arquivos hospedados no próprio projeto
 - [ ] Mais testes automatizados, rodando a cada alteração
