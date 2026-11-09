@@ -9,6 +9,7 @@ import com.senac.biblioteca.exception.NaoAutenticadoException;
 import com.senac.biblioteca.seguranca.ChaveApiFilter;
 import com.senac.biblioteca.service.ChaveApiService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -111,7 +112,9 @@ public class ChaveApiController {
         @ApiResponse(responseCode = "404", description = "Chave não encontrada"),
         @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
-    public ResponseEntity<EntityModel<ChaveApi>> buscarPorId(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<EntityModel<ChaveApi>> buscarPorId(
+        @Parameter(description = "ID da chave de API", example = "1") @PathVariable Long id,
+        HttpServletRequest request) {
         return ResponseEntity.ok(assembler.toModel(service.buscar(id, chaveAtual(request))));
     }
 
@@ -127,7 +130,9 @@ public class ChaveApiController {
         @ApiResponse(responseCode = "404", description = "Chave não encontrada"),
         @ApiResponse(responseCode = "400", description = "ID informado em formato inválido")
     })
-    public ResponseEntity<Void> revogar(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<Void> revogar(
+        @Parameter(description = "ID da chave de API", example = "1") @PathVariable Long id,
+        HttpServletRequest request) {
         service.revogar(id, chaveAtual(request));
         return ResponseEntity.noContent().build();
     }
