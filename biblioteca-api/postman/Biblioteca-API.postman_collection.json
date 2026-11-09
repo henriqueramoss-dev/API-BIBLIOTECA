@@ -1,13 +1,18 @@
 {
   "info": {
     "name": "Biblioteca API - Parte 1 - Testes HTTP",
-    "description": "Coleção Postman da API de Biblioteca com CRUD, paginação, buscas personalizadas e testes automáticos dos principais códigos HTTP (200, 201, 204, 400, 404 e 409).",
+    "description": "Coleção Postman da API de Biblioteca com CRUD, paginação, buscas personalizadas e testes automáticos dos principais códigos HTTP (200, 201, 204, 400, 404 e 409).\n\nCHAVE DE API: as rotas protegidas exigem o cabeçalho X-API-Key. Antes de rodar a coleção, copie a chave de administrador mostrada no log ao iniciar a API (ou a que você definiu em BIBLIOTECA_CHAVE_ADMIN) e cole na variável apiKey da coleção.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8080"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "description": "Chave de administrador mostrada no log da API ao iniciar (ou BIBLIOTECA_CHAVE_ADMIN)."
     },
     {
       "key": "usuarioId",
@@ -55,6 +60,34 @@
     },
     {
       "key": "senhaCpf",
+      "value": ""
+    },
+    {
+      "key": "chaveEmail",
+      "value": ""
+    },
+    {
+      "key": "chaveCpf",
+      "value": ""
+    },
+    {
+      "key": "chaveUsuarioId",
+      "value": ""
+    },
+    {
+      "key": "chaveGerada",
+      "value": ""
+    },
+    {
+      "key": "chaveGeradaId",
+      "value": ""
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "autorIdempotenteId",
       "value": ""
     }
   ],
@@ -595,6 +628,334 @@
                   "pm.test(\"Status 204\", function () {",
                   "    pm.response.to.have.status(204);",
                   "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chaves de API",
+      "description": "Gera uma chave para um funcionário, usa, testa os níveis de acesso e revoga. As requisições sem chave ou com a chave gerada não usam a apiKey da coleção.",
+      "item": [
+        {
+          "name": "Criar funcionario com senha",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Funcionario Chave\",\n  \"email\": \"{{chaveEmail}}\",\n  \"cpf\": \"{{chaveCpf}}\",\n  \"tipo\": \"FUNCIONARIO\",\n  \"senha\": \"senhaChave123\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"1990-05-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// E-mail e CPF válido novos a cada execução.",
+                  "const base = String(Math.floor(Math.random() * 900000000) + 100000000);",
+                  "const dv = (n) => { let s = 0; for (let i = 0; i < n.length; i++) s += Number(n[i]) * (n.length + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; };",
+                  "const parcial = base + dv(base);",
+                  "pm.collectionVariables.set(\"chaveCpf\", parcial + dv(parcial));",
+                  "pm.collectionVariables.set(\"chaveEmail\", \"chave\" + Date.now() + \"@email.com\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"chaveUsuarioId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gerar chave de API (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/chaves-api",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{chaveEmail}}\",\n  \"senha\": \"senhaChave123\",\n  \"nome\": \"Postman\",\n  \"nivel\": \"ESCRITA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const corpo = pm.response.json();",
+                  "pm.test(\"Chave começa com bib_ e aparece uma única vez\", () => pm.expect(corpo.chave).to.match(/^bib_/));",
+                  "pm.test(\"Nível ESCRITA\", () => pm.expect(corpo.nivel).to.eql(\"ESCRITA\"));",
+                  "pm.collectionVariables.set(\"chaveGerada\", corpo.chave);",
+                  "pm.collectionVariables.set(\"chaveGeradaId\", corpo.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar a chave em uso (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{chaveGerada}}"
+              }
+            ],
+            "url": "{{baseUrl}}/chaves-api/atual",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Não devolve a chave completa\", () => pm.expect(pm.response.text()).to.not.include(pm.collectionVariables.get(\"chaveGerada\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar chaves com a chave de administrador (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/chaves-api?page=0&size=10"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rota protegida sem chave (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios?page=0&size=10",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Cabeçalho WWW-Authenticate\", () => pm.response.to.have.header(\"WWW-Authenticate\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chave inexistente (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "bib_chave_inexistente"
+              }
+            ],
+            "url": "{{baseUrl}}/livros",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chave de ESCRITA tentando excluir (403)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{chaveGerada}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores/999999",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Autocadastro de funcionario sem chave (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Tentativa\",\n  \"email\": \"tentativa@email.com\",\n  \"cpf\": \"12345678909\",\n  \"tipo\": \"FUNCIONARIO\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua Exemplo, 100\",\n  \"cidade\": \"São Paulo\",\n  \"estado\": \"SP\",\n  \"cep\": \"01001000\",\n  \"dataNascimento\": \"1990-05-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revogar chave (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{chaveGerada}}"
+              }
+            ],
+            "url": "{{baseUrl}}/chaves-api/{{chaveGeradaId}}",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chave revogada (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{chaveGerada}}"
+              }
+            ],
+            "url": "{{baseUrl}}/chaves-api/atual",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir funcionario (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{chaveUsuarioId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
                 ]
               }
             }
@@ -1378,6 +1739,236 @@
       ]
     },
     {
+      "name": "Idempotência",
+      "description": "Envia o mesmo POST duas vezes com o mesmo X-Idempotency-Key: o segundo devolve a resposta do primeiro, sem cadastrar de novo. Com a mesma chave e outro corpo, a API responde 422.",
+      "item": [
+        {
+          "name": "POST com X-Idempotency-Key (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Autor Idempotente\",\n  \"nacionalidade\": \"Brasileira\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Uma chave nova a cada execução da coleção.",
+                  "pm.collectionVariables.set(\"idempotencyKey\", pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Primeira vez: não é repetição\", () => pm.response.to.not.have.header(\"X-Idempotency-Replayed\"));",
+                  "pm.collectionVariables.set(\"autorIdempotenteId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesmo POST de novo: resposta repetida (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Autor Idempotente\",\n  \"nacionalidade\": \"Brasileira\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Cabeçalho X-Idempotency-Replayed: true\", () => pm.expect(pm.response.headers.get(\"X-Idempotency-Replayed\")).to.eql(\"true\"));",
+                  "pm.test(\"Mesmo autor da primeira resposta\", () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"autorIdempotenteId\"))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mesma chave com outro corpo (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": "{{baseUrl}}/autores",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Outro Autor\",\n  \"nacionalidade\": \"Portuguesa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Excluir autor idempotente (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/autores/{{autorIdempotenteId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Versionamento",
+      "description": "GET /livros/{id} nas versões 1 (padrão) e 2, escolhidas pelo cabeçalho X-API-Version.",
+      "item": [
+        {
+          "name": "Livro sem X-API-Version: versão 1 (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Respondeu na versão 1\", () => pm.expect(pm.response.headers.get(\"X-API-Version\")).to.eql(\"1\"));",
+                  "pm.test(\"Categoria como objeto\", () => pm.expect(pm.response.json().categoria).to.be.an(\"object\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Livro com X-API-Version: 2 (200)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Version",
+                "value": "2"
+              }
+            ],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Respondeu na versão 2\", () => pm.expect(pm.response.headers.get(\"X-API-Version\")).to.eql(\"2\"));",
+                  "const livro = pm.response.json();",
+                  "pm.test(\"Categoria pelo nome\", () => pm.expect(livro.categoria).to.be.a(\"string\"));",
+                  "pm.test(\"Autores pelo nome\", () => pm.expect(livro.autores.every(a => typeof a === \"string\")).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Versão inexistente (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Version",
+                "value": "3"
+              }
+            ],
+            "url": "{{baseUrl}}/livros/{{livroId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensagem cita as versões disponíveis\", () => pm.expect(pm.response.json().mensagem).to.include(\"1, 2\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Testes de códigos HTTP",
       "description": "Cenários prontos para validar os tratamentos de erro da API. Execute os testes de preparação antes dos testes 409.",
       "item": [
@@ -2139,5 +2730,25 @@
         }
       ]
     }
-  ]
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  }
 }

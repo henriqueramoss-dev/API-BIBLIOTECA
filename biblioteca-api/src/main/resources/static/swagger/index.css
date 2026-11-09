@@ -108,10 +108,35 @@ body {
 .swagger-ui .topbar .topbar-wrapper { max-width: 1120px; margin: 0 auto; padding: 0 24px; align-items: center; flex-wrap: nowrap; }
 
 /* botão de tema escuro do Swagger, à direita e em branco */
-.swagger-ui .topbar .dark-mode-toggle { margin-left: auto; }
+.swagger-ui .topbar .dark-mode-toggle { margin-left: 16px; }
 .swagger-ui .topbar .dark-mode-toggle button { opacity: 0.8; }
 .swagger-ui .topbar .dark-mode-toggle svg { fill: #ffffff; color: #ffffff; }
-.swagger-ui .topbar .download-url-wrapper { display: none; }
+
+/* seletor de versão da API (um documento por versão: v1 e v2), à direita */
+.swagger-ui .topbar .download-url-wrapper { margin-left: auto; flex: 0 1 auto; min-width: 0; display: flex; justify-content: flex-end; }
+.swagger-ui .topbar .download-url-wrapper .select-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--cor-menu-texto);
+    font: 500 0.85rem var(--fonte);
+    width: auto;
+    max-width: none;
+}
+.swagger-ui .topbar .download-url-wrapper .select-label span { display: none; }
+.swagger-ui .topbar .download-url-wrapper .select-label::before { content: "Versão da API"; white-space: nowrap; }
+.swagger-ui .topbar .download-url-wrapper .select-label select {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 180px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: var(--cor-texto);
+    font: 600 0.9rem var(--fonte);
+    box-shadow: none;
+}
 .swagger-ui .topbar a.link { flex: 0 0 auto; max-width: none; gap: 12px; }
 .swagger-ui .topbar a.link svg,
 .swagger-ui .topbar a.link img { display: none; }
@@ -450,8 +475,13 @@ body {
 #swagger-ui { padding-bottom: 48px; }
 
 @media (max-width: 640px) {
-    .swagger-ui .topbar a.link::after { content: "Biblioteca"; }
     .swagger-ui .topbar .topbar-wrapper { flex-direction: row; align-items: center; }
+    /* No celular, a marca fica só com o ícone para caber o seletor de versão */
+    .swagger-ui .topbar a.link::after { content: none; }
+    .swagger-ui .topbar .download-url-wrapper { flex: 0 0 170px; }
+    .swagger-ui .topbar .download-url-wrapper .select-label::before { content: none; }
+    .swagger-ui .topbar .download-url-wrapper .select-label select { min-width: 0; width: 170px; }
+    .swagger-ui .topbar .dark-mode-toggle { margin-left: 8px; }
     .swagger-ui .info { padding: 24px 20px 24px 40px; }
     .swagger-ui .info::before { left: 26px; }
     .swagger-ui .info .title { font-size: 1.6rem; }

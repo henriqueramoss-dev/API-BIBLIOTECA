@@ -40,7 +40,9 @@ com.senac.biblioteca
 ├── enums
 ├── exception
 ├── repository
-└── service
+├── seguranca
+├── service
+└── validation
 ```
 
 Responsabilidade de cada pacote:
@@ -53,7 +55,9 @@ Responsabilidade de cada pacote:
 - `assembler`: monta as respostas HATEOAS (`EntityModel`) com os links de cada recurso;
 - `enums`: armazena valores fixos utilizados pelas entidades;
 - `exception`: tratamento de erros da API;
-- `config`: configurações gerais, como Swagger e CORS.
+- `config`: configurações gerais, como Swagger e CORS;
+- `seguranca`: filtros de chave de API, limite de requisições e idempotência;
+- `validation`: validação própria do CPF (`@Cpf`).
 
 ---
 
@@ -343,8 +347,12 @@ A API utilizará códigos HTTP adequados para cada operação.
 | Recurso criado | 201 Created |
 | Exclusão realizada | 204 No Content |
 | Dados inválidos, ID relacionado inexistente, parâmetro ausente ou ordenação inválida | 400 Bad Request |
+| Rota protegida sem chave de API, ou chave inexistente ou revogada | 401 Unauthorized |
+| Chave de API sem o nível exigido | 403 Forbidden |
 | Registro ou endereço não encontrado | 404 Not Found |
 | Valor duplicado (e-mail, ISBN, número de carteirinha, segunda carteirinha do mesmo usuário) ou registro em uso ao excluir | 409 Conflict |
+| `X-Idempotency-Key` já usada com outra requisição | 422 Unprocessable Content |
+| Limite de requisições por minuto atingido (com `Retry-After`) | 429 Too Many Requests |
 | Erro interno | 500 Internal Server Error |
 
 Todos os erros voltam com uma mensagem explicando o problema, no mesmo formato.
@@ -543,6 +551,8 @@ A API estará disponível em:
 http://localhost:8080
 ```
 
+No log, a API mostra uma **chave de API de administrador**, usada no cabeçalho `X-API-Key` para cadastrar, alterar, excluir e ver dados pessoais. Para fixar a chave, defina a variável de ambiente `BIBLIOTECA_CHAVE_ADMIN`. Veja [Recursos avançados](docs/recursos-avancados.md).
+
 ---
 
 ## 15. Checklist dos requisitos da Parte 1
@@ -570,18 +580,22 @@ http://localhost:8080
 
 ---
 
-## 16. Escopo
+## 16. Recursos avançados da API
 
-Este projeto está limitado aos requisitos da **Parte 1** da atividade.
+Implementados na segunda fase do projeto. O detalhamento, com exemplos, está em [docs/recursos-avancados.md](docs/recursos-avancados.md).
 
-Não fazem parte desta etapa:
+| Requisito | Implementação no projeto |
+|---|---|
+| **4.1 Idempotência** com `X-Idempotency-Key` | `IdempotenciaFilter`: guarda por 24 h a resposta de sucesso de cada `POST` com a chave; o reenvio devolve a mesma resposta, com `X-Idempotency-Replayed: true`, sem cadastrar de novo. Mesma chave com outro corpo: 422; ainda em processamento: 409 |
+| **4.2 Chave de API** (`X-API-Key`) | Endpoints `/chaves-api` para gerar (com e-mail e senha), listar, consultar e revogar chaves. `ChaveApiFilter` protege dados pessoais (LEITURA), `POST`/`PUT` (ESCRITA) e `DELETE` (ADMIN). O banco guarda só o hash da chave |
+| Níveis de acesso (opcional) | LEITURA, ESCRITA e ADMIN; só funcionários geram chaves de ESCRITA ou ADMIN |
+| **4.3 Rate limiting** | `LimiteDeRequisicoesFilter`: 60 req/min por IP sem chave e 300 por chave; cabeçalhos `X-RateLimit-*` em toda resposta; 429 com `Retry-After` |
+| **4.4 CORS** | `CorsConfig`: origens configuráveis (`localhost`, `127.0.0.1`, `192.168.*`), métodos GET, POST, PUT, DELETE e OPTIONS, cabeçalhos aceitos e expostos listados |
+| **4.5 Versionamento** com `X-API-Version` | Versionamento nativo do Spring 7. `GET /livros` e `GET /livros/{id}` nas versões 1 (padrão) e 2 (`LivroV2`); versão inexistente: 400. Swagger com um documento por versão |
+| **5. Validações e erros** | Bean Validation em todas as entradas e `@RestControllerAdvice` (`ApiExceptionHandler`) com mensagens em português para 400, 401, 403, 404, 405, 406, 409, 415, 422, 429 e 500 |
+| **6. Swagger** | Todos os endpoints documentados, com o botão **Authorize** para a chave de API, os cabeçalhos novos e as respostas 401, 403, 422 e 429 |
 
-- autenticação por token (JWT ou API Key); existe apenas login por e-mail e senha, sem token;
-- idempotência;
-- rate limiting;
-- versionamento da API;
-- recursos avançados previstos para etapas futuras.
-
+Não fazem parte do projeto: autenticação por token JWT e armazenamento compartilhado (como o Redis) para o limite de requisições e a idempotência, que hoje ficam na memória da API.
 
 ---
 

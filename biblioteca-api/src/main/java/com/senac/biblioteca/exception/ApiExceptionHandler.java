@@ -1,10 +1,13 @@
 package com.senac.biblioteca.exception;
 
 import com.senac.biblioteca.dto.ErroResposta;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.core.PropertyReferenceException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.accept.InvalidApiVersionException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -21,6 +25,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Map;
@@ -35,6 +40,13 @@ import java.util.Map;
 public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    /** Versões aceitas no cabeçalho X-API-Version (spring.mvc.apiversion.supported). */
+    private final List<String> versoesSuportadas;
+
+    public ApiExceptionHandler(@Value("${spring.mvc.apiversion.supported}") List<String> versoesSuportadas) {
+        this.versoesSuportadas = versoesSuportadas;
+    }
 
     /**
      * Trata erros de Bean Validation, como campos obrigatórios vazios,
@@ -202,6 +214,82 @@ public class ApiExceptionHandler {
         ErroResposta resposta = criarResposta(HttpStatus.UNAUTHORIZED, "Não autorizado", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resposta);
+    }
+
+    /**
+     * Trata rotas protegidas chamadas sem chave de API ou com uma chave inválida ou revogada.
+     *
+     * Retorna HTTP 401 - Unauthorized, com o cabeçalho WWW-Authenticate dizendo onde a chave vai.
+     */
+    @ExceptionHandler(NaoAutenticadoException.class)
+    public ResponseEntity<ErroResposta> tratarNaoAutenticado(NaoAutenticadoException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.UNAUTHORIZED, "Não autorizado", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .header(HttpHeaders.WWW_AUTHENTICATE, "ApiKey header=\"X-API-Key\"")
+            .body(resposta);
+    }
+
+    /**
+     * Trata chaves de API válidas, mas sem permissão para a operação.
+     *
+     * Exemplo: excluir um livro (exige ADMIN) com uma chave de nível LEITURA.
+     *
+     * Retorna HTTP 403 - Forbidden.
+     */
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErroResposta> tratarAcessoNegado(AcessoNegadoException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.FORBIDDEN, "Acesso negado", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resposta);
+    }
+
+    /**
+     * Trata clientes que passaram do limite de requisições por minuto.
+     *
+     * Retorna HTTP 429 - Too Many Requests, com o cabeçalho Retry-After (segundos de espera).
+     */
+    @ExceptionHandler(LimiteDeRequisicoesException.class)
+    public ResponseEntity<ErroResposta> tratarLimiteDeRequisicoes(LimiteDeRequisicoesException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.TOO_MANY_REQUESTS, "Muitas requisições", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getSegundosParaTentarDeNovo()))
+            .body(resposta);
+    }
+
+    /**
+     * Trata problemas com o cabeçalho X-Idempotency-Key.
+     *
+     * Retorna HTTP 400 (chave em formato inválido), 409 (requisição com a mesma chave ainda
+     * em andamento) ou 422 (chave já usada com outra requisição).
+     */
+    @ExceptionHandler(IdempotenciaException.class)
+    public ResponseEntity<ErroResposta> tratarIdempotencia(IdempotenciaException ex) {
+        ErroResposta resposta = criarResposta(ex.getStatus(), ex.getTitulo(), ex.getMessage());
+
+        return ResponseEntity.status(ex.getStatus()).body(resposta);
+    }
+
+    /**
+     * Trata versões da API que não existem no cabeçalho X-API-Version.
+     *
+     * Exemplo: X-API-Version: 3 (a API tem as versões 1 e 2).
+     *
+     * Retorna HTTP 400 - Bad Request, dizendo quais versões existem.
+     */
+    @ExceptionHandler(InvalidApiVersionException.class)
+    public ResponseEntity<ErroResposta> tratarVersaoInvalida(InvalidApiVersionException ex, HttpServletRequest request) {
+        // Mostra a versão como o cliente enviou ("3"), e não como o Spring a interpretou ("3.0.0").
+        String enviada = request.getHeader("X-API-Version");
+        ErroResposta resposta = criarResposta(
+            HttpStatus.BAD_REQUEST,
+            "Versão da API não suportada",
+            "A versão '" + (enviada != null ? enviada.trim() : ex.getVersion()) + "' não existe. Envie o cabeçalho X-API-Version com uma das versões: "
+                + String.join(", ", versoesSuportadas) + " (sem o cabeçalho, vale a versão 1)."
+        );
+
+        return ResponseEntity.badRequest().body(resposta);
     }
 
     /**

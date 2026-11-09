@@ -32,8 +32,18 @@ export function getBaseUrl() {
   return baseUrl;
 }
 
+// Chave de API enviada no cabeçalho X-API-Key (as rotas protegidas da API exigem uma).
+let apiKey = '';
+
+export function setApiKey(chave: string | undefined) {
+  apiKey = (chave ?? '').trim();
+}
+
 const DEFAULT_MESSAGES: Record<number, string> = {
   400: 'Dados inválidos. Verifique os campos informados.',
+  401: 'A API exigiu uma chave de acesso. Configure VITE_API_KEY no arquivo .env do site.',
+  403: 'A chave de API configurada não tem permissão para esta operação.',
+  429: 'Muitas requisições em pouco tempo. Aguarde alguns segundos e tente de novo.',
   404: 'Registro não encontrado.',
   409: 'Operação não permitida: dado duplicado ou registro em uso.',
 };
@@ -43,7 +53,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(baseUrl + path, {
       ...init,
-      headers: { 'Content-Type': 'application/json', Accept: 'application/hal+json', ...init.headers },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/hal+json',
+        ...(apiKey ? { 'X-API-Key': apiKey } : {}),
+        ...init.headers,
+      },
     });
   } catch {
     throw new ApiError(0, `Não foi possível conectar à API em ${baseUrl}. Ela está rodando?`);

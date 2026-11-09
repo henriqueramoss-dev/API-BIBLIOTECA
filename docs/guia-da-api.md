@@ -11,63 +11,74 @@ A API é REST, fala **JSON** e roda por padrão em `http://localhost:8080`. A do
 | Identificadores | Números inteiros gerados pela API (`id`); o `id` enviado no corpo é ignorado na criação |
 | Relacionamentos na entrada | Por **ID**: `categoriaId`, `autoresIds`, `usuarioId`, `livroId` |
 | Relacionamentos na saída | Objetos completos dentro do registro, mais links HATEOAS |
-| Autenticação | Login por e-mail e senha em `POST /auth/login`. **Não há token**: as demais rotas continuam abertas (veja [Segurança e limitações](seguranca-e-limitacoes.md)) |
+| Autenticação | Chave de API no cabeçalho `X-API-Key`, exigida para ler dados pessoais e para alterar dados. O catálogo (livros, autores, categorias) é público. Veja [Recursos avançados](recursos-avancados.md#1-chave-de-api-x-api-key) |
+| Limite de requisições | 60 por minuto sem chave (por IP) e 300 com chave; acima disso, **429** com `Retry-After` |
+| Idempotência | Cabeçalho opcional `X-Idempotency-Key` nos `POST`, para reenviar com segurança |
+| Versão | Cabeçalho opcional `X-API-Version` (1 ou 2; padrão 1). `GET /livros` e `GET /livros/{id}` têm a versão 2 |
 
 ## Endpoints
 
-São **42 endpoints**: 40 em 6 recursos e 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`). Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
+São **47 endpoints**: 40 em 6 recursos, 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`) e 5 de chaves de API. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
 
-| Método | Rota | O que faz | Respostas |
-|---|---|---|---|
-| **Livros** | | | |
-| GET | `/livros` | Listar livros | 200, 400, 404 |
-| POST | `/livros` | Cadastrar livro | 201, 400, 409 |
-| GET | `/livros/buscar?titulo=` | Buscar por título | 200, 400, 404 |
-| GET | `/livros/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/livros/{id}` | Atualizar | 200, 400, 404, 409 |
-| DELETE | `/livros/{id}` | Excluir | 204, 404, 409 |
-| GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | 200, 400, 404 |
-| **Autenticação e senha** | | | |
-| POST | `/auth/login` | Entrar (confere e-mail e senha e devolve o usuário) | 200, 400, 401 |
-| PUT | `/usuarios/{id}/senha` | Trocar a senha do usuário | 204, 400, 404 |
-| **Autores** | | | |
-| GET | `/autores` | Listar autores | 200, 400, 404 |
-| POST | `/autores` | Cadastrar autor | 201, 400 |
-| GET | `/autores/buscar?nome=` | Buscar por nome | 200, 400, 404 |
-| GET | `/autores/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/autores/{id}` | Atualizar | 200, 400, 404 |
-| DELETE | `/autores/{id}` | Excluir | 204, 404, 409 |
-| GET | `/autores/{id}/livros` | Livros do autor | 200, 400, 404 |
-| **Categorias** | | | |
-| GET | `/categorias` | Listar categorias | 200, 400, 404 |
-| POST | `/categorias` | Cadastrar categoria | 201, 400 |
-| GET | `/categorias/buscar?nome=` | Buscar por nome | 200, 400, 404 |
-| GET | `/categorias/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/categorias/{id}` | Atualizar | 200, 400, 404 |
-| DELETE | `/categorias/{id}` | Excluir | 204, 404, 409 |
-| GET | `/categorias/{id}/livros` | Livros da categoria | 200, 400, 404 |
-| **Usuários** | | | |
-| GET | `/usuarios` | Listar usuários | 200, 400, 404 |
-| POST | `/usuarios` | Cadastrar usuário | 201, 400, 409 |
-| GET | `/usuarios/buscar?nome=` | Buscar por nome | 200, 400, 404 |
-| GET | `/usuarios/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/usuarios/{id}` | Atualizar | 200, 400, 404, 409 |
-| DELETE | `/usuarios/{id}` | Excluir (apaga também a carteirinha) | 204, 404, 409 |
-| GET | `/usuarios/{id}/emprestimos` | Empréstimos do usuário | 200, 400, 404 |
-| **Carteirinhas** | | | |
-| GET | `/carteirinhas` | Listar carteirinhas | 200, 400, 404 |
-| POST | `/carteirinhas` | Cadastrar carteirinha | 201, 400, 409 |
-| GET | `/carteirinhas/buscar?numero=` | Buscar por número | 200, 400, 404 |
-| GET | `/carteirinhas/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/carteirinhas/{id}` | Atualizar | 200, 400, 404, 409 |
-| DELETE | `/carteirinhas/{id}` | Excluir | 204, 404 |
-| **Empréstimos** | | | |
-| GET | `/emprestimos` | Listar empréstimos | 200, 400, 404 |
-| POST | `/emprestimos` | Cadastrar empréstimo | 201, 400 |
-| GET | `/emprestimos/buscar?status=` | Filtrar por status (`ATIVO`, `DEVOLVIDO`, `ATRASADO`) | 200, 400, 404 |
-| GET | `/emprestimos/{id}` | Buscar por ID | 200, 400, 404 |
-| PUT | `/emprestimos/{id}` | Atualizar | 200, 400, 404 |
-| DELETE | `/emprestimos/{id}` | Excluir | 204, 404 |
+A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITURA), E (ESCRITA) ou A (ADMIN). Todas as rotas também podem responder **429** (limite de requisições), e as protegidas, **401** e **403**.
+
+| Método | Rota | O que faz | Acesso | Respostas |
+|---|---|---|---|---|
+| **Livros** | | | | |
+| GET | `/livros` | Listar livros (versões 1 e 2, pelo cabeçalho `X-API-Version`) | — | 200, 400, 404 |
+| POST | `/livros` | Cadastrar livro | E | 201, 400, 409 |
+| GET | `/livros/buscar?titulo=` | Buscar por título | — | 200, 400, 404 |
+| GET | `/livros/{id}` | Buscar por ID (versões 1 e 2) | — | 200, 400, 404 |
+| PUT | `/livros/{id}` | Atualizar | E | 200, 400, 404, 409 |
+| DELETE | `/livros/{id}` | Excluir | A | 204, 404, 409 |
+| GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | L | 200, 400, 404 |
+| **Autenticação e senha** | | | | |
+| POST | `/auth/login` | Entrar (confere e-mail e senha e devolve o usuário) | — | 200, 400, 401 |
+| PUT | `/usuarios/{id}/senha` | Trocar a senha do usuário (a primeira senha exige chave de ESCRITA) | — | 204, 400, 403, 404 |
+| **Autores** | | | | |
+| GET | `/autores` | Listar autores | — | 200, 400, 404 |
+| POST | `/autores` | Cadastrar autor | E | 201, 400 |
+| GET | `/autores/buscar?nome=` | Buscar por nome | — | 200, 400, 404 |
+| GET | `/autores/{id}` | Buscar por ID | — | 200, 400, 404 |
+| PUT | `/autores/{id}` | Atualizar | E | 200, 400, 404 |
+| DELETE | `/autores/{id}` | Excluir | A | 204, 404, 409 |
+| GET | `/autores/{id}/livros` | Livros do autor | — | 200, 400, 404 |
+| **Categorias** | | | | |
+| GET | `/categorias` | Listar categorias | — | 200, 400, 404 |
+| POST | `/categorias` | Cadastrar categoria | E | 201, 400 |
+| GET | `/categorias/buscar?nome=` | Buscar por nome | — | 200, 400, 404 |
+| GET | `/categorias/{id}` | Buscar por ID | — | 200, 400, 404 |
+| PUT | `/categorias/{id}` | Atualizar | E | 200, 400, 404 |
+| DELETE | `/categorias/{id}` | Excluir | A | 204, 404, 409 |
+| GET | `/categorias/{id}/livros` | Livros da categoria | — | 200, 400, 404 |
+| **Usuários** | | | | |
+| GET | `/usuarios` | Listar usuários | L | 200, 400, 404 |
+| POST | `/usuarios` | Cadastrar usuário (sem chave de ESCRITA, só `ALUNO` e `VISITANTE`) | — | 201, 400, 403, 409 |
+| GET | `/usuarios/buscar?nome=` | Buscar por nome | L | 200, 400, 404 |
+| GET | `/usuarios/{id}` | Buscar por ID | L | 200, 400, 404 |
+| PUT | `/usuarios/{id}` | Atualizar | E | 200, 400, 404, 409 |
+| DELETE | `/usuarios/{id}` | Excluir (apaga também a carteirinha) | A | 204, 404, 409 |
+| GET | `/usuarios/{id}/emprestimos` | Empréstimos do usuário | L | 200, 400, 404 |
+| **Carteirinhas** | | | | |
+| GET | `/carteirinhas` | Listar carteirinhas | L | 200, 400, 404 |
+| POST | `/carteirinhas` | Cadastrar carteirinha | E | 201, 400, 409 |
+| GET | `/carteirinhas/buscar?numero=` | Buscar por número | L | 200, 400, 404 |
+| GET | `/carteirinhas/{id}` | Buscar por ID | L | 200, 400, 404 |
+| PUT | `/carteirinhas/{id}` | Atualizar | E | 200, 400, 404, 409 |
+| DELETE | `/carteirinhas/{id}` | Excluir | A | 204, 404 |
+| **Empréstimos** | | | | |
+| GET | `/emprestimos` | Listar empréstimos | L | 200, 400, 404 |
+| POST | `/emprestimos` | Cadastrar empréstimo | E | 201, 400 |
+| GET | `/emprestimos/buscar?status=` | Filtrar por status (`ATIVO`, `DEVOLVIDO`, `ATRASADO`) | L | 200, 400, 404 |
+| GET | `/emprestimos/{id}` | Buscar por ID | L | 200, 400, 404 |
+| PUT | `/emprestimos/{id}` | Atualizar | E | 200, 400, 404 |
+| DELETE | `/emprestimos/{id}` | Excluir | A | 204, 404 |
+| **Chaves de API** | | | | |
+| POST | `/chaves-api` | Gerar chave (confere e-mail e senha; a chave aparece só nesta resposta) | — | 201, 400, 401, 403 |
+| GET | `/chaves-api` | Listar as próprias chaves (ADMIN: todas) | L | 200, 400, 404 |
+| GET | `/chaves-api/atual` | Consultar a chave usada na requisição | L | 200 |
+| GET | `/chaves-api/{id}` | Buscar uma chave própria | L | 200, 400, 404 |
+| DELETE | `/chaves-api/{id}` | Revogar uma chave própria (ADMIN: qualquer uma) | L | 204, 400, 404 |
 
 Nas listagens, o **404** significa "a página pedida não existe" (veja a seção de paginação). Nas rotas com `{id}`, significa "registro não encontrado".
 
@@ -168,6 +179,12 @@ Todos os erros têm o mesmo formato, com uma mensagem em português:
 | **404** | Página que não existe | `A página 100000 não existe. Esta listagem tem 1 página (de 0 a 0).` |
 | **404** | Endereço que não existe | `O endereço '/livross' não existe nesta API.` |
 | **400** | Dados que se contradizem (regras do empréstimo) | `Informe a data de devolução quando o status for DEVOLVIDO.` (acompanha o objeto `campos`) |
+| **401** | Rota protegida sem chave de API, ou chave inexistente ou revogada (a resposta traz o cabeçalho `WWW-Authenticate`) | `Esta rota exige uma chave de API no cabeçalho X-API-Key. Gere uma em POST /chaves-api.` |
+| **403** | Chave de API sem o nível exigido | `Esta operação exige uma chave de API de nível ESCRITA ou superior. A chave usada é de nível LEITURA.` |
+| **400** | Versão inexistente no cabeçalho `X-API-Version` | `A versão '3' não existe. Envie o cabeçalho X-API-Version com uma das versões: 1, 2 (sem o cabeçalho, vale a versão 1).` |
+| **409** | Outra requisição com a mesma `X-Idempotency-Key` ainda em andamento | `Uma requisição com esta X-Idempotency-Key ainda está sendo processada. Aguarde e tente de novo.` |
+| **422** | `X-Idempotency-Key` já usada com outra requisição | `Esta X-Idempotency-Key já foi usada com outra requisição (corpo ou endereço diferentes). Use uma chave nova para cada operação.` |
+| **429** | Limite de requisições por minuto atingido (a resposta traz o cabeçalho `Retry-After`) | `Limite de 60 requisições por minuto atingido. Tente novamente em 38 segundos.` |
 | **405** | Método HTTP não aceito (a resposta traz o cabeçalho `Allow` com os métodos aceitos) | `O método PATCH não é aceito neste endereço. Métodos aceitos: DELETE, GET, PUT.` |
 | **406** | Cabeçalho `Accept` que a API não atende | `A API responde em application/json (ou HAL+JSON). Ajuste o cabeçalho Accept.` |
 | **415** | `Content-Type` que a API não aceita | `Envie o corpo da requisição como application/json.` |
@@ -193,6 +210,12 @@ Erro de validação (**400**), com os problemas por campo:
 
 Os exemplos usam `curl`. A ordem importa: um livro precisa de uma categoria, um empréstimo precisa de um livro e de um usuário, e assim por diante.
 
+As rotas de cadastro, alteração e exclusão exigem uma chave de API. Os exemplos usam a variável `CHAVE` com a chave de administrador mostrada no log ao iniciar a API (veja [Recursos avançados](recursos-avancados.md#a-primeira-chave-administrador)):
+
+```bash
+CHAVE=bib_cole_aqui_a_chave_do_log
+```
+
 ### Regras que a API confere além do formato
 
 | Recurso | Regra | Erro |
@@ -210,12 +233,12 @@ Os exemplos usam `curl`. A ordem importa: um livro precisa de uma categoria, um 
 ### 1. Cadastrar uma categoria e um autor
 
 ```bash
-curl -X POST http://localhost:8080/categorias -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/categorias -H "Content-Type: application/json" -d '{
   "nome": "Romance", "codigo": "ROM", "descricao": "Narrativas de ficção em prosa",
   "localizacao": "Estante A", "publicoAlvo": "Adulto"
 }'
 
-curl -X POST http://localhost:8080/autores -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/autores -H "Content-Type: application/json" -d '{
   "nome": "Machado de Assis", "nacionalidade": "Brasileira",
   "dataNascimento": "1839-06-21", "generoLiterario": "Romance"
 }'
@@ -226,7 +249,7 @@ A resposta é **201 Created**, com o endereço do novo registro no cabeçalho `L
 ### 2. Cadastrar um livro (usa os IDs acima)
 
 ```bash
-curl -X POST http://localhost:8080/livros -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/livros -H "Content-Type: application/json" -d '{
   "titulo": "Dom Casmurro", "isbn": "9788535910663", "anoPublicacao": 1899,
   "editora": "Penguin-Companhia", "numeroPaginas": 256,
   "categoriaId": 1, "autoresIds": [1]
@@ -236,7 +259,7 @@ curl -X POST http://localhost:8080/livros -H "Content-Type: application/json" -d
 ### 3. Cadastrar um usuário, a carteirinha dele e um empréstimo
 
 ```bash
-curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
   "nome": "Henrique Ramos", "email": "henrique@email.com",
   "cpf": "12345678909", "matricula": "2026001", "tipo": "ALUNO",
   "telefone": "11999990000", "endereco": "Rua das Flores, 10",
@@ -244,12 +267,12 @@ curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" 
   "dataNascimento": "2000-05-10"
 }'
 
-curl -X POST http://localhost:8080/carteirinhas -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/carteirinhas -H "Content-Type: application/json" -d '{
   "numero": "CB-000123", "dataEmissao": "2026-02-01", "dataValidade": "2027-02-01",
   "status": "ATIVA", "limiteEmprestimos": 3, "usuarioId": 1
 }'
 
-curl -X POST http://localhost:8080/emprestimos -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/emprestimos -H "Content-Type: application/json" -d '{
   "dataEmprestimo": "2026-10-20", "dataPrevistaDevolucao": "2026-11-03",
   "status": "ATIVO", "usuarioId": 1, "livroId": 1
 }'
@@ -277,15 +300,23 @@ curl -X PUT http://localhost:8080/usuarios/1/senha -H "Content-Type: application
 }'
 ```
 
-Regras: a nova senha deve ser diferente da atual; usuário **sem senha** (criado sem o campo `senha`) não consegue entrar, mas pode definir a primeira senha por `PUT /usuarios/{id}/senha` (sem `senhaAtual`). `PUT /usuarios/{id}` não altera a senha.
+Regras: a nova senha deve ser diferente da atual; usuário **sem senha** (criado sem o campo `senha`) não consegue entrar, e a primeira senha dele é definida por `PUT /usuarios/{id}/senha` (sem `senhaAtual`) com uma chave de API de nível ESCRITA. `PUT /usuarios/{id}` não altera a senha.
+
+Sem chave de API, o cadastro (autocadastro) só aceita os tipos `ALUNO` e `VISITANTE`. Com a senha cadastrada, o próprio usuário gera uma chave de LEITURA para acessar os dados dele:
+
+```bash
+curl -X POST http://localhost:8080/chaves-api -H "Content-Type: application/json" -d '{
+  "email": "ana@email.com", "senha": "minhaSenha123", "nome": "Meu celular"
+}'
+```
 
 ### 4. Consultar
 
 ```bash
 curl "http://localhost:8080/livros/buscar?titulo=dom"              # busca por parte do título
-curl "http://localhost:8080/emprestimos/buscar?status=ATIVO"       # empréstimos ativos
+curl -H "X-API-Key: $CHAVE" "http://localhost:8080/emprestimos/buscar?status=ATIVO"       # empréstimos ativos
 curl "http://localhost:8080/categorias/1/livros"                   # livros de uma categoria
-curl "http://localhost:8080/usuarios/1/emprestimos"                # empréstimos de um usuário
+curl -H "X-API-Key: $CHAVE" "http://localhost:8080/usuarios/1/emprestimos"                # empréstimos de um usuário
 ```
 
 ### 5. Devolver um livro (atualizar o empréstimo)
@@ -293,7 +324,7 @@ curl "http://localhost:8080/usuarios/1/emprestimos"                # empréstimo
 O `PUT` substitui os campos do registro, então envie o corpo completo:
 
 ```bash
-curl -X PUT http://localhost:8080/emprestimos/1 -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X PUT http://localhost:8080/emprestimos/1 -H "Content-Type: application/json" -d '{
   "dataEmprestimo": "2026-10-20", "dataPrevistaDevolucao": "2026-11-03",
   "dataDevolucao": "2026-11-01", "status": "DEVOLVIDO",
   "usuarioId": 1, "livroId": 1
@@ -303,7 +334,7 @@ curl -X PUT http://localhost:8080/emprestimos/1 -H "Content-Type: application/js
 ### 6. Excluir
 
 ```bash
-curl -X DELETE http://localhost:8080/emprestimos/1     # 204 No Content
+curl -H "X-API-Key: $CHAVE" -X DELETE http://localhost:8080/emprestimos/1     # 204 No Content
 ```
 
 **Ordem de exclusão:** um registro em uso não pode ser excluído (erro 409). Exclua primeiro quem depende dele: empréstimo → livro → autor e categoria → usuário (que leva a carteirinha junto).
