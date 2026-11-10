@@ -127,10 +127,14 @@ class ChaveApiTest extends ApiHttpTeste {
     // ---------------------------------------------------------------- níveis de acesso
 
     @Test
-    void chaveDeLeituraConsultaMasNaoAlteraNemExclui() throws Exception {
+    void chaveDeLeituraEhDeClienteEnaoVeDadosDeOutrasPessoasNemAltera() throws Exception {
         String chave = novaChave("ALUNO", "LEITURA");
 
-        assertThat(chamar("GET", "/emprestimos", null, "X-API-Key", chave).status()).isEqualTo(200);
+        // Cliente vê o que é dele (a própria chave), mas não os dados pessoais de outras pessoas.
+        assertThat(chamar("GET", "/chaves-api/atual", null, "X-API-Key", chave).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/usuarios", null, "X-API-Key", chave).status()).isEqualTo(403);
+        assertThat(chamar("GET", "/carteirinhas", null, "X-API-Key", chave).status()).isEqualTo(403);
+        assertThat(chamar("GET", "/emprestimos", null, "X-API-Key", chave).status()).isEqualTo(403);
 
         Resposta criar = chamar("POST", "/categorias", "{\"nome\":\"Leitura\"}", "X-API-Key", chave);
         assertThat(criar.status()).isEqualTo(403);
@@ -142,6 +146,9 @@ class ChaveApiTest extends ApiHttpTeste {
     @Test
     void chaveDeEscritaCadastraMasSoAdminExclui() throws Exception {
         String chave = novaChave("FUNCIONARIO", "ESCRITA");
+
+        // A equipe da biblioteca (ESCRITA ou ADMIN) vê os dados de todos.
+        assertThat(chamar("GET", "/usuarios", null, "X-API-Key", chave).status()).isEqualTo(200);
 
         Resposta autor = chamar("POST", "/autores", "{\"nome\":\"Autor " + unico() + "\",\"nacionalidade\":\"Brasileira\"}", "X-API-Key", chave);
         assertThat(autor.status()).isEqualTo(201);

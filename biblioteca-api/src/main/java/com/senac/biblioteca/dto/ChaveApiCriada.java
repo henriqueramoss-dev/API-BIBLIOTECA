@@ -2,6 +2,7 @@ package com.senac.biblioteca.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.senac.biblioteca.entity.ChaveApi;
+import com.senac.biblioteca.entity.Usuario;
 import com.senac.biblioteca.enums.NivelAcesso;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * Resposta da geração de uma chave de API: é a ÚNICA vez em que a chave completa aparece.
  */
-@JsonPropertyOrder({"id", "chave", "aviso", "nome", "prefixo", "nivel", "usuarioId", "criadaEm"})
+@JsonPropertyOrder({"id", "chave", "aviso", "nome", "prefixo", "nivel", "usuarioId", "usuarioNome", "usuarioTipo", "criadaEm"})
 @Schema(name = "ChaveApiCriada", description = "Chave de API recém-gerada, mostrada uma única vez")
 public class ChaveApiCriada {
 
@@ -37,16 +38,24 @@ public class ChaveApiCriada {
     @Schema(description = "ID do usuário dono da chave", example = "1")
     private final Long usuarioId;
 
+    @Schema(description = "Nome do usuário dono da chave", example = "Ana Souza")
+    private final String usuarioNome;
+
+    @Schema(description = "Tipo do usuário dono da chave (FUNCIONARIO é o dono/equipe da biblioteca; os demais são clientes)", example = "ALUNO")
+    private final String usuarioTipo;
+
     @Schema(description = "Quando a chave foi gerada", example = "2026-11-06T10:15:30")
     private final LocalDateTime criadaEm;
 
-    public ChaveApiCriada(ChaveApi registro, String chave) {
+    public ChaveApiCriada(ChaveApi registro, String chave, Usuario usuario) {
         this.id = registro.getId();
         this.chave = chave;
         this.nome = registro.getNome();
         this.prefixo = registro.getPrefixo();
         this.nivel = registro.getNivel();
         this.usuarioId = registro.getUsuarioId();
+        this.usuarioNome = usuario == null ? null : usuario.getNome();
+        this.usuarioTipo = usuario == null || usuario.getTipo() == null ? null : usuario.getTipo().name();
         this.criadaEm = registro.getCriadaEm();
     }
 
@@ -57,5 +66,7 @@ public class ChaveApiCriada {
     public String getPrefixo() { return prefixo; }
     public NivelAcesso getNivel() { return nivel; }
     public Long getUsuarioId() { return usuarioId; }
+    public String getUsuarioNome() { return usuarioNome; }
+    public String getUsuarioTipo() { return usuarioTipo; }
     public LocalDateTime getCriadaEm() { return criadaEm; }
 }

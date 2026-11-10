@@ -245,6 +245,17 @@ public class ApiExceptionHandler {
     }
 
     /**
+     * Trata reservas que as regras da biblioteca não permitem (livro indisponível, limite de reservas,
+     * reserva já retirada). Retorna HTTP 409 - Conflict.
+     */
+    @ExceptionHandler(ReservaNaoPermitidaException.class)
+    public ResponseEntity<ErroResposta> tratarReservaNaoPermitida(ReservaNaoPermitidaException ex) {
+        ErroResposta resposta = criarResposta(HttpStatus.CONFLICT, "Reserva não permitida", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(resposta);
+    }
+
+    /**
      * Trata clientes que passaram do limite de requisições por minuto.
      *
      * Retorna HTTP 429 - Too Many Requests, com o cabeçalho Retry-After (segundos de espera).

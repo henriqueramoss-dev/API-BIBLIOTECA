@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
-import { ApiError, list, Page, remove } from '../api/client';
-import { isResourceKey, Livro, RESOURCES } from '../api/resources';
+import { ApiError, list, Page, remove, update } from '../api/client';
+import { isResourceKey, Livro, RESOURCES, today } from '../api/resources';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import CapaDoLivro from '../components/CapaDoLivro';
@@ -65,6 +65,24 @@ export default function ResourceList() {
       // Se era o último item da página, volta uma página (a API responde 404 para página inexistente).
       if (data && data.items.length === 1 && page > 0) goTo(page - 1);
       else load();
+    } catch (e) {
+      alert((e as Error).message);
+    }
+  };
+
+  // A pessoa chegou na biblioteca para retirar o livro reservado: vira um empréstimo ATIVO de 14 dias a partir de hoje.
+  const confirmarRetirada = async (item: any) => {
+    if (!confirm(`Confirmar a retirada de "${resource.title(item)}" por ${item.usuario?.nome}?`)) return;
+    try {
+      await update('emprestimos', item.id, {
+        dataEmprestimo: today(),
+        dataPrevistaDevolucao: today(14),
+        status: 'ATIVO',
+        observacao: item.observacao ?? null,
+        usuarioId: item.usuario.id,
+        livroId: item.livro.id,
+      });
+      load();
     } catch (e) {
       alert((e as Error).message);
     }
@@ -151,6 +169,9 @@ export default function ResourceList() {
                     {resource.details(item).map((d) => <td key={d.label} data-label={d.label}>{d.value}</td>)}
                     {badge && <td><span className={`badge ${badge.tone}`}>{badge.text}</span></td>}
                     <td className="actions">
+                      {resource.key === 'emprestimos' && item.status === 'RESERVADO' && pode('ESCRITA') && (
+                        <button className="btn small-btn" onClick={() => confirmarRetirada(item)}>Confirmar retirada</button>
+                      )}
                       {pode('ESCRITA') && <Link className="icon-btn" to={`/${resource.key}/${item.id}`} aria-label="Editar"><Icon name="edit" /></Link>}
                       {pode('ADMIN') && <button className="icon-btn danger" onClick={() => handleDelete(item)} aria-label="Excluir"><Icon name="trash" /></button>}
                     </td>

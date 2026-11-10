@@ -15,5 +15,8 @@ public enum StatusEmprestimo {
     DEVOLVIDO,
 
     // O prazo de devolução foi ultrapassado.
-    ATRASADO
+    ATRASADO,
+
+    // O cliente reservou o livro pelo site e ainda vai retirá-lo na biblioteca.
+    RESERVADO
 }

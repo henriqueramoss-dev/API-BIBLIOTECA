@@ -72,7 +72,7 @@ export default function Cadastro() {
     <div className="login-wrap">
       <form className="card form cadastro-card" onSubmit={enviar} noValidate>
         <h1>Criar conta</h1>
-        <p className="muted">Cadastre-se como aluno ou visitante para acompanhar seus empréstimos.</p>
+        <p className="muted">Crie sua conta de cliente para reservar livros e retirá-los na biblioteca.</p>
         {message && <div className="alert" role="alert">{message}</div>}
         {recurso.fields.map((f: Field) => (
           <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} onChange={(v) => setField(f.name, v)} />

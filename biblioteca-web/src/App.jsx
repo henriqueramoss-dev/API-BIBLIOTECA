@@ -4,6 +4,7 @@ import { RESOURCE_ORDER, RESOURCES } from './api/resources';
 import { exigeLogin, useAuth } from './auth/AuthContext';
 import { Icon } from './components/Icon';
 import { Estante, FaixaDeLombadas } from './components/ilustracoes';
+import AreaDoCliente from './cliente/AreaDoCliente';
 import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import Entrar from './pages/Entrar';
@@ -24,9 +25,16 @@ function Guarda({ modo, children }) {
 
 const NIVEIS = { LEITURA: 'Leitura', ESCRITA: 'Escrita', ADMIN: 'Administrador' };
 
-// Estrutura da página: menu lateral, barra de topo e as rotas.
-// Arquivo em JavaScript (.jsx).
+// Quem entra é da equipe da biblioteca (tipo FUNCIONARIO) ou cliente? O dono vê o painel de gestão;
+// clientes e visitantes veem a área de reservas (cliente/AreaDoCliente.jsx).
 export default function App() {
+  const { ehFuncionario } = useAuth();
+  return ehFuncionario ? <PainelDaBiblioteca /> : <AreaDoCliente />;
+}
+
+// Painel de gestão da biblioteca: menu lateral, barra de topo e as rotas.
+// Arquivo em JavaScript (.jsx).
+function PainelDaBiblioteca() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const { sessao, sair } = useAuth();

@@ -60,6 +60,10 @@ public class Emprestimo {
     @JoinColumn(name = "livro_id", nullable = false)
     private Livro livro;
 
+    // Só existe em reservas (status RESERVADO): último dia para retirar o livro na biblioteca.
+    @Schema(description = "Último dia para retirar o livro, quando o status é RESERVADO", accessMode = Schema.AccessMode.READ_ONLY, example = "2026-11-12")
+    private LocalDate retirarAte;
+
     public Emprestimo() {
     }
 
@@ -129,5 +133,13 @@ public class Emprestimo {
 
     public void setLivro(Livro livro) {
         this.livro = livro;
+    }
+
+    public LocalDate getRetirarAte() {
+        return retirarAte;
+    }
+
+    public void setRetirarAte(LocalDate retirarAte) {
+        this.retirarAte = retirarAte;
     }
 }
