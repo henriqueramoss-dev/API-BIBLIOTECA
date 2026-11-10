@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -51,6 +52,9 @@ public class UsuarioService {
                 + "ALUNO e VISITANTE. Usuários " + usuario.getTipo() + " são cadastrados pela biblioteca.");
         }
 
+        // A matrícula nunca vem de quem cadastra: é gerada abaixo, depois que o banco define o ID.
+        usuario.setMatricula(null);
+
         // O ID de um novo recurso sempre deve ser gerado pelo banco.
         // Isso também evita erro caso o Swagger envie um ID de exemplo.
         usuario.setId(null);
@@ -61,7 +65,10 @@ public class UsuarioService {
             usuario.setSenha(null);
         }
 
-        return repository.save(usuario);
+        Usuario salvo = repository.save(usuario);
+        // Matrícula = ano do cadastro + ID com 6 dígitos (ex.: 2026000012). Como o ID é único, ela também é.
+        salvo.setMatricula(LocalDate.now().getYear() + String.format("%06d", salvo.getId()));
+        return repository.save(salvo);
     }
 
     // Atualiza somente se o usuário informado existir. A senha não é alterada aqui (use PUT /usuarios/{id}/senha).
@@ -71,7 +78,7 @@ public class UsuarioService {
                 usuario.setNome(dados.getNome());
                 usuario.setEmail(dados.getEmail());
                 usuario.setCpf(dados.getCpf());
-                usuario.setMatricula(dados.getMatricula());
+                // A matrícula não muda: ela é gerada no cadastro.
                 usuario.setTipo(dados.getTipo());
                 usuario.setTelefone(dados.getTelefone());
                 usuario.setEndereco(dados.getEndereco());

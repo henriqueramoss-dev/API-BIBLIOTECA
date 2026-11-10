@@ -266,7 +266,7 @@ curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/livros -H "Content-Typ
 ```bash
 curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
   "nome": "Henrique Ramos", "email": "henrique@email.com",
-  "cpf": "12345678909", "matricula": "2026001", "tipo": "ALUNO",
+  "cpf": "12345678909", "tipo": "ALUNO",
   "telefone": "11999990000", "endereco": "Rua das Flores, 10",
   "cidade": "São Paulo", "estado": "SP", "cep": "01001000",
   "dataNascimento": "2000-05-10"

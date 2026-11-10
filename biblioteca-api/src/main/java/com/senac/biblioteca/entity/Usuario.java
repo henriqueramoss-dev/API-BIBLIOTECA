@@ -53,7 +53,8 @@ public class Usuario {
     private String cpf;
 
     @Size(max = 20, message = "A matrícula deve ter no máximo 20 caracteres")
-    @Schema(description = "Matrícula na instituição (opcional)", example = "2026001")
+    @Schema(description = "Matrícula gerada automaticamente no cadastro (ano + número sequencial). Não pode ser informada nem alterada.",
+        accessMode = Schema.AccessMode.READ_ONLY, example = "2026000012")
     private String matricula;
 
     @NotNull(message = "O tipo de usuário é obrigatório")

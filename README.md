@@ -75,7 +75,7 @@ Principais dados:
 - nome *
 - email * (único)
 - cpf * (11 dígitos, único)
-- matricula
+- matricula (gerada automaticamente no cadastro: ano + número sequencial; não é enviada nem alterada)
 - tipo * (`ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE`)
 - telefone *
 - endereco *

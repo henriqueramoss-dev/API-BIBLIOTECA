@@ -96,7 +96,7 @@ A tabela de ligação `livro_autor` guarda o relacionamento muitos-para-muitos e
 | nome * | texto | até 100 |
 | email * | texto | formato de e-mail, até 150, **único** |
 | cpf * | texto | exatamente 11 dígitos, sem pontos ou traço, com **dígitos verificadores corretos**, **único**. Só aparece nas rotas de `/usuarios` |
-| matricula | texto | até 20 |
+| matricula | texto | gerada pela API no cadastro (ano + ID com 6 dígitos, ex.: `2026000012`); não pode ser informada nem alterada |
 | tipo * | enum | `ALUNO`, `PROFESSOR`, `FUNCIONARIO` ou `VISITANTE` |
 | telefone * | texto | até 20 |
 | endereco * | texto | até 200 |
