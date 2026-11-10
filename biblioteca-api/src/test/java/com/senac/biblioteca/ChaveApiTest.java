@@ -212,7 +212,7 @@ class ChaveApiTest extends ApiHttpTeste {
 
     @Test
     void swaggerMostraQuaisRotasExigemChave() throws Exception {
-        String api = chamar("GET", "/v3/api-docs", null).corpo();
+        String api = chamar("GET", "/v3/api-docs/v2", null).corpo();
 
         assertThat(api).contains("\"chaveApi\"").contains("\"X-API-Key\"");
         assertThat(api).contains("Exige chave de API (X-API-Key) de nível ADMIN");

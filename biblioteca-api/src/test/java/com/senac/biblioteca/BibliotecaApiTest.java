@@ -143,7 +143,7 @@ class BibliotecaApiTest {
 
     @Test
     void especificacaoOpenApiTemOFormatoDeErroEOsLimitesDePaginacao() throws Exception {
-        Resposta docs = get("/v3/api-docs");
+        Resposta docs = get("/v3/api-docs/v1");
 
         assertThat(docs.status()).isEqualTo(200);
         assertThat(docs.corpo()).contains("\"ErroResposta\"").contains("de 1 a 100").contains("Página inexistente");
@@ -549,7 +549,7 @@ class BibliotecaApiTest {
 
     @Test
     void swaggerDocumentaLoginETrocaDeSenhaSemExporOHash() throws Exception {
-        String api = get("/v3/api-docs").corpo();
+        String api = get("/v3/api-docs/v2").corpo();
 
         assertThat(api).contains("/auth/login").contains("/usuarios/{id}/senha").contains("TrocaSenhaRequest").contains("LoginRequest");
         assertThat(api).doesNotContain("senhaHash");
@@ -557,7 +557,7 @@ class BibliotecaApiTest {
 
     @Test
     void swaggerDocumentaCarteirinhasEJaNaoTemPerfis() throws Exception {
-        String api = get("/v3/api-docs").corpo();
+        String api = get("/v3/api-docs/v1").corpo();
 
         assertThat(api).contains("\"/carteirinhas\"").contains("\"/carteirinhas/{id}\"").contains("\"/carteirinhas/buscar\"").contains("SUSPENSA");
         assertThat(api).doesNotContain("\"/perfis").doesNotContain("PerfilRequest");

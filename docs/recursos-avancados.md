@@ -307,6 +307,13 @@ A resposta desses dois endpoints traz o cabeçalho `X-API-Version` com a versão
 
 No **Swagger**, há uma documentação para cada versão: escolha no seletor **Versão da API**, no topo da página. Os arquivos ficam em `/v3/api-docs/v1` e `/v3/api-docs/v2`.
 
+| Seletor | O que mostra |
+|---|---|
+| **Versão 1 (Parte 1)** | O CRUD das 6 entidades (livros, autores, categorias, usuários, carteirinhas e empréstimos), a paginação, as consultas personalizadas, os links HATEOAS e as respostas de erro (400, 404, 409, 500). Sem chave de API, idempotência, limite de requisições, `X-API-Version`, `/chaves-api`, `/auth`, `/reservas` nem a troca de senha |
+| **Versão 2 (Parte 1 + Parte 2)** | Tudo da versão 1 e mais: botão Authorize (`X-API-Key`), `/chaves-api`, respostas 401, 403 e 429 (com `Retry-After`), `X-Idempotency-Key` nos POSTs, `X-API-Version` com as duas versões de `GET /livros`, login, troca de senha e reservas |
+
+Os dois documentos descrevem a **mesma API**: o que muda é só o que a documentação mostra. Na prática, as rotas que alteram dados ou mostram dados pessoais exigem chave de API em qualquer versão; para testá-las no Swagger, use a versão 2 e o botão Authorize. O servidor do Swagger é o próprio endereço em que ele foi aberto (então o Try it out também funciona na API publicada).
+
 ---
 
 ## Testando

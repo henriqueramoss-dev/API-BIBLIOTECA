@@ -142,7 +142,7 @@ class IdempotenciaTest extends ApiHttpTeste {
 
     @Test
     void swaggerDocumentaOCabecalhoNosPosts() throws Exception {
-        String api = chamar("GET", "/v3/api-docs", null).corpo();
+        String api = chamar("GET", "/v3/api-docs/v2", null).corpo();
 
         assertThat(api).contains("X-Idempotency-Key").contains("\"422\"");
     }
