@@ -18,7 +18,7 @@ public class SwaggerUiConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // O "*" no final faz o Spring extrair o nome do arquivo (index.css) da URL.
-        registry.addResourceHandler("/swagger-ui/index.css*", "/swagger-ui/index.html*", "/swagger-ui/favicon.svg*")
+        registry.addResourceHandler("/swagger-ui/index.css*", "/swagger-ui/index.html*", "/swagger-ui/favicon.svg*", "/swagger-ui/lombadas.svg*")
             .addResourceLocations("classpath:/static/swagger/");
     }
 }
