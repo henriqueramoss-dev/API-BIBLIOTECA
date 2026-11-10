@@ -99,7 +99,7 @@ class VersionamentoTest extends ApiHttpTeste {
 
         String v1 = chamar("GET", "/v3/api-docs/v1", null).corpo();
         String v2 = chamar("GET", "/v3/api-docs/v2", null).corpo();
-        assertThat(v1).contains("Buscar livro por ID (versão 1)").doesNotContain("(versão 2)");
+        assertThat(v1).contains("Buscar livro por ID").doesNotContain("(versão 2)").doesNotContain("LivroV2");
         assertThat(v2).contains("Buscar livro por ID (versão 2)").contains("LivroV2").doesNotContain("(versão 1)");
         // As rotas sem versão aparecem nas duas, e as melhorias da documentação valem para ambas.
         assertThat(v2).contains("/autores").contains("ErroResposta").contains("X-API-Key");

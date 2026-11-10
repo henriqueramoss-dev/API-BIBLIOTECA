@@ -68,7 +68,7 @@ class LimiteDeRequisicoesTest extends ApiHttpTeste {
 
     @Test
     void swaggerDocumentaO429() throws Exception {
-        String api = chamar("GET", "/v3/api-docs", null).corpo();
+        String api = chamar("GET", "/v3/api-docs/v2", null).corpo();
 
         assertThat(api).contains("\"429\"").contains("Retry-After").contains("Muitas requisições");
     }
