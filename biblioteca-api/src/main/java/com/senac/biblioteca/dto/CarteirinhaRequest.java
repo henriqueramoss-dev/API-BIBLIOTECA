@@ -40,7 +40,7 @@ public class CarteirinhaRequest {
     private Integer limiteEmprestimos;
 
     @NotNull(message = "O ID do usuário é obrigatório")
-    @Schema(description = "ID de um usuário já cadastrado", example = "1")
+    @Schema(description = "ID de um usuário já cadastrado e que ainda não tem carteirinha (cada usuário tem uma)", example = "6")
     private Long usuarioId;
 
     public String getNumero() { return numero; }

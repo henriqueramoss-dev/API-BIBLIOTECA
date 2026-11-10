@@ -28,6 +28,7 @@ import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -135,17 +136,17 @@ public class OpenApiConfig {
      * versão no seletor do topo.
      */
     @Bean
-    public GroupedOpenApi versao1(PaginacaoConfig paginacao) {
-        return documentacaoDaVersao("1", "Versão 1 (Parte 1)", paginacao);
+    public GroupedOpenApi versao1(PaginacaoConfig paginacao, @Value("${biblioteca.dados-exemplo:false}") boolean exemplos) {
+        return documentacaoDaVersao("1", "Versão 1 (Parte 1)", paginacao, exemplos);
     }
 
     /** Documentação da versão 2 da API (cabeçalho X-API-Version: 2): Parte 1 mais os recursos avançados da Parte 2. */
     @Bean
-    public GroupedOpenApi versao2(PaginacaoConfig paginacao) {
-        return documentacaoDaVersao("2", "Versão 2 (Parte 1 + Parte 2)", paginacao);
+    public GroupedOpenApi versao2(PaginacaoConfig paginacao, @Value("${biblioteca.dados-exemplo:false}") boolean exemplos) {
+        return documentacaoDaVersao("2", "Versão 2 (Parte 1 + Parte 2)", paginacao, exemplos);
     }
 
-    private GroupedOpenApi documentacaoDaVersao(String versao, String nome, PaginacaoConfig paginacao) {
+    private GroupedOpenApi documentacaoDaVersao(String versao, String nome, PaginacaoConfig paginacao, boolean exemplos) {
         boolean completa = "2".equals(versao);
         GroupedOpenApi.Builder grupo = GroupedOpenApi.builder().group("v" + versao).displayName(nome);
         if (completa) {
@@ -169,7 +170,7 @@ public class OpenApiConfig {
                 }
                 return operacao;
             })
-            .addOpenApiCustomizer(openApi -> completar(openApi, completa, paginacao.getTamanhoMaximo()))
+            .addOpenApiCustomizer(openApi -> completar(openApi, completa, paginacao.getTamanhoMaximo(), exemplos))
             .build();
     }
 
@@ -183,12 +184,13 @@ public class OpenApiConfig {
      *
      * Só altera o que existe: partes ausentes da especificação são ignoradas, nunca causam erro.
      */
-    private void completar(OpenAPI openApi, boolean completa, int tamanhoMaximo) {
+    private void completar(OpenAPI openApi, boolean completa, int tamanhoMaximo, boolean exemplos) {
         if (openApi.getPaths() == null) {
             return;
         }
 
-        descreverVersao(openApi, completa);
+        descreverVersao(openApi, completa, exemplos);
+        ordenarGrupos(openApi);
 
         if (!completa) {
             ajustarParaAParte1(openApi);
@@ -206,6 +208,8 @@ public class OpenApiConfig {
 
             if (completa) {
                 documentarProtecoes(metodo.name(), rota, operacao);
+            } else {
+                marcarCadeado(metodo.name(), rota, operacao);
             }
 
             if (ehListagemPaginada(operacao)) {
@@ -222,12 +226,12 @@ public class OpenApiConfig {
         }));
     }
 
-    /** Título da versão, texto explicando o que ela mostra e servidor relativo (o Try it out funciona em qualquer endereço). */
-    private void descreverVersao(OpenAPI openApi, boolean completa) {
+    /** Título da versão, passo a passo de teste e servidor relativo (o Try it out funciona em qualquer endereço). */
+    private void descreverVersao(OpenAPI openApi, boolean completa, boolean exemplos) {
         io.swagger.v3.oas.models.info.Info info = openApi.getInfo();
         if (info != null && (info.getDescription() == null || !info.getDescription().contains(MARCADOR_VERSAO))) {
             String base = info.getDescription() == null ? "" : info.getDescription() + "\n\n";
-            info.setDescription(base + (completa ? RESUMO_VERSAO_2 : RESUMO_VERSAO_1));
+            info.setDescription(base + (completa ? RESUMO_VERSAO_2 : RESUMO_VERSAO_1) + "\n\n" + passoAPasso(completa, exemplos));
             info.setVersion(completa ? "2.0.0" : "1.0.0");
         }
         // O servidor fixo em localhost:8080 faria o Try it out chamar o computador de quem abre o Swagger
@@ -235,15 +239,68 @@ public class OpenApiConfig {
         openApi.setServers(List.of(new io.swagger.v3.oas.models.servers.Server().url("/").description("Este servidor")));
     }
 
+    /** Como executar as rotas no Swagger: o catálogo é aberto; o resto precisa da chave (botão Authorize). */
+    private String passoAPasso(boolean completa, boolean exemplos) {
+        String contas = exemplos
+            ? "\n\n**Conta de cliente de exemplo:** `" + DadosDeExemplo.EMAIL_DE_EXEMPLO + "` / `" + DadosDeExemplo.SENHA_DOS_CLIENTES
+                + "` (nível LEITURA: só reservas). Para ser funcionário, use a conta do dono da biblioteca."
+            : "";
+        if (!completa) {
+            return "**Para testar:** as listagens e buscas do catálogo (livros, autores e categorias) abrem sem chave. "
+                + "Para cadastrar, alterar, excluir ou ver dados pessoais, clique em **Authorize** e cole uma chave de API de "
+                + "funcionário (como gerar: na **Versão 2**, `POST /chaves-api`). A chave fica guardada neste navegador, "
+                + "inclusive ao trocar de versão." + contas;
+        }
+        return "**Passo a passo para testar:**\n"
+            + "1. Abra `POST /chaves-api`, clique em **Try it out** e informe e-mail e senha de um usuário "
+            + "(`nivel`: `ADMIN` para funcionário, `LEITURA` para cliente).\n"
+            + "2. Copie o campo `chave` da resposta (ela só aparece uma vez), clique em **Authorize**, cole e confirme.\n"
+            + "3. Pronto: as rotas com cadeado funcionam. Para ver a idempotência, execute um POST duas vezes com o mesmo "
+            + "`X-Idempotency-Key`; para o limite de requisições, repita uma rota até receber 429."
+            + contas;
+    }
+
+    /** Ordem dos grupos no Swagger: primeiro as entidades da Parte 1, depois os recursos avançados. */
+    private static final List<String> ORDEM_DOS_GRUPOS = List.of(
+        "Categorias", "Autores", "Livros", "Usuários", "Carteirinhas", "Empréstimos", "Autenticação", "Chaves de API", "Reservas");
+
+    private void ordenarGrupos(OpenAPI openApi) {
+        if (openApi.getTags() == null) {
+            return;
+        }
+        List<io.swagger.v3.oas.models.tags.Tag> ordenados = new java.util.ArrayList<>(openApi.getTags());
+        ordenados.sort(java.util.Comparator.comparingInt(tag -> {
+            int posicao = ORDEM_DOS_GRUPOS.indexOf(tag.getName());
+            return posicao < 0 ? ORDEM_DOS_GRUPOS.size() : posicao;
+        }));
+        openApi.setTags(ordenados);
+    }
+
+    /** Versão 1: só o cadeado (e o Authorize) nas rotas protegidas, sem as respostas 401/403/429 da Parte 2. */
+    private void marcarCadeado(String metodo, String rota, Operation operacao) {
+        if (!rota.startsWith("/") || rota.startsWith("/v3") || rota.startsWith("/swagger")) {
+            return;
+        }
+        if (RegrasDeAcesso.nivelExigido(metodo, rota) != null) {
+            operacao.setSecurity(List.of(new SecurityRequirement().addList(ESQUEMA_CHAVE_API)));
+        } else if (CHAVE_OPCIONAL.contains(metodo + " " + rota)) {
+            operacao.setSecurity(List.of(new SecurityRequirement(), new SecurityRequirement().addList(ESQUEMA_CHAVE_API)));
+        }
+    }
+
     /**
      * Versão 1 = só a Parte 1: tira o que é dos recursos avançados (chave de API, cabeçalho de
      * versão) e dos extras que vieram com eles (senha, reservas), nas rotas que ela mostra.
      */
     private void ajustarParaAParte1(OpenAPI openApi) {
-        openApi.setSecurity(null);
+        // O botão Authorize fica na versão 1: sem a chave, nenhuma rota que grava dados executa no Swagger.
         Components componentes = openApi.getComponents();
         if (componentes != null) {
-            componentes.setSecuritySchemes(null);
+            io.swagger.v3.oas.models.security.SecurityScheme esquemaDaChave = componentes.getSecuritySchemes() == null ? null : componentes.getSecuritySchemes().get(ESQUEMA_CHAVE_API);
+            if (esquemaDaChave != null) {
+                esquemaDaChave.setDescription("Chave de API (cabeçalho X-API-Key), necessária para executar as rotas que gravam dados "
+                    + "ou mostram dados pessoais. Para gerar uma, use a **Versão 2**: POST /chaves-api.");
+            }
             if (componentes.getSchemas() != null) {
                 // Vale para todos os esquemas, inclusive as versões com links (EntityModelUsuario...).
                 componentes.getSchemas().values().forEach(esquema -> {
@@ -346,11 +403,11 @@ public class OpenApiConfig {
         operacao.addParametersItem(new HeaderParameter()
             .name(IdempotenciaFilter.CABECALHO)
             .required(false)
-            .description("Opcional. Identificador único desta operação (sugestão: um UUID). Reenviando a mesma "
-                + "requisição com a mesma chave em até 24 horas, a API devolve a resposta original, com o "
-                + "cabeçalho X-Idempotency-Replayed: true, em vez de cadastrar de novo.")
-            .schema(new StringSchema().maxLength(100))
-            .example("3f1c9a52-7d4e-4b8a-9c6f-2e5d8b1a0c47"));
+            .description("Opcional (deixe em branco para um POST normal). Para testar a idempotência, informe um "
+                + "identificador único, como um UUID, e execute DUAS vezes com o mesmo valor: a segunda devolve a "
+                + "resposta original, com o cabeçalho X-Idempotency-Replayed: true, em vez de cadastrar de novo. "
+                + "Exemplo: 3f1c9a52-7d4e-4b8a-9c6f-2e5d8b1a0c47")
+            .schema(new StringSchema().maxLength(100)));
 
         ApiResponse conflito = operacao.getResponses().get("409");
         String emAndamento = "Requisição com a mesma X-Idempotency-Key ainda em andamento";
