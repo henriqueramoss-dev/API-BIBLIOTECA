@@ -74,7 +74,7 @@ export default function ResourceForm() {
           <p className="empty">Carregando…</p>
         ) : (
           <fieldset className="campos" disabled={somenteLeitura}>
-            {resource.fields.map((f) => (
+            {resource.fields.filter((f) => !(f.type === 'password' && f.soCadastro && editing)).map((f) => (
               <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} onChange={(v) => setField(f.name, v)} />
             ))}
           </fieldset>
@@ -153,6 +153,12 @@ export function FieldInput({ field, value, error, onChange }: {
           onChange={(e) => onChange(e.target.value.replace(/[^A-Za-z]/g, '').toUpperCase())} />
       );
       break;
+    case 'password':
+      input = (
+        <input id={id} type="password" autoComplete="new-password" maxLength={72} value={str} placeholder={field.placeholder}
+          onChange={(e) => onChange(e.target.value)} />
+      );
+      break;
     default:
       input = (
         <input id={id} type={field.type === 'number' ? 'text' : field.type} inputMode={field.type === 'number' ? 'numeric' : undefined}
@@ -164,6 +170,7 @@ export function FieldInput({ field, value, error, onChange }: {
     <div className={`field ${error ? 'has-error' : ''}`}>
       <label htmlFor={id}>{field.label}{field.required && <span className="req"> *</span>}</label>
       {input}
+      {field.type === 'password' && field.hint && <span className="muted small">{field.hint}</span>}
       {field.type === 'relation' && loaded && options.length === 0 && !optionsError && (
         <span className="muted small">Nenhum registro disponível. <Link to={`/${field.resource}/novo`}>Cadastrar {RESOURCES[field.resource].singular.toLowerCase()}</Link></span>
       )}
