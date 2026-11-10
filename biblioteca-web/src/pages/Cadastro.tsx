@@ -19,7 +19,8 @@ export default function Cadastro() {
   const recurso = useMemo(
     () => ({
       ...usuarios,
-      fields: usuarios.fields.map((f: Field) =>
+      // A senha do cadastro público tem campo próprio (com confirmação), então o campo de senha do painel fica de fora.
+      fields: usuarios.fields.filter((f: Field) => f.type !== 'password').map((f: Field) =>
         f.type === 'enum' && f.name === 'tipo' ? { ...f, options: f.options.filter((o) => TIPOS_AUTOCADASTRO.includes(o.value)) } : f,
       ),
     }),
