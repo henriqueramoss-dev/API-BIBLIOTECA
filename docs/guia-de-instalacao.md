@@ -55,6 +55,21 @@ Ela muda a cada início. Para fixar uma chave no seu computador, defina a variá
 
 Abra <http://localhost:8080/swagger-ui.html>. Clique em **Authorize**, cole a chave de administrador e confirme. Depois, clique em um endpoint, em **Try it out** e **Execute**. As rotas com cadeado exigem a chave. No topo da página, o seletor **Versão da API** troca entre a documentação da versão 1 e da versão 2.
 
+### Apresentando pelo Swagger
+
+Ao iniciar, a API já carrega um **acervo de exemplo**: 5 categorias, 6 autores, 12 livros, 6 clientes, 4 carteirinhas e 4 empréstimos (ativo, devolvido e atrasado). Assim as listagens não começam vazias. Para desligar, use `BIBLIOTECA_DADOS_EXEMPLO=false`.
+
+Roteiro sugerido:
+
+1. **Versão 1 (Parte 1):** abra `GET /livros` e execute: o catálogo abre sem chave, com paginação e links HATEOAS. Use a caixa de busca do topo para achar uma rota.
+2. **Gerar a chave:** troque para a **Versão 2**, abra `POST /chaves-api` (o corpo já vem com a conta de cliente de exemplo, `beatriz@exemplo.com` / `Cliente12345`) e execute. Para uma chave de funcionário, use o e-mail e a senha do dono (`BIBLIOTECA_DONO_EMAIL` e `BIBLIOTECA_DONO_SENHA`) com `"nivel": "ADMIN"`, ou a chave de administrador do log.
+3. **Authorize:** copie o campo `chave`, clique em **Authorize** e cole. A chave fica guardada no navegador, inclusive ao trocar de versão ou recarregar a página. Agora as rotas com cadeado executam, inclusive na versão 1.
+4. **Idempotência:** em qualquer POST da versão 2, preencha `X-Idempotency-Key` com um valor qualquer e execute duas vezes: a segunda devolve `X-Idempotency-Replayed: true` e não cadastra de novo.
+5. **Limite de requisições:** repita uma rota sem chave até receber 429 (60 por minuto por IP; com chave, 300).
+6. **Versionamento:** em `GET /livros` (versão 2), envie `X-API-Version: 1` e depois `2` e compare as respostas.
+
+Os corpos de exemplo de `POST /livros`, `/usuarios`, `/carteirinhas` e `/reservas` cadastram na primeira tentativa (os dados de exemplo não usam os mesmos valores únicos). Na segunda tentativa, o 409 de valor duplicado também serve de demonstração.
+
 ### Testes automatizados
 
 ```bash

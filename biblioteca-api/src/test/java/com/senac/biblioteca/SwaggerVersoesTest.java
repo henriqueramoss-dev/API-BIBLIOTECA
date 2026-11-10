@@ -46,16 +46,39 @@ class SwaggerVersoesTest extends ApiHttpTeste {
         String doc = v1();
 
         // Rotas dos recursos avançados e extras
-        for (String rota : new String[]{"/chaves-api", "/reservas", "/auth/login", "/senha"}) {
+        // (o texto de ajuda pode citar POST /chaves-api; o que não pode é a rota aparecer na lista de rotas)
+        for (String rota : new String[]{"\"/chaves-api", "\"/reservas", "\"/auth/", "\"/usuarios/{id}/senha\""}) {
             assertThat(doc).as("rota fora da Parte 1: " + rota).doesNotContain(rota);
         }
-        // Chave de API, idempotência, versionamento por cabeçalho e limite de requisições
-        assertThat(doc).doesNotContain("securitySchemes").doesNotContain("X-API-Key").doesNotContain("chaveApi");
+        // Idempotência, versionamento por cabeçalho e limite de requisições
         assertThat(doc).doesNotContain("X-Idempotency-Key").doesNotContain("X-API-Version");
         assertThat(doc).doesNotContain("\"429\"").doesNotContain("Retry-After");
         assertThat(doc).doesNotContain("\"401\"");
         // Campos e valores extras
         assertThat(doc).doesNotContain("\"senha\"").doesNotContain("retirarAte").doesNotContain("RESERVADO");
+    }
+
+    @Test
+    void versao1TemOAuthorizeParaExecutarAsRotasQueGravam() throws Exception {
+        String doc = v1();
+
+        // Só o botão Authorize e o cadeado: sem a chave, nenhuma rota que grava executaria no Swagger.
+        assertThat(doc).contains("securitySchemes").contains("chaveApi").contains("Versão 2");
+        assertThat(doc).contains("\"security\":[{\"chaveApi\":[]}]");
+    }
+
+    @Test
+    void ordemDosGruposComecaPelasEntidadesDaParte1() throws Exception {
+        String doc = v2();
+
+        assertThat(doc.indexOf("\"name\":\"Categorias\"")).isLessThan(doc.indexOf("\"name\":\"Empréstimos\""));
+        assertThat(doc.indexOf("\"name\":\"Empréstimos\"")).isLessThan(doc.indexOf("\"name\":\"Chaves de API\""));
+    }
+
+    @Test
+    void oExemploDeIdempotenciaNaoTemUuidFixo() throws Exception {
+        // Com um UUID fixo preenchido, o segundo clique devolveria a resposta guardada e pareceria defeito.
+        assertThat(v2()).contains("X-Idempotency-Key").doesNotContain("\"example\":\"3f1c9a52");
     }
 
     @Test

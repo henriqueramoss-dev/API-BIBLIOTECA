@@ -12,11 +12,11 @@ import jakarta.validation.constraints.Size;
 public class ChaveApiRequest {
 
     @NotBlank(message = "O e-mail é obrigatório")
-    @Schema(description = "E-mail do usuário dono da chave", example = "henrique@email.com")
+    @Schema(description = "E-mail do usuário dono da chave", example = "beatriz@exemplo.com")
     private String email;
 
     @NotBlank(message = "A senha é obrigatória")
-    @Schema(description = "Senha do usuário", example = "minhaSenha123")
+    @Schema(description = "Senha do usuário", example = "Cliente12345")
     private String senha;
 
     @NotBlank(message = "O nome da chave é obrigatório")
