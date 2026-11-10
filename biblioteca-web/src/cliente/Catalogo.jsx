@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { list, livrosIndisponiveis } from '../api/client';
+import { list } from '../api/client';
 import { RESOURCES } from '../api/resources';
 import CapaDoLivro from '../components/CapaDoLivro';
 import { Icon } from '../components/Icon';
@@ -22,10 +22,11 @@ export default function Catalogo() {
   const [erro, setErro] = useState();
   const [carregando, setCarregando] = useState(true);
 
-  const marcarIndisponivel = (id) => id && setIndisponiveis((atual) => new Set(atual).add(id));
+  // Cada livro já vem com a "situacao" calculada pela API. Ao reservar, marca o livro na hora;
+  // se a reserva falhar (alguém reservou antes), recarrega a página para mostrar a situação atual.
   const { reservar, reservando, aviso, erro: erroReserva } = useReservar((id) => {
-    if (id) marcarIndisponivel(id);
-    else livrosIndisponiveis().then(setIndisponiveis).catch(() => {});
+    if (id) setIndisponiveis((atual) => new Set(atual).add(id));
+    else carregar();
   });
 
   useEffect(() => {
@@ -39,10 +40,10 @@ export default function Catalogo() {
     const consulta = categoria
       ? list(`categorias/${categoria}/livros`, embedded, { page, size: TAMANHO, sort: 'titulo' })
       : list('livros', embedded, { page, size: TAMANHO, sort: 'titulo', search: { titulo: termo } });
-    Promise.all([consulta, livrosIndisponiveis().catch(() => new Set())])
-      .then(([pagina, fora]) => {
+    consulta
+      .then((pagina) => {
         setDados(pagina);
-        setIndisponiveis(fora);
+        setIndisponiveis(new Set(pagina.items.filter((l) => l.situacao && l.situacao !== 'DISPONIVEL').map((l) => l.id)));
       })
       .catch((e) => {
         // Página que não existe mais: volta para a primeira.

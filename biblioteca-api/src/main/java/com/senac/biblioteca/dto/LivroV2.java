@@ -3,6 +3,7 @@ package com.senac.biblioteca.dto;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.senac.biblioteca.entity.Autor;
 import com.senac.biblioteca.entity.Livro;
+import com.senac.biblioteca.enums.StatusLivro;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.hateoas.server.core.Relation;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * "_embedded.livros" (na versão 1, em "_embedded.livroList").
  */
 @Relation(itemRelation = "livro", collectionRelation = "livros")
-@JsonPropertyOrder({"id", "titulo", "isbn", "anoPublicacao", "editora", "numeroPaginas", "categoria", "autores", "quantidadeAutores"})
+@JsonPropertyOrder({"id", "titulo", "isbn", "anoPublicacao", "editora", "numeroPaginas", "categoria", "autores", "quantidadeAutores", "situacao"})
 @Schema(name = "LivroV2", description = "Livro no formato da versão 2: categoria e autores pelo nome")
 public class LivroV2 {
 
@@ -46,7 +47,11 @@ public class LivroV2 {
     @Schema(description = "Nomes dos autores, em ordem alfabética", example = "[\"Machado de Assis\"]")
     private final List<String> autores;
 
+    @Schema(description = "Situação do livro agora: DISPONIVEL, EMPRESTADO ou INDISPONIVEL (reservado)", example = "DISPONIVEL")
+    private final StatusLivro situacao;
+
     public LivroV2(Livro livro) {
+        this.situacao = livro.getSituacao();
         this.id = livro.getId();
         this.titulo = livro.getTitulo();
         this.isbn = livro.getIsbn();
@@ -68,6 +73,7 @@ public class LivroV2 {
     public Integer getNumeroPaginas() { return numeroPaginas; }
     public String getCategoria() { return categoria; }
     public List<String> getAutores() { return autores; }
+    public StatusLivro getSituacao() { return situacao; }
 
     @Schema(description = "Quantidade de autores", example = "1")
     public int getQuantidadeAutores() {

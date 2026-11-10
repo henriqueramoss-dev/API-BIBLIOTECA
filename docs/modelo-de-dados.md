@@ -151,6 +151,8 @@ O telefone, o endereço, a cidade, o estado, o CEP e a data de nascimento ficava
 | categoriaId * | número | ID de uma categoria existente |
 | autoresIds | lista de números | IDs de autores existentes (pode ficar vazia) |
 
+Nas respostas, o livro também traz `situacao` (`DISPONIVEL`, `EMPRESTADO` ou `INDISPONIVEL`). Ela não é enviada nem gravada: a API calcula a cada resposta, olhando os empréstimos (ativo ou atrasado = `EMPRESTADO`) e as reservas dentro do prazo de retirada (`INDISPONIVEL`).
+
 ### Empréstimo
 
 | Campo | Tipo | Regras |

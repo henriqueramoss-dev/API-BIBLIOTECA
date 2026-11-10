@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
 
 /**
  * Reservas do cliente: escolher um livro no site e reservá-lo para retirar na biblioteca.
@@ -97,18 +95,6 @@ public class ReservaController {
     ) {
         Page<Emprestimo> pagina = Paginas.conferir(service.minhas(chaveAtual(request), pageable));
         return ResponseEntity.ok(pagedResourcesAssembler.toModel(pagina, assembler));
-    }
-
-    // GET /reservas/indisponiveis: público, para o catálogo mostrar quais livros não podem ser reservados.
-    @GetMapping("/indisponiveis")
-    @Operation(
-        summary = "Livros indisponíveis",
-        description = "Rota pública. Devolve os IDs dos livros que hoje não podem ser reservados "
-            + "(emprestados ou com reserva em andamento). Não mostra dados de pessoas."
-    )
-    @ApiResponse(responseCode = "200", description = "Lista de IDs (pode ser vazia)")
-    public ResponseEntity<Map<String, List<Long>>> indisponiveis() {
-        return ResponseEntity.ok(Map.of("livroIds", service.livrosIndisponiveis()));
     }
 
     // DELETE /reservas/{id}: cancela uma reserva ainda não retirada.

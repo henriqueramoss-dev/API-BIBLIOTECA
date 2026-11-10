@@ -43,11 +43,11 @@ class ReservaTest extends ApiHttpTeste {
         return id(livro);
     }
 
-    /** O livro aparece (com o id exato) na lista pública de livros indisponíveis? */
-    private boolean indisponivel(long livroId) throws Exception {
-        Resposta r = chamar("GET", "/reservas/indisponiveis", null);
+    /** A situação do livro no catálogo público (GET /livros/{id}): DISPONIVEL, EMPRESTADO ou INDISPONIVEL. */
+    private String situacao(long livroId) throws Exception {
+        Resposta r = chamar("GET", "/livros/" + livroId, null);
         assertThat(r.status()).isEqualTo(200);
-        return java.util.regex.Pattern.compile("[\\[,]" + livroId + "[\\],]").matcher(r.corpo()).find();
+        return campo(r, "situacao");
     }
 
     private Resposta reservar(Pessoa pessoa, long livroId) throws Exception {
@@ -74,16 +74,45 @@ class ReservaTest extends ApiHttpTeste {
         Pessoa beto = novaPessoa("VISITANTE", "LEITURA");
         long livro = novoLivro();
 
-        assertThat(indisponivel(livro)).isFalse();
+        assertThat(situacao(livro)).isEqualTo("DISPONIVEL");
         assertThat(reservar(ana, livro).status()).isEqualTo(201);
 
         Resposta segunda = reservar(beto, livro);
         assertThat(segunda.status()).isEqualTo(409);
         assertThat(segunda.corpo()).contains("não está disponível");
-        // A rota é pública e mostra o livro como indisponível, sem dados de pessoas.
-        assertThat(chamar("GET", "/reservas/indisponiveis", null).status()).isEqualTo(200);
-        assertThat(indisponivel(livro)).isTrue();
-        assertThat(chamar("GET", "/reservas/indisponiveis", null).corpo()).doesNotContain("@");
+        // O catálogo (público) mostra o livro como indisponível, sem dados de pessoas.
+        assertThat(situacao(livro)).isEqualTo("INDISPONIVEL");
+        assertThat(chamar("GET", "/livros/" + livro, null).corpo()).doesNotContain("@");
+    }
+
+    @Test
+    void situacaoDoLivroAcompanhaAReservaOEmprestimoEADevolucao() throws Exception {
+        Pessoa ana = novaPessoa("ALUNO", "LEITURA");
+        long livro = novoLivro();
+        assertThat(situacao(livro)).isEqualTo("DISPONIVEL");
+
+        Resposta reserva = reservar(ana, livro);
+        assertThat(situacao(livro)).isEqualTo("INDISPONIVEL");
+
+        String corpo = "{\"dataEmprestimo\":\"2026-11-10\",\"dataPrevistaDevolucao\":\"2026-11-24\",\"status\":\"STATUS\","
+            + "\"usuarioId\":" + ana.id() + ",\"livroId\":" + livro + "}";
+        assertThat(comAdmin("PUT", "/emprestimos/" + id(reserva), corpo.replace("STATUS", "ATIVO")).status()).isEqualTo(200);
+        assertThat(situacao(livro)).isEqualTo("EMPRESTADO");
+
+        String devolvido = corpo.replace("STATUS", "DEVOLVIDO").replace("}", ",\"dataDevolucao\":\"2026-11-12\"}");
+        assertThat(comAdmin("PUT", "/emprestimos/" + id(reserva), devolvido).status()).isEqualTo(200);
+        assertThat(situacao(livro)).isEqualTo("DISPONIVEL");
+    }
+
+    @Test
+    void listagensDeLivrosJaTrazAsituacaoDeCadaLivro() throws Exception {
+        Pessoa ana = novaPessoa("ALUNO", "LEITURA");
+        long livro = novoLivro();
+        reservar(ana, livro);
+
+        assertThat(chamar("GET", "/livros?size=100", null).corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
+        assertThat(chamar("GET", "/livros?size=100", null, "X-API-Version", "2").corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
+        assertThat(chamar("GET", "/livros/buscar?titulo=Livro", null).corpo()).contains("\"situacao\"");
     }
 
     @Test

@@ -3,16 +3,17 @@ package com.senac.biblioteca.enums;
 /**
  * Define os estados possíveis de disponibilidade de um livro.
  *
- * O enum mantém os valores padronizados e facilita a leitura do código.
+ * A situação não é gravada no livro: a API a calcula ao responder, olhando os empréstimos
+ * e as reservas dele (campo "situacao" do livro).
  */
 public enum StatusLivro {
 
-    // O livro está disponível para empréstimo.
+    // Está na estante: pode ser reservado ou emprestado.
     DISPONIVEL,
 
-    // O livro está atualmente emprestado.
+    // Tem empréstimo ATIVO ou ATRASADO.
     EMPRESTADO,
 
-    // O livro não pode ser emprestado no momento.
+    // Reservado por alguém, aguardando retirada na biblioteca.
     INDISPONIVEL
 }

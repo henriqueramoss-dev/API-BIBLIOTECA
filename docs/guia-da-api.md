@@ -18,7 +18,7 @@ A API é REST, fala **JSON** e roda por padrão em `http://localhost:8080`. A do
 
 ## Endpoints
 
-São **51 endpoints**: 40 em 6 recursos, 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`), 5 de chaves de API e 4 de reservas. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
+São **50 endpoints**: 40 em 6 recursos, 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`), 5 de chaves de API e 3 de reservas. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
 
 A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITURA), E (ESCRITA) ou A (ADMIN). Todas as rotas também podem responder **429** (limite de requisições), e as protegidas, **401** e **403**.
 
@@ -82,7 +82,6 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | **Reservas** (rotas do cliente) | | | | |
 | POST | `/reservas` | Reservar um livro para o dono da chave (status `RESERVADO`, com `retirarAte`) | L | 201, 400, 401, 403, 409 |
 | GET | `/reservas/minhas` | Reservas e empréstimos do dono da chave | L | 200, 400, 401, 403, 404 |
-| GET | `/reservas/indisponiveis` | IDs dos livros que hoje não podem ser reservados | — | 200 |
 | DELETE | `/reservas/{id}` | Cancelar uma reserva própria que ainda não foi retirada | L | 204, 400, 404, 409 |
 
 Nas listagens, o **404** significa "a página pedida não existe" (veja a seção de paginação). Nas rotas com `{id}`, significa "registro não encontrado".
@@ -320,8 +319,8 @@ curl -X POST http://localhost:8080/chaves-api -H "Content-Type: application/json
 Quem é **cliente** (`ALUNO`, `PROFESSOR` ou `VISITANTE`) tem chave de nível LEITURA. Com ela, reserva livros e vê só as próprias reservas; os dados de outras pessoas (`/usuarios`, `/carteirinhas`, `/emprestimos`) são da equipe da biblioteca (`FUNCIONARIO`, chave de ESCRITA ou ADMIN).
 
 ```bash
-# Quais livros não podem ser reservados agora (rota pública)
-curl http://localhost:8080/reservas/indisponiveis                    # {"livroIds":[3,7]}
+# Cada livro do catálogo (público) diz se pode ser reservado, no campo "situacao"
+curl http://localhost:8080/livros/1                                  # ..."situacao":"DISPONIVEL"
 
 # Reservar o livro 1 (quem reserva é o dono da chave)
 curl -X POST http://localhost:8080/reservas -H "X-API-Key: $CHAVE_DO_CLIENTE" -H "Content-Type: application/json" -d '{"livroId":1}'
@@ -333,7 +332,7 @@ curl -X DELETE -H "X-API-Key: $CHAVE_DO_CLIENTE" http://localhost:8080/reservas/
 
 | Regra | Resposta |
 |---|---|
-| Livro já emprestado ou reservado por outra pessoa | **409** |
+| Livro já emprestado ou reservado por outra pessoa (`situacao` diferente de `DISPONIVEL`) | **409** |
 | Mais de 3 reservas aguardando retirada (`biblioteca.reservas.maximo-por-usuario`) | **409** |
 | Prazo de retirada: 3 dias (`biblioteca.reservas.dias-para-retirar`); depois dele a reserva deixa de bloquear o livro | — |
 | Cancelar reserva de outra pessoa | **404** (a chave ADMIN cancela qualquer uma) |

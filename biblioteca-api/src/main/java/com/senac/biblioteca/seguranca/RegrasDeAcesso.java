@@ -54,10 +54,6 @@ public final class RegrasDeAcesso {
             return null;
         }
 
-        // Quais livros estão fora da estante: informação do catálogo, sem dados de pessoas.
-        if ("GET".equals(metodo) && caminho.equals("/reservas/indisponiveis")) {
-            return null;
-        }
         // Reservas e chaves são "do próprio cliente": basta a chave de LEITURA e o serviço confere quem é o dono.
         if ("/reservas".equals(recurso)) {
             return NivelAcesso.LEITURA;

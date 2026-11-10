@@ -51,7 +51,7 @@ As regras ficam num lugar só (`RegrasDeAcesso`), usado tanto pelo filtro quanto
 
 | Acesso | Rotas |
 |---|---|
-| **Público** (sem chave) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo), menos `GET /livros/{id}/emprestimos`; `GET /reservas/indisponiveis`; `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
+| **Público** (sem chave) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo), menos `GET /livros/{id}/emprestimos`; `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
 | **LEITURA** (clientes) | Ver e revogar as próprias chaves; reservar livros, ver e cancelar as próprias reservas (`/reservas`) |
 | **ESCRITA** (equipe) | `GET` de `/usuarios`, `/carteirinhas`, `/emprestimos` e `/livros/{id}/emprestimos` (dados pessoais de todos); `POST` e `PUT` em todos os recursos |
 | **ADMIN** | `DELETE` em todos os recursos; ver e revogar as chaves de todos |
