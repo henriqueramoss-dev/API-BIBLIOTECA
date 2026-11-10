@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Reservas feitas pelo cliente: o livro fica separado na biblioteca até o dia limite de retirada.
@@ -109,11 +108,6 @@ public class ReservaService {
             throw new ReservaNaoPermitidaException("Só é possível cancelar reservas que ainda não foram retiradas.");
         }
         repository.delete(reserva);
-    }
-
-    /** IDs dos livros que hoje não podem ser reservados (emprestados ou já reservados). */
-    public List<Long> livrosIndisponiveis() {
-        return repository.idsDeLivrosIndisponiveis(LocalDate.now());
     }
 
     private Usuario donoDaChave(ChaveApi chave) {

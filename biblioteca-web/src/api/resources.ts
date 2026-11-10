@@ -48,6 +48,8 @@ export interface Livro {
   numeroPaginas: number;
   categoria: Categoria;
   autores: Autor[];
+  /** Calculada pela API: DISPONIVEL (na estante), EMPRESTADO ou INDISPONIVEL (reservado). */
+  situacao?: 'DISPONIVEL' | 'EMPRESTADO' | 'INDISPONIVEL';
 }
 export type StatusCarteirinha = 'ATIVA' | 'SUSPENSA' | 'CANCELADA';
 

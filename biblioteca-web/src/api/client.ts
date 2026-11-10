@@ -181,9 +181,3 @@ export async function reservarLivro<T = any>(livroId: Id, observacao?: string): 
 export async function cancelarReserva(id: Id): Promise<void> {
   await request(`/reservas/${id}`, { method: 'DELETE' });
 }
-
-/** IDs dos livros que hoje não podem ser reservados (rota pública). */
-export async function livrosIndisponiveis(): Promise<Set<Id>> {
-  const body = await request<{ livroIds?: Id[] }>('/reservas/indisponiveis');
-  return new Set(body?.livroIds ?? []);
-}

@@ -8,6 +8,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import com.senac.biblioteca.enums.StatusLivro;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Transient;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +73,13 @@ public class Livro {
         inverseJoinColumns = @JoinColumn(name = "autor_id")
     )
     private Set<Autor> autores = new HashSet<>();
+
+    // Calculada pela API a cada resposta (não é gravada no banco); aparece só onde foi calculada.
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "Situação do livro agora: DISPONIVEL (na estante), EMPRESTADO (empréstimo ativo ou atrasado) "
+        + "ou INDISPONIVEL (reservado, aguardando retirada)", accessMode = Schema.AccessMode.READ_ONLY, example = "DISPONIVEL")
+    private StatusLivro situacao;
 
     // One-to-Many: um livro pode aparecer em vários empréstimos ao longo do tempo.
     @JsonIgnore
@@ -149,5 +159,13 @@ public class Livro {
 
     public List<Emprestimo> getEmprestimos() {
         return emprestimos;
+    }
+
+    public StatusLivro getSituacao() {
+        return situacao;
+    }
+
+    public void setSituacao(StatusLivro situacao) {
+        this.situacao = situacao;
     }
 }

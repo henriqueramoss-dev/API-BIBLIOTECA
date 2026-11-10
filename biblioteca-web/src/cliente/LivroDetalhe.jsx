@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { get, livrosIndisponiveis } from '../api/client';
+import { get } from '../api/client';
 import CapaDoLivro from '../components/CapaDoLivro';
 import { Icon } from '../components/Icon';
 import { autoresDe, useReservar } from './useReservar';
@@ -11,19 +11,22 @@ export default function LivroDetalhe() {
   const [livro, setLivro] = useState();
   const [fora, setFora] = useState(false);
   const [erro, setErro] = useState();
-  const { reservar, reservando, aviso, erro: erroReserva } = useReservar((livroId) => {
-    if (livroId) setFora(true);
-    else livrosIndisponiveis().then((s) => setFora(s.has(Number(id)))).catch(() => {});
-  });
-
-  useEffect(() => {
-    Promise.all([get('livros', Number(id)), livrosIndisponiveis().catch(() => new Set())])
-      .then(([l, indisponiveis]) => {
+  const carregar = useCallback(() => {
+    get('livros', Number(id))
+      .then((l) => {
         setLivro(l);
-        setFora(indisponiveis.has(l.id));
+        setFora(!!l.situacao && l.situacao !== 'DISPONIVEL');
       })
       .catch((e) => setErro(e.message));
   }, [id]);
+
+  // A situação vem no próprio livro. Se a reserva falhar (alguém reservou antes), recarrega para mostrar a atual.
+  const { reservar, reservando, aviso, erro: erroReserva } = useReservar((livroId) => {
+    if (livroId) setFora(true);
+    else carregar();
+  });
+
+  useEffect(carregar, [carregar]);
 
   return (
     <>
