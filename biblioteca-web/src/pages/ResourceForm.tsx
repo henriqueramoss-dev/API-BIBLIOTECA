@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, create, get, update } from '../api/client';
 import { Field, FormValues, isResourceKey, RESOURCES, validate } from '../api/resources';
+import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import { useOptions } from '../components/useOptions';
 
@@ -10,6 +11,9 @@ export default function ResourceForm() {
   const navigate = useNavigate();
   const resource = isResourceKey(key) ? RESOURCES[key] : undefined;
   const editing = id !== undefined;
+  const { pode } = useAuth();
+  // Chave só de leitura: os dados aparecem, mas não dá para salvar (a API responderia 403).
+  const somenteLeitura = !pode('ESCRITA');
 
   const [values, setValues] = useState<FormValues>(() => resource?.toForm() ?? {});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,16 +69,19 @@ export default function ResourceForm() {
 
       <form className="card form" onSubmit={handleSubmit} noValidate>
         {message && <div className="alert">{message}</div>}
+        {somenteLeitura && <div className="alert">Seu acesso é somente leitura: você pode ver os dados, mas não alterá-los.</div>}
         {loading ? (
           <p className="empty">Carregando…</p>
         ) : (
-          resource.fields.map((f) => (
-            <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} onChange={(v) => setField(f.name, v)} />
-          ))
+          <fieldset className="campos" disabled={somenteLeitura}>
+            {resource.fields.map((f) => (
+              <FieldInput key={f.name} field={f} value={values[f.name]} error={errors[f.name]} onChange={(v) => setField(f.name, v)} />
+            ))}
+          </fieldset>
         )}
         <div className="form-actions">
           <Link className="btn" to={`/${resource.key}`}>Cancelar</Link>
-          <button className="btn primary" type="submit" disabled={saving || loading}>
+          <button className="btn primary" type="submit" disabled={saving || loading || somenteLeitura}>
             {saving ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
@@ -84,12 +91,12 @@ export default function ResourceForm() {
 }
 
 // A API devolve erros pelo nome do campo do DTO (ex.: "usuarioId") — mesmo nome usado nos formulários.
-function mapApiErrors(campos: Record<string, string>) {
+export function mapApiErrors(campos: Record<string, string>) {
   const map: Record<string, string> = { usuario: 'usuarioId', livro: 'livroId', categoria: 'categoriaId' };
   return Object.fromEntries(Object.entries(campos).map(([k, v]) => [map[k] ?? k, v]));
 }
 
-function FieldInput({ field, value, error, onChange }: {
+export function FieldInput({ field, value, error, onChange }: {
   field: Field;
   value: string | string[] | undefined;
   error?: string;
