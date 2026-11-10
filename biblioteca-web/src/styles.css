@@ -239,3 +239,27 @@ tbody tr:hover { background: var(--surface-2); }
   td:first-child { display: none; }
   .actions { text-align: left; }
 }
+
+/* Login, cadastro e sessão */
+.login-wrap { display: flex; justify-content: center; padding: 8px 0 32px; }
+.login-card { width: 100%; max-width: 420px; }
+.cadastro-card { width: 100%; max-width: 640px; }
+.login-art { display: flex; justify-content: center; margin-bottom: -6px; }
+.login-card h1, .cadastro-card h1 { margin: 0; }
+.login-card p.muted, .cadastro-card p.muted { margin: -8px 0 0; }
+.campos { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+.campos:disabled input, .campos:disabled select { opacity: 0.75; cursor: not-allowed; }
+.sessao { display: flex; flex-direction: column; gap: 6px; padding: 12px 10px; margin-top: 12px; border-top: 1px solid rgba(255, 246, 224, 0.14); }
+.sessao-nome { color: #fff6e0; font-weight: 600; overflow-wrap: anywhere; }
+.sessao-nivel { color: var(--gold); font-size: 0.8rem; }
+.sessao-link { color: #e8dcc2; font-size: 0.88rem; text-align: center; }
+.btn-entrar, .btn-sair {
+  display: block; width: 100%; text-align: center; padding: 8px 12px; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer;
+  background: var(--gold); color: #2b1a10; border: 1px solid var(--gold); text-decoration: none;
+}
+.btn-sair { background: transparent; color: #fff6e0; border-color: rgba(255, 246, 224, 0.35); margin-top: 4px; }
+.btn-entrar:hover { filter: brightness(1.06); text-decoration: none; }
+.btn-sair:hover { background: rgba(255, 255, 255, 0.08); }
+.aviso-login { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 16px; }
+.aviso-login p { margin: 0; flex: 1 1 260px; }
+.aviso-login-acoes { display: flex; gap: 10px; }

@@ -39,10 +39,17 @@ export function setApiKey(chave: string | undefined) {
   apiKey = (chave ?? '').trim();
 }
 
+// Chamada quando a API recusa a chave em uso (401): chave revogada ou inválida. O login limpa a sessão.
+let aoNaoAutorizado: (() => void) | undefined;
+
+export function setOnUnauthorized(callback: (() => void) | undefined) {
+  aoNaoAutorizado = callback;
+}
+
 const DEFAULT_MESSAGES: Record<number, string> = {
   400: 'Dados inválidos. Verifique os campos informados.',
-  401: 'A API exigiu uma chave de acesso. Configure VITE_API_KEY no arquivo .env do site.',
-  403: 'A chave de API configurada não tem permissão para esta operação.',
+  401: 'Entre com seu e-mail e senha para acessar este recurso.',
+  403: 'Seu nível de acesso não permite esta operação.',
   429: 'Muitas requisições em pouco tempo. Aguarde alguns segundos e tente de novo.',
   404: 'Registro não encontrado.',
   409: 'Operação não permitida: dado duplicado ou registro em uso.',
@@ -73,6 +80,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     body = undefined;
   }
+
+  if (res.status === 401 && apiKey) aoNaoAutorizado?.();
 
   if (!res.ok) {
     const mensagem = body?.mensagem ?? DEFAULT_MESSAGES[res.status] ?? `Erro ${res.status} ao chamar a API.`;
@@ -126,4 +135,27 @@ export async function update<T>(resource: string, id: Id, data: unknown): Promis
 
 export async function remove(resource: string, id: Id): Promise<void> {
   await request(`/${resource}/${id}`, { method: 'DELETE' });
+}
+
+export type Nivel = 'LEITURA' | 'ESCRITA' | 'ADMIN';
+
+export interface ChaveCriada {
+  id: Id;
+  chave: string;
+  nivel: Nivel;
+  usuarioId?: Id;
+}
+
+/** Gera uma chave de API conferindo e-mail e senha (POST /chaves-api). A chave completa só vem nesta resposta. */
+export async function gerarChave(email: string, senha: string, nivel: Nivel): Promise<ChaveCriada> {
+  const body = await request<any>('/chaves-api', {
+    method: 'POST',
+    body: JSON.stringify({ email: email.trim(), senha, nome: 'Site da Biblioteca', nivel }),
+  });
+  return { id: body.id, chave: body.chave, nivel: body.nivel, usuarioId: body.usuarioId };
+}
+
+/** Revoga uma chave: ela deixa de funcionar na hora. */
+export async function revogarChave(id: Id): Promise<void> {
+  await request(`/chaves-api/${id}`, { method: 'DELETE' });
 }

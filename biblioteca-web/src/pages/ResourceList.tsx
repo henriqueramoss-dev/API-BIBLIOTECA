@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { ApiError, list, Page, remove } from '../api/client';
 import { isResourceKey, Livro, RESOURCES } from '../api/resources';
+import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import CapaDoLivro from '../components/CapaDoLivro';
 import { PilhaDeLivros } from '../components/ilustracoes';
@@ -12,6 +13,7 @@ export default function ResourceList() {
   const { resource: key } = useParams();
   const [params, setParams] = useSearchParams();
   const resource = isResourceKey(key) ? RESOURCES[key] : undefined;
+  const { sessao, pode } = useAuth();
 
   const page = Number(params.get('page') ?? 0);
   const term = resource ? params.get(resource.search.param) ?? '' : '';
@@ -77,9 +79,11 @@ export default function ResourceList() {
           <h1>{resource.label}</h1>
           <p className="muted">{data ? (data.totalElements === 1 ? '1 registro' : `${data.totalElements} registros`) : 'Carregando…'}</p>
         </div>
-        <Link className="btn primary" to={`/${resource.key}/novo`}>
-          <Icon name="plus" /> {resource.newLabel}
-        </Link>
+        {pode('ESCRITA') && (
+          <Link className="btn primary" to={`/${resource.key}/novo`}>
+            <Icon name="plus" /> {resource.newLabel}
+          </Link>
+        )}
       </div>
 
       <div className="toolbar">
@@ -114,7 +118,7 @@ export default function ResourceList() {
           <div className="empty-state">
             <PilhaDeLivros width={170} />
             <p>{term ? 'Nenhum resultado para a busca.' : resource.emptyLabel}</p>
-            {!term && <Link className="btn primary" to={`/${resource.key}/novo`}><Icon name="plus" /> {resource.newLabel}</Link>}
+            {!term && pode('ESCRITA') && <Link className="btn primary" to={`/${resource.key}/novo`}><Icon name="plus" /> {resource.newLabel}</Link>}
           </div>
         ) : (
           <table>
@@ -137,7 +141,9 @@ export default function ResourceList() {
                       <div className="title-cell">
                         {resource.key === 'livros' && <CapaDoLivro livro={item as Livro} width={34} />}
                         <div>
-                          <Link to={`/${resource.key}/${item.id}`} className="row-title">{resource.title(item)}</Link>
+                          {sessao
+                            ? <Link to={`/${resource.key}/${item.id}`} className="row-title">{resource.title(item)}</Link>
+                            : <span className="row-title">{resource.title(item)}</span>}
                           <div className="muted small">{resource.subtitle(item)}</div>
                         </div>
                       </div>
@@ -145,8 +151,8 @@ export default function ResourceList() {
                     {resource.details(item).map((d) => <td key={d.label} data-label={d.label}>{d.value}</td>)}
                     {badge && <td><span className={`badge ${badge.tone}`}>{badge.text}</span></td>}
                     <td className="actions">
-                      <Link className="icon-btn" to={`/${resource.key}/${item.id}`} aria-label="Editar"><Icon name="edit" /></Link>
-                      <button className="icon-btn danger" onClick={() => handleDelete(item)} aria-label="Excluir"><Icon name="trash" /></button>
+                      {pode('ESCRITA') && <Link className="icon-btn" to={`/${resource.key}/${item.id}`} aria-label="Editar"><Icon name="edit" /></Link>}
+                      {pode('ADMIN') && <button className="icon-btn danger" onClick={() => handleDelete(item)} aria-label="Excluir"><Icon name="trash" /></button>}
                     </td>
                   </tr>
                 );
