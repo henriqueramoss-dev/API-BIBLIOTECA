@@ -104,6 +104,22 @@ mvn spring-boot:run
 
 No IntelliJ: **Run → Edit Configurations → Environment variables**.
 
+### A conta do dono (entrar no painel do site)
+
+O cadastro público só cria `ALUNO` e `VISITANTE`, então a primeira conta de **dono** (tipo `FUNCIONARIO`) não pode ser criada pelo site. Para não depender da chave de administrador a cada reinício, a API cria essa conta sozinha ao iniciar quando estas variáveis de ambiente estão definidas:
+
+| Variável | O que é |
+|---|---|
+| `BIBLIOTECA_DONO_EMAIL` | E-mail de entrada do dono |
+| `BIBLIOTECA_DONO_SENHA` | Senha (8 a 72 caracteres). Só o hash BCrypt é guardado |
+| `BIBLIOTECA_DONO_NOME` | Nome exibido (opcional; padrão "Dono da Biblioteca") |
+
+```bash
+BIBLIOTECA_DONO_EMAIL=dono@biblioteca.com BIBLIOTECA_DONO_SENHA=minha-senha-forte mvn spring-boot:run
+```
+
+Com isso, `/entrar` no site já leva o dono ao painel. CPF, telefone e endereço da conta são provisórios: ajuste em Usuários, Editar. Sem as variáveis, nada é criado, e a primeira conta de funcionário é cadastrada com a chave de administrador (`POST /usuarios`). Como o banco é em memória, a conta é recriada a cada início.
+
 ### Gerar e gerenciar chaves
 
 | Método | Rota | O que faz | Acesso |

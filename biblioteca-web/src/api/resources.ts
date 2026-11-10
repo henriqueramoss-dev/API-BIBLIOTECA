@@ -83,6 +83,8 @@ export type Field =
   | { name: string; label: string; type: 'text' | 'email' | 'number' | 'date'; required?: boolean; maxLength?: number; placeholder?: string }
   /** Somente dígitos, com tamanho exato (CPF, CEP). */
   | { name: string; label: string; type: 'digits'; required?: boolean; length: number; placeholder?: string }
+  /** Senha de acesso (8 a 72 caracteres). soCadastro: só aparece ao cadastrar (a API troca senha em outra rota). */
+  | { name: string; label: string; type: 'password'; required?: boolean; placeholder?: string; hint?: string; soCadastro?: boolean }
   /** Sigla de estado com 2 letras. */
   | { name: string; label: string; type: 'uf'; required?: boolean; placeholder?: string }
   | { name: string; label: string; type: 'enum'; required?: boolean; options: Option[] }
@@ -283,6 +285,10 @@ const usuarios: Resource<Usuario> = {
     { name: 'estado', label: 'Estado (UF)', type: 'uf', required: true, placeholder: 'SP' },
     { name: 'cep', label: 'CEP', type: 'digits', required: true, length: 8, placeholder: '01001000' },
     { name: 'dataNascimento', label: 'Data de nascimento', type: 'date', required: true },
+    {
+      name: 'senha', label: 'Senha de acesso', type: 'password', soCadastro: true, placeholder: 'De 8 a 72 caracteres',
+      hint: 'Com a senha, a pessoa entra no site com o e-mail acima. Sem ela, só a biblioteca consegue usar o cadastro.',
+    },
   ],
   title: (u) => u.nome,
   subtitle: (u) => u.email,
@@ -305,6 +311,7 @@ const usuarios: Resource<Usuario> = {
     estado: u?.estado ?? '',
     cep: u?.cep ?? '',
     dataNascimento: u?.dataNascimento ?? '',
+    senha: '',
   }),
   toPayload: (v) => ({
     nome: str(v.nome),
@@ -318,6 +325,7 @@ const usuarios: Resource<Usuario> = {
     estado: str(v.estado).toUpperCase(),
     cep: str(v.cep),
     dataNascimento: str(v.dataNascimento) || null,
+    senha: opt(v.senha),
   }),
 };
 
@@ -354,8 +362,8 @@ const carteirinhas: Resource<Carteirinha> = {
   toForm: (c) => ({
     usuarioId: c?.usuario ? String(c.usuario.id) : '',
     numero: c?.numero ?? '',
-    dataEmissao: c?.dataEmissao ?? '',
-    dataValidade: c?.dataValidade ?? '',
+    dataEmissao: c?.dataEmissao ?? today(),
+    dataValidade: c?.dataValidade ?? today(365),
     status: c?.status ?? 'ATIVA',
     limiteEmprestimos: c ? String(c.limiteEmprestimos) : '3',
   }),
@@ -444,6 +452,7 @@ export function validate(resource: Resource, values: FormValues): Record<string,
     if (f.type === 'date' && !isValidIsoDate(v.trim())) errors[f.name] = 'Informe uma data válida.';
     if (f.type === 'digits' && !new RegExp(`^\\d{${f.length}}$`).test(v.trim())) errors[f.name] = `Informe ${f.length} dígitos, sem pontos ou traço.`;
     if (f.type === 'uf' && !/^[A-Za-z]{2}$/.test(v.trim())) errors[f.name] = 'Informe a sigla com 2 letras (ex.: SP).';
+    if (f.type === 'password' && (v.length < 8 || v.length > 72)) errors[f.name] = 'A senha deve ter de 8 a 72 caracteres.';
   }
   if (resource.key === 'emprestimos' && !errors.dataPrevistaDevolucao) {
     const ini = str(values.dataEmprestimo);
