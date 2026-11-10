@@ -263,3 +263,52 @@ tbody tr:hover { background: var(--surface-2); }
 .aviso-login { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 16px; }
 .aviso-login p { margin: 0; flex: 1 1 260px; }
 .aviso-login-acoes { display: flex; gap: 10px; }
+
+/* Status "reservado" e avisos de sucesso */
+.badge.info { background: var(--primary-soft); color: var(--primary); }
+.alert.ok-alert { background: var(--ok-soft); color: var(--ok); }
+.alert.ok-alert a { color: inherit; font-weight: 700; text-decoration: underline; }
+.small-btn { padding: 4px 10px; font-size: 0.82rem; margin-right: 6px; }
+
+/* Área do cliente: catálogo e reservas */
+.cliente { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+.cliente-topo { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.cliente-marca { display: flex; align-items: center; gap: 8px; font-family: var(--serif); font-weight: 700; font-size: 1.3rem; color: var(--text); text-decoration: none; }
+.cliente-nav { display: flex; gap: 6px; flex: 1; }
+.cliente-nav a { padding: 8px 12px; border-radius: 8px; color: var(--muted); font-weight: 600; text-decoration: none; }
+.cliente-nav a:hover { background: var(--surface-2); }
+.cliente-nav a.active { background: var(--primary-soft); color: var(--primary); }
+.cliente-conta { display: flex; align-items: center; gap: 10px; }
+.cliente-nome { font-weight: 600; }
+.cliente-conteudo { width: 100%; max-width: 1100px; margin: 0 auto; padding: 24px 24px 48px; box-sizing: border-box; }
+.cliente-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.cliente-hero h1 { margin: 4px 0; font-family: var(--serif); }
+.cliente-hero p { margin: 0; }
+.cliente-busca { flex: 1 1 280px; max-width: 420px; }
+.cliente-categorias { margin-bottom: 18px; flex-wrap: wrap; }
+.livros-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.livro-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 16px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.livro-card-capa { display: flex; justify-content: center; min-height: 150px; align-items: flex-end; }
+.livro-card-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.livro-card-titulo { font-weight: 700; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
+.livro-card-titulo:hover { text-decoration: underline; }
+.livro-card .btn { width: 100%; }
+.livro-detalhe { display: flex; gap: 28px; padding: 24px; flex-wrap: wrap; }
+.livro-detalhe-capa { flex: 0 0 auto; }
+.livro-detalhe-info { flex: 1 1 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.livro-detalhe-info h1 { margin: 0; font-family: var(--serif); }
+.livro-detalhe-info p { margin: 0; }
+.ficha { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px 20px; margin: 4px 0; width: 100%; }
+.ficha dt { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.ficha dd { margin: 2px 0 0; font-weight: 600; }
+.livro-detalhe-acoes { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.reservas-lista { display: flex; flex-direction: column; gap: 12px; }
+.reserva-card { display: flex; align-items: center; gap: 16px; padding: 14px 16px; }
+.reserva-info { display: flex; flex-direction: column; gap: 4px; flex: 1; align-items: flex-start; }
+@media (max-width: 640px) {
+  .cliente-topo { padding: 10px 16px; gap: 10px; }
+  .cliente-nav { order: 3; flex-basis: 100%; }
+  .cliente-conteudo { padding: 16px 16px 40px; }
+  .reserva-card { flex-wrap: wrap; }
+  .livro-detalhe { padding: 16px; justify-content: center; }
+}

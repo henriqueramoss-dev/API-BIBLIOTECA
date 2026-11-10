@@ -144,6 +144,9 @@ export interface ChaveCriada {
   chave: string;
   nivel: Nivel;
   usuarioId?: Id;
+  usuarioNome?: string;
+  /** FUNCIONARIO é a equipe/dono da biblioteca; os demais tipos são clientes. */
+  usuarioTipo?: string;
 }
 
 /** Gera uma chave de API conferindo e-mail e senha (POST /chaves-api). A chave completa só vem nesta resposta. */
@@ -152,10 +155,35 @@ export async function gerarChave(email: string, senha: string, nivel: Nivel): Pr
     method: 'POST',
     body: JSON.stringify({ email: email.trim(), senha, nome: 'Site da Biblioteca', nivel }),
   });
-  return { id: body.id, chave: body.chave, nivel: body.nivel, usuarioId: body.usuarioId };
+  return {
+    id: body.id,
+    chave: body.chave,
+    nivel: body.nivel,
+    usuarioId: body.usuarioId,
+    usuarioNome: body.usuarioNome,
+    usuarioTipo: body.usuarioTipo,
+  };
 }
 
 /** Revoga uma chave: ela deixa de funcionar na hora. */
 export async function revogarChave(id: Id): Promise<void> {
   await request(`/chaves-api/${id}`, { method: 'DELETE' });
+}
+
+// ---- Reservas (área do cliente)
+
+/** Reserva um livro para o dono da chave (POST /reservas). Devolve o empréstimo com status RESERVADO e retirarAte. */
+export async function reservarLivro<T = any>(livroId: Id, observacao?: string): Promise<T> {
+  return strip<T>(await request('/reservas', { method: 'POST', body: JSON.stringify({ livroId, observacao: observacao || null }) }));
+}
+
+/** Cancela uma reserva ainda não retirada. */
+export async function cancelarReserva(id: Id): Promise<void> {
+  await request(`/reservas/${id}`, { method: 'DELETE' });
+}
+
+/** IDs dos livros que hoje não podem ser reservados (rota pública). */
+export async function livrosIndisponiveis(): Promise<Set<Id>> {
+  const body = await request<{ livroIds?: Id[] }>('/reservas/indisponiveis');
+  return new Set(body?.livroIds ?? []);
 }

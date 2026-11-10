@@ -18,7 +18,7 @@ A API é REST, fala **JSON** e roda por padrão em `http://localhost:8080`. A do
 
 ## Endpoints
 
-São **47 endpoints**: 40 em 6 recursos, 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`) e 5 de chaves de API. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
+São **51 endpoints**: 40 em 6 recursos, 2 de senha e login (`POST /auth/login` e `PUT /usuarios/{id}/senha`), 5 de chaves de API e 4 de reservas. Todo recurso tem o CRUD completo (listar, buscar por ID, criar, atualizar, excluir) e uma consulta personalizada (`/buscar`). Livros, autores, categorias e usuários também têm uma rota para navegar até os registros relacionados.
 
 A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITURA), E (ESCRITA) ou A (ADMIN). Todas as rotas também podem responder **429** (limite de requisições), e as protegidas, **401** e **403**.
 
@@ -31,7 +31,7 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | GET | `/livros/{id}` | Buscar por ID (versões 1 e 2) | — | 200, 400, 404 |
 | PUT | `/livros/{id}` | Atualizar | E | 200, 400, 404, 409 |
 | DELETE | `/livros/{id}` | Excluir | A | 204, 404, 409 |
-| GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | L | 200, 400, 404 |
+| GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | E | 200, 400, 404 |
 | **Autenticação e senha** | | | | |
 | POST | `/auth/login` | Entrar (confere e-mail e senha e devolve o usuário) | — | 200, 400, 401 |
 | PUT | `/usuarios/{id}/senha` | Trocar a senha do usuário (a primeira senha exige chave de ESCRITA) | — | 204, 400, 403, 404 |
@@ -52,25 +52,25 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | DELETE | `/categorias/{id}` | Excluir | A | 204, 404, 409 |
 | GET | `/categorias/{id}/livros` | Livros da categoria | — | 200, 400, 404 |
 | **Usuários** | | | | |
-| GET | `/usuarios` | Listar usuários | L | 200, 400, 404 |
+| GET | `/usuarios` | Listar usuários | E | 200, 400, 404 |
 | POST | `/usuarios` | Cadastrar usuário (sem chave de ESCRITA, só `ALUNO` e `VISITANTE`) | — | 201, 400, 403, 409 |
-| GET | `/usuarios/buscar?nome=` | Buscar por nome | L | 200, 400, 404 |
-| GET | `/usuarios/{id}` | Buscar por ID | L | 200, 400, 404 |
+| GET | `/usuarios/buscar?nome=` | Buscar por nome | E | 200, 400, 404 |
+| GET | `/usuarios/{id}` | Buscar por ID | E | 200, 400, 404 |
 | PUT | `/usuarios/{id}` | Atualizar | E | 200, 400, 404, 409 |
 | DELETE | `/usuarios/{id}` | Excluir (apaga também a carteirinha) | A | 204, 404, 409 |
-| GET | `/usuarios/{id}/emprestimos` | Empréstimos do usuário | L | 200, 400, 404 |
+| GET | `/usuarios/{id}/emprestimos` | Empréstimos do usuário | E | 200, 400, 404 |
 | **Carteirinhas** | | | | |
-| GET | `/carteirinhas` | Listar carteirinhas | L | 200, 400, 404 |
+| GET | `/carteirinhas` | Listar carteirinhas | E | 200, 400, 404 |
 | POST | `/carteirinhas` | Cadastrar carteirinha | E | 201, 400, 409 |
-| GET | `/carteirinhas/buscar?numero=` | Buscar por número | L | 200, 400, 404 |
-| GET | `/carteirinhas/{id}` | Buscar por ID | L | 200, 400, 404 |
+| GET | `/carteirinhas/buscar?numero=` | Buscar por número | E | 200, 400, 404 |
+| GET | `/carteirinhas/{id}` | Buscar por ID | E | 200, 400, 404 |
 | PUT | `/carteirinhas/{id}` | Atualizar | E | 200, 400, 404, 409 |
 | DELETE | `/carteirinhas/{id}` | Excluir | A | 204, 404 |
 | **Empréstimos** | | | | |
-| GET | `/emprestimos` | Listar empréstimos | L | 200, 400, 404 |
+| GET | `/emprestimos` | Listar empréstimos | E | 200, 400, 404 |
 | POST | `/emprestimos` | Cadastrar empréstimo | E | 201, 400 |
-| GET | `/emprestimos/buscar?status=` | Filtrar por status (`ATIVO`, `DEVOLVIDO`, `ATRASADO`) | L | 200, 400, 404 |
-| GET | `/emprestimos/{id}` | Buscar por ID | L | 200, 400, 404 |
+| GET | `/emprestimos/buscar?status=` | Filtrar por status (`ATIVO`, `DEVOLVIDO`, `ATRASADO`, `RESERVADO`) | E | 200, 400, 404 |
+| GET | `/emprestimos/{id}` | Buscar por ID | E | 200, 400, 404 |
 | PUT | `/emprestimos/{id}` | Atualizar | E | 200, 400, 404 |
 | DELETE | `/emprestimos/{id}` | Excluir | A | 204, 404 |
 | **Chaves de API** | | | | |
@@ -79,6 +79,11 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | GET | `/chaves-api/atual` | Consultar a chave usada na requisição | L | 200 |
 | GET | `/chaves-api/{id}` | Buscar uma chave própria | L | 200, 400, 404 |
 | DELETE | `/chaves-api/{id}` | Revogar uma chave própria (ADMIN: qualquer uma) | L | 204, 400, 404 |
+| **Reservas** (rotas do cliente) | | | | |
+| POST | `/reservas` | Reservar um livro para o dono da chave (status `RESERVADO`, com `retirarAte`) | L | 201, 400, 401, 403, 409 |
+| GET | `/reservas/minhas` | Reservas e empréstimos do dono da chave | L | 200, 400, 401, 403, 404 |
+| GET | `/reservas/indisponiveis` | IDs dos livros que hoje não podem ser reservados | — | 200 |
+| DELETE | `/reservas/{id}` | Cancelar uma reserva própria que ainda não foi retirada | L | 204, 400, 404, 409 |
 
 Nas listagens, o **404** significa "a página pedida não existe" (veja a seção de paginação). Nas rotas com `{id}`, significa "registro não encontrado".
 
@@ -309,6 +314,33 @@ curl -X POST http://localhost:8080/chaves-api -H "Content-Type: application/json
   "email": "ana@email.com", "senha": "minhaSenha123", "nome": "Meu celular"
 }'
 ```
+
+### Reservas (o cliente reserva, a equipe confirma a retirada)
+
+Quem é **cliente** (`ALUNO`, `PROFESSOR` ou `VISITANTE`) tem chave de nível LEITURA. Com ela, reserva livros e vê só as próprias reservas; os dados de outras pessoas (`/usuarios`, `/carteirinhas`, `/emprestimos`) são da equipe da biblioteca (`FUNCIONARIO`, chave de ESCRITA ou ADMIN).
+
+```bash
+# Quais livros não podem ser reservados agora (rota pública)
+curl http://localhost:8080/reservas/indisponiveis                    # {"livroIds":[3,7]}
+
+# Reservar o livro 1 (quem reserva é o dono da chave)
+curl -X POST http://localhost:8080/reservas -H "X-API-Key: $CHAVE_DO_CLIENTE" -H "Content-Type: application/json" -d '{"livroId":1}'
+# 201 → "status":"RESERVADO", "retirarAte":"2026-11-13"
+
+curl -H "X-API-Key: $CHAVE_DO_CLIENTE" http://localhost:8080/reservas/minhas
+curl -X DELETE -H "X-API-Key: $CHAVE_DO_CLIENTE" http://localhost:8080/reservas/1     # cancelar (204)
+```
+
+| Regra | Resposta |
+|---|---|
+| Livro já emprestado ou reservado por outra pessoa | **409** |
+| Mais de 3 reservas aguardando retirada (`biblioteca.reservas.maximo-por-usuario`) | **409** |
+| Prazo de retirada: 3 dias (`biblioteca.reservas.dias-para-retirar`); depois dele a reserva deixa de bloquear o livro | — |
+| Cancelar reserva de outra pessoa | **404** (a chave ADMIN cancela qualquer uma) |
+| Cancelar reserva que já foi retirada | **409** |
+| Chave de administrador inicial (não pertence a ninguém) em `/reservas/minhas` | **403** |
+
+Quando a pessoa chega para retirar o livro, a equipe muda o empréstimo para `ATIVO` (`PUT /emprestimos/{id}`; no site, o botão "Confirmar retirada").
 
 ### 4. Consultar
 

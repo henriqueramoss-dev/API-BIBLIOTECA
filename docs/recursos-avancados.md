@@ -51,9 +51,9 @@ As regras ficam num lugar só (`RegrasDeAcesso`), usado tanto pelo filtro quanto
 
 | Acesso | Rotas |
 |---|---|
-| **Público** (sem chave) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo), menos `GET /livros/{id}/emprestimos`; `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
-| **LEITURA** | `GET` de `/usuarios`, `/carteirinhas`, `/emprestimos` e `/livros/{id}/emprestimos` (dados pessoais); ver e revogar as próprias chaves |
-| **ESCRITA** | `POST` e `PUT` em todos os recursos |
+| **Público** (sem chave) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo), menos `GET /livros/{id}/emprestimos`; `GET /reservas/indisponiveis`; `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
+| **LEITURA** (clientes) | Ver e revogar as próprias chaves; reservar livros, ver e cancelar as próprias reservas (`/reservas`) |
+| **ESCRITA** (equipe) | `GET` de `/usuarios`, `/carteirinhas`, `/emprestimos` e `/livros/{id}/emprestimos` (dados pessoais de todos); `POST` e `PUT` em todos os recursos |
 | **ADMIN** | `DELETE` em todos os recursos; ver e revogar as chaves de todos |
 
 Cada nível inclui os anteriores (ADMIN pode tudo que ESCRITA pode, e assim por diante).
@@ -304,7 +304,7 @@ No **Swagger**, há uma documentação para cada versão: escolha no seletor **V
 ## Limitações
 
 - As contagens do limite de requisições e as respostas guardadas pela idempotência ficam **na memória** da API: somem ao reiniciar e, com mais de uma instância da API, cada uma teria as suas. Numa publicação real, elas iriam para um armazenamento compartilhado (como o Redis).
-- Uma chave de LEITURA vê os dados pessoais de **todos** os usuários, não só os do dono da chave.
+- Quem tem chave de ESCRITA ou ADMIN (só a equipe da biblioteca) vê os dados pessoais de **todos** os usuários, inclusive o CPF completo.
 - Atrás de um proxy reverso, o IP visto pela API é o do proxy. Nesse caso, configure `server.forward-headers-strategy=native` para usar o IP real do cliente.
 
 Veja também [Segurança e limitações](seguranca-e-limitacoes.md).

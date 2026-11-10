@@ -16,7 +16,7 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 | Limite de 100 registros por página | `PaginacaoConfig` |
 | Erros padronizados, sem mostrar detalhes internos (o erro 500 só diz que houve um erro inesperado) | `ApiExceptionHandler` |
 | Navegador só acessa a API a partir de `localhost`, `127.0.0.1` e `192.168.*` (configurável), com métodos e cabeçalhos listados um a um | `CorsConfig` |
-| Chave de API (`X-API-Key`) com níveis LEITURA, ESCRITA e ADMIN para ler dados pessoais e para alterar dados. O banco guarda só o hash SHA-256 das chaves, e elas podem ser revogadas | `ChaveApiFilter`, `RegrasDeAcesso`, `ChaveApiService` |
+| Chave de API (`X-API-Key`) com níveis LEITURA (cliente: só o que é dele e as reservas), ESCRITA e ADMIN (equipe: dados de todos e alterações). O banco guarda só o hash SHA-256 das chaves, e elas podem ser revogadas | `ChaveApiFilter`, `RegrasDeAcesso`, `ChaveApiService` |
 | Autocadastro limitado a `ALUNO` e `VISITANTE`; só funcionários geram chaves de ESCRITA ou ADMIN; definir a primeira senha de alguém exige chave de ESCRITA | `UsuarioService`, `ChaveApiService`, `AutenticacaoService` |
 | Limite de requisições por minuto (por chave ou por IP), que também limita as tentativas de login | `LimiteDeRequisicoesFilter` |
 | Reenvio seguro de `POST` com `X-Idempotency-Key` (evita cadastros duplicados) | `IdempotenciaFilter` |
@@ -25,7 +25,7 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 
 | Limitação | Risco | O que seria preciso |
 |---|---|---|
-| **Chave de LEITURA vê os dados de todos** | Qualquer usuário com senha gera uma chave de LEITURA e, com ela, consulta os dados pessoais (inclusive CPF) de todos os usuários, carteirinhas e empréstimos, não só os dele | Filtrar os dados pelo dono da chave (o aluno só vê o que é dele) |
+| **A equipe vê os dados de todos** | Quem tem chave de ESCRITA ou ADMIN (só funcionários) consulta os dados pessoais de todos os usuários, carteirinhas e empréstimos. Clientes (chave de LEITURA) não veem dados de outras pessoas | Níveis mais finos (ex.: separar quem só atende no balcão de quem administra) |
 | **Chave de administrador inicial** | Sem `BIBLIOTECA_CHAVE_ADMIN`, a chave ADMIN é gerada a cada início e aparece no log; quem lê o log tem acesso total | Definir a chave por variável de ambiente, guardada num cofre de segredos, e restringir o acesso aos logs |
 | **Chaves sem prazo de validade** | Uma chave vale até ser revogada | Prazo de validade e renovação |
 | **Limite de tentativas de login só por minuto** | O limite de requisições por IP dificulta, mas não bloqueia, quem testa senhas devagar | Bloqueio temporário da conta após várias falhas |
@@ -37,7 +37,7 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 | **CORS não protege a API** | O CORS só controla navegadores; qualquer programa (curl, Postman, o app) acessa as rotas públicas sem restrição | A chave de API protege as demais rotas |
 | **Sem registro de acessos (auditoria)** | Não se sabe quem alterou o quê | Logs de auditoria |
 | **Poucos testes de unidade** | Há 68 testes de integração, 5 de unidade e a coleção do Postman, rodando no CI, mas não há medição de cobertura | Mais testes de unidade e medição de cobertura |
-| **CPF visível para qualquer chave** | As rotas de `/usuarios` devolvem o CPF completo de todos os usuários para qualquer chave de API, inclusive de LEITURA | Filtrar pelo dono da chave e, se possível, não devolver o CPF (ou devolver mascarado) |
+| **CPF completo para a equipe** | As rotas de `/usuarios` devolvem o CPF completo para chaves de ESCRITA e ADMIN | Devolver o CPF mascarado quando o nome já basta |
 | **CPF de teste pode ser de gente real** | A API só aceita CPFs com dígitos verificadores corretos, e um CPF assim pode pertencer a uma pessoa de verdade | Usar sempre CPFs de teste (ex.: `12345678909`) |
 | **Status do empréstimo manual** | Um empréstimo vencido não vira `ATRASADO` sozinho | Tarefa agendada que atualiza o status |
 | **Capas pelo Open Library** | Ao mostrar a capa de um livro, o navegador ou o app pede a imagem a `covers.openlibrary.org`, que recebe o ISBN e o IP de quem vê a lista | Desligar as capas reais (app: Configurações; site: `VITE_CAPAS_REAIS=false`) ou guardar as imagens na própria API |

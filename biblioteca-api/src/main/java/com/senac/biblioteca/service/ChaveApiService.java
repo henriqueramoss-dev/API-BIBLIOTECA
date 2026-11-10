@@ -64,7 +64,7 @@ public class ChaveApiService {
         }
 
         String chave = novaChave();
-        return new ChaveApiCriada(salvar(dados.getNome().trim(), nivel, usuario, chave), chave);
+        return new ChaveApiCriada(salvar(dados.getNome().trim(), nivel, usuario, chave), chave, usuario);
     }
 
     /**

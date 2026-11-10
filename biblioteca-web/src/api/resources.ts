@@ -4,7 +4,7 @@
 
 import { formatDate, isValidIsoDate, today } from '../utils/datas';
 
-export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO';
+export type StatusEmprestimo = 'ATIVO' | 'DEVOLVIDO' | 'ATRASADO' | 'RESERVADO';
 
 export type TipoUsuario = 'ALUNO' | 'PROFESSOR' | 'FUNCIONARIO' | 'VISITANTE';
 
@@ -65,6 +65,8 @@ export interface Emprestimo {
   dataEmprestimo: string;
   dataPrevistaDevolucao: string;
   dataDevolucao?: string | null;
+  /** Só em reservas: último dia para retirar o livro na biblioteca. */
+  retirarAte?: string | null;
   status: StatusEmprestimo;
   observacao?: string | null;
   usuario: Usuario;
@@ -105,7 +107,7 @@ export interface Resource<T = any> {
   subtitle: (item: T) => string;
   /** Colunas da tabela (web) / detalhes do card (mobile). */
   details: (item: T) => { label: string; value: string }[];
-  badge?: (item: T) => { text: string; tone: 'ok' | 'warn' | 'danger' } | undefined;
+  badge?: (item: T) => { text: string; tone: 'ok' | 'warn' | 'danger' | 'info' } | undefined;
   toForm: (item?: T) => FormValues;
   toPayload: (values: FormValues) => unknown;
 }
@@ -114,6 +116,7 @@ export const STATUS_OPTIONS: Option[] = [
   { value: 'ATIVO', label: 'Ativo' },
   { value: 'DEVOLVIDO', label: 'Devolvido' },
   { value: 'ATRASADO', label: 'Atrasado' },
+  { value: 'RESERVADO', label: 'Reservado' },
 ];
 
 export const STATUS_CARTEIRINHA_OPTIONS: Option[] = [
@@ -138,7 +141,7 @@ const ids = (v: string | string[] | undefined) => (Array.isArray(v) ? v.map(Numb
 // formatDate, isValidIsoDate e today ficam em utils/datas.js (JavaScript puro).
 export { formatDate, isValidIsoDate, today };
 
-const statusTone = { ATIVO: 'ok', DEVOLVIDO: 'warn', ATRASADO: 'danger' } as const;
+const statusTone = { ATIVO: 'ok', DEVOLVIDO: 'warn', ATRASADO: 'danger', RESERVADO: 'info' } as const;
 
 const livros: Resource<Livro> = {
   key: 'livros',
@@ -391,7 +394,9 @@ const emprestimos: Resource<Emprestimo> = {
     { label: 'Devolvido em', value: formatDate(e.dataDevolucao ?? undefined) },
   ],
   badge: (e) => ({
-    text: STATUS_OPTIONS.find((o) => o.value === e.status)?.label ?? e.status,
+    text: e.status === 'RESERVADO' && e.retirarAte
+      ? `Reservado · retirar até ${formatDate(e.retirarAte)}`
+      : STATUS_OPTIONS.find((o) => o.value === e.status)?.label ?? e.status,
     tone: statusTone[e.status] ?? 'warn',
   }),
   toForm: (e) => ({

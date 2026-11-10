@@ -45,7 +45,7 @@ export default function Entrar() {
       <form className="card form login-card" onSubmit={enviar} noValidate>
         <div className="login-art"><PilhaDeLivros width={120} /></div>
         <h1>Entrar</h1>
-        <p className="muted">Use o e-mail e a senha do seu cadastro para ver empréstimos, usuários e carteirinhas.</p>
+        <p className="muted">Entre para reservar livros e acompanhar suas reservas. A equipe da biblioteca entra por aqui também.</p>
         {aviso && <div className="alert">{aviso}</div>}
         {erro && <div className="alert" role="alert">{erro}</div>}
         <div className="field">

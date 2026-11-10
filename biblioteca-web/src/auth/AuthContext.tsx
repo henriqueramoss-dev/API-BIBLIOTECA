@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ApiError, Nivel, gerarChave, get, revogarChave, setApiKey, setOnUnauthorized } from '../api/client';
+import { ApiError, Nivel, gerarChave, revogarChave, setApiKey, setOnUnauthorized } from '../api/client';
 
 // Login do site: e-mail e senha viram uma chave de API (POST /chaves-api), guardada só nesta aba do navegador.
 
@@ -24,6 +24,8 @@ interface Auth {
   sair: () => Promise<void>;
   /** A sessão tem pelo menos este nível de acesso? */
   pode: (nivel: Nivel) => boolean;
+  /** É da equipe/dono da biblioteca (tipo FUNCIONARIO)? Os demais são clientes. */
+  ehFuncionario: boolean;
 }
 
 /** Recursos com dados pessoais: a API só responde a quem tem chave. */
@@ -70,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const entrar = useCallback(async (email: string, senha: string) => {
-    // Funcionários recebem uma chave ADMIN; os demais tipos só podem ter LEITURA (a API responde 403 ao ADMIN).
+    // Funcionários (equipe da biblioteca) recebem uma chave ADMIN; clientes só podem ter LEITURA (a API responde 403 ao ADMIN).
     let criada;
     try {
       criada = await gerarChave(email, senha, 'ADMIN');
@@ -80,18 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setApiKey(criada.chave);
-    let nome = email.trim();
-    let tipo: string | undefined;
-    if (criada.usuarioId !== undefined) {
-      try {
-        const usuario = await get<{ nome: string; tipo: string }>('usuarios', criada.usuarioId);
-        nome = usuario.nome;
-        tipo = usuario.tipo;
-      } catch {
-        // Sem os dados do usuário, o e-mail serve de nome.
-      }
-    }
-    const nova: Sessao = { chave: criada.chave, id: criada.id, nivel: criada.nivel, email: email.trim(), nome, tipo };
+    const nova: Sessao = {
+      chave: criada.chave,
+      id: criada.id,
+      nivel: criada.nivel,
+      email: email.trim(),
+      nome: criada.usuarioNome ?? email.trim(),
+      tipo: criada.usuarioTipo,
+    };
     gravar(nova);
     setAviso(undefined);
     setSessao(nova);
@@ -120,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       entrar,
       sair,
       pode: (nivel) => !!sessao && ORDEM.indexOf(sessao.nivel) >= ORDEM.indexOf(nivel),
+      ehFuncionario: sessao?.tipo === 'FUNCIONARIO',
     }),
     [sessao, aviso, entrar, sair],
   );

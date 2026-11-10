@@ -28,7 +28,7 @@ public final class RegrasDeAcesso {
 
     /** Recursos da API. Endereços fora desta lista (Swagger, /v3/api-docs...) são públicos. */
     private static final List<String> RECURSOS = List.of(
-        "/usuarios", "/carteirinhas", "/emprestimos", "/livros", "/autores", "/categorias", "/chaves-api", "/auth"
+        "/usuarios", "/carteirinhas", "/emprestimos", "/livros", "/autores", "/categorias", "/chaves-api", "/reservas", "/auth"
     );
 
     /** Recursos que formam o catálogo público: qualquer um pode consultar. */
@@ -54,8 +54,23 @@ public final class RegrasDeAcesso {
             return null;
         }
 
+        // Quais livros estão fora da estante: informação do catálogo, sem dados de pessoas.
+        if ("GET".equals(metodo) && caminho.equals("/reservas/indisponiveis")) {
+            return null;
+        }
+        // Reservas e chaves são "do próprio cliente": basta a chave de LEITURA e o serviço confere quem é o dono.
+        if ("/reservas".equals(recurso)) {
+            return NivelAcesso.LEITURA;
+        }
         return switch (metodo) {
-            case "GET" -> CATALOGO.contains(recurso) && !caminho.endsWith("/emprestimos") ? null : NivelAcesso.LEITURA;
+            case "GET" -> {
+                if (CATALOGO.contains(recurso) && !caminho.endsWith("/emprestimos")) {
+                    yield null;
+                }
+                // Dados de outras pessoas (usuários, carteirinhas, empréstimos) são da equipe da biblioteca:
+                // clientes só têm chave de LEITURA, então não conseguem ler o que é de outros clientes.
+                yield "/chaves-api".equals(recurso) ? NivelAcesso.LEITURA : NivelAcesso.ESCRITA;
+            }
             // Cada um revoga as próprias chaves; o serviço confere quem é o dono.
             case "DELETE" -> "/chaves-api".equals(recurso) ? NivelAcesso.LEITURA : NivelAcesso.ADMIN;
             default -> NivelAcesso.ESCRITA;
