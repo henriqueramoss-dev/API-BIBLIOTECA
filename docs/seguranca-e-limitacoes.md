@@ -25,6 +25,7 @@ A Biblioteca é um **projeto acadêmico**. Este documento diz com clareza o que 
 
 | Limitação | Risco | O que seria preciso |
 |---|---|---|
+| **A chave do catálogo é pública** | Fica no código do site e do app, e qualquer pessoa pode usá-la para ler livros, autores e categorias. É de propósito: o acervo não é sensível. Ela não lê dados pessoais, não grava e não reserva | Se o acervo fosse restrito, visitantes teriam de ter conta |
 | **A equipe vê os dados de todos** | Quem tem chave de ESCRITA ou ADMIN (só funcionários) consulta os dados pessoais de todos os usuários, carteirinhas e empréstimos. Clientes (chave de LEITURA) não veem dados de outras pessoas | Níveis mais finos (ex.: separar quem só atende no balcão de quem administra) |
 | **Chave de administrador inicial** | Sem `BIBLIOTECA_CHAVE_ADMIN`, a chave ADMIN é gerada a cada início e aparece no log; quem lê o log tem acesso total | Definir a chave por variável de ambiente, guardada num cofre de segredos, e restringir o acesso aos logs |
 | **Chaves sem prazo de validade** | Uma chave vale até ser revogada | Prazo de validade e renovação |

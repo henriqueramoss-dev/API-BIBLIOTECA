@@ -64,7 +64,7 @@ public class LimiteDeRequisicoesFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain cadeia)
         throws ServletException, IOException {
-        int limite = cliente.chave(request).isPresent() ? limiteComChave : limiteSemChave;
+        int limite = cliente.chaveDeConta(request).isPresent() ? limiteComChave : limiteSemChave;
         LimitadorDeRequisicoes.Consumo consumo = limitador.registrar(cliente.identificador(request), limite);
 
         response.setHeader("X-RateLimit-Limit", String.valueOf(consumo.limite()));

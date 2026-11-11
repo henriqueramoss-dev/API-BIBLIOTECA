@@ -51,8 +51,8 @@ As regras ficam num lugar só (`RegrasDeAcesso`), usado tanto pelo filtro quanto
 
 | Acesso | Rotas |
 |---|---|
-| **Público** (sem chave) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo), menos `GET /livros/{id}/emprestimos`; `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
-| **LEITURA** (clientes) | Ver e revogar as próprias chaves; reservar livros, ver e cancelar as próprias reservas (`/reservas`) |
+| **Público** (sem chave) | `POST /auth/login`; `POST /chaves-api`; `POST /usuarios` (autocadastro, veja abaixo); `PUT /usuarios/{id}/senha` (exige a senha atual); Swagger |
+| **LEITURA** (clientes e visitantes) | `GET` de `/livros`, `/autores` e `/categorias` (o catálogo: listas, busca e por ID), menos `GET /livros/{id}/emprestimos`; ver e revogar as próprias chaves; reservar livros, ver e cancelar as próprias reservas (`/reservas`) |
 | **ESCRITA** (equipe) | `GET` de `/usuarios`, `/carteirinhas`, `/emprestimos` e `/livros/{id}/emprestimos` (dados pessoais de todos); `POST` e `PUT` em todos os recursos |
 | **ADMIN** | `DELETE` em todos os recursos; ver e revogar as chaves de todos |
 
@@ -103,6 +103,18 @@ mvn spring-boot:run
 ```
 
 No IntelliJ: **Run → Edit Configurations → Environment variables**.
+
+### A chave de leitura do catálogo
+
+O catálogo exige pelo menos LEITURA, mas visitantes do site e do app não têm conta. Para eles existe uma **chave de leitura do catálogo**, criada ao iniciar a API:
+
+```text
+bib_catalogo_aberto_da_biblioteca_2026
+```
+
+Ela é pública por natureza (fica no código do site e do app), **não pertence a ninguém** e só lê livros, autores e categorias. Com ela, `GET /usuarios`, `/carteirinhas`, `/emprestimos` e `/livros/{id}/emprestimos` dão 403; ela não grava, não exclui, não reserva (a reserva é do dono da chave) e não lista chaves. Como é compartilhada, o limite de requisições dela é contado **por IP**, como para quem não tem chave. O valor vem de `biblioteca.chave-api.catalogo` (variável `BIBLIOTECA_CHAVE_API_CATALOGO`); vazio desliga a chave.
+
+No Swagger, clique em **Authorize** e cole essa chave para listar o catálogo.
 
 ### A conta do dono (entrar no painel do site)
 

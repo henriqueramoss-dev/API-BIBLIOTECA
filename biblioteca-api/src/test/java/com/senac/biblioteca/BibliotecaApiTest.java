@@ -62,6 +62,9 @@ class BibliotecaApiTest {
         return new Resposta(r.statusCode(), r.body(), r);
     }
 
+    /** Chave de leitura do catálogo (ver ChaveCatalogoInicial): o catálogo exige pelo menos LEITURA. */
+    private static final String CHAVE_CATALOGO = "bib_catalogo_aberto_da_biblioteca_2026";
+
     private Resposta get(String caminho) throws Exception {
         return chamar("GET", caminho, null);
     }
@@ -166,7 +169,7 @@ class BibliotecaApiTest {
         assertThat(tipo.status()).isEqualTo(415);
         assertThat(tipo.corpo()).contains("\"status\":415").contains("\"erro\":\"Tipo de conteúdo não suportado\"").contains("\"mensagem\"");
 
-        Resposta aceite = chamar("GET", "/livros", null, "Accept", "text/xml");
+        Resposta aceite = chamar("GET", "/livros", null, "Accept", "text/xml", "X-API-Key", CHAVE_CATALOGO);
         assertThat(aceite.status()).isEqualTo(406);
         assertThat(aceite.corpo()).contains("\"status\":406").contains("\"mensagem\"");
     }

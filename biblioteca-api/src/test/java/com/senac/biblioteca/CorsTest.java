@@ -46,7 +46,7 @@ class CorsTest extends ApiHttpTeste {
 
     @Test
     void requisicaoComumDeOrigemPermitidaRecebeOsCabecalhosDeCors() throws Exception {
-        Resposta r = chamar("GET", "/livros", null, "Origin", "http://127.0.0.1:3000");
+        Resposta r = chamar("GET", "/livros", null, "Origin", "http://127.0.0.1:3000", "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(r.status()).isEqualTo(200);
         assertThat(r.cabecalho("Access-Control-Allow-Origin")).isEqualTo("http://127.0.0.1:3000");

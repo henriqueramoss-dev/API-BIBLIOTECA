@@ -32,11 +32,16 @@ export function getBaseUrl() {
   return baseUrl;
 }
 
-// Chave de API enviada no cabeçalho X-API-Key (as rotas protegidas da API exigem uma).
-let apiKey = '';
+// Chave de LEITURA do catálogo: pública por natureza (fica neste código), não pertence a ninguém e só lê livros,
+// autores e categorias. É a que os visitantes usam; quem entra passa a usar a própria chave. Para trocar, VITE_API_KEY.
+export const CHAVE_DO_CATALOGO: string = import.meta.env.VITE_API_KEY || 'bib_catalogo_aberto_da_biblioteca_2026';
 
+// Chave de API enviada no cabeçalho X-API-Key (a API exige uma em todas as rotas, menos login e cadastro).
+let apiKey = CHAVE_DO_CATALOGO;
+
+// Sem chave (sair, sessão que caiu), volta para a chave do catálogo.
 export function setApiKey(chave: string | undefined) {
-  apiKey = (chave ?? '').trim();
+  apiKey = (chave ?? '').trim() || CHAVE_DO_CATALOGO;
 }
 
 // Chamada quando a API recusa a chave em uso (401): chave revogada ou inválida. O login limpa a sessão.
@@ -81,7 +86,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     body = undefined;
   }
 
-  if (res.status === 401 && apiKey) aoNaoAutorizado?.();
+  // 401 com uma chave de conta (revogada, API reiniciada): a sessão terminou. A chave do catálogo não é sessão.
+  if (res.status === 401 && apiKey !== CHAVE_DO_CATALOGO) aoNaoAutorizado?.();
 
   if (!res.ok) {
     const mensagem = body?.mensagem ?? DEFAULT_MESSAGES[res.status] ?? `Erro ${res.status} ao chamar a API.`;

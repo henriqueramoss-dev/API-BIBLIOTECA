@@ -35,7 +35,7 @@ class VersionamentoTest extends ApiHttpTeste {
 
     @Test
     void semOCabecalhoValeAVersao1ComObjetosCompletos() throws Exception {
-        Resposta r = chamar("GET", "/livros/" + livro, null);
+        Resposta r = chamar("GET", "/livros/" + livro, null, "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(r.status()).isEqualTo(200);
         assertThat(r.cabecalho("X-API-Version")).isEqualTo("1");
@@ -44,8 +44,8 @@ class VersionamentoTest extends ApiHttpTeste {
 
     @Test
     void versao1ExplicitaEhIgualAoPadrao() throws Exception {
-        Resposta padrao = chamar("GET", "/livros/" + livro, null);
-        Resposta v1 = chamar("GET", "/livros/" + livro, null, "X-API-Version", "1");
+        Resposta padrao = chamar("GET", "/livros/" + livro, null, "X-API-Key", CHAVE_CATALOGO);
+        Resposta v1 = chamar("GET", "/livros/" + livro, null, "X-API-Version", "1", "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(v1.status()).isEqualTo(200);
         assertThat(v1.cabecalho("X-API-Version")).isEqualTo("1");
@@ -54,7 +54,7 @@ class VersionamentoTest extends ApiHttpTeste {
 
     @Test
     void versao2TrazCategoriaEAutoresPeloNome() throws Exception {
-        Resposta r = chamar("GET", "/livros/" + livro, null, "X-API-Version", "2");
+        Resposta r = chamar("GET", "/livros/" + livro, null, "X-API-Version", "2", "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(r.status()).isEqualTo(200);
         assertThat(r.cabecalho("X-API-Version")).isEqualTo("2");
@@ -67,8 +67,8 @@ class VersionamentoTest extends ApiHttpTeste {
 
     @Test
     void listagemNaVersao2UsaOutraChaveNoEmbedded() throws Exception {
-        Resposta v1 = chamar("GET", "/livros", null);
-        Resposta v2 = chamar("GET", "/livros", null, "X-API-Version", "2");
+        Resposta v1 = chamar("GET", "/livros", null, "X-API-Key", CHAVE_CATALOGO);
+        Resposta v2 = chamar("GET", "/livros", null, "X-API-Version", "2", "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(v1.corpo()).contains("\"livroList\"");
         assertThat(v2.status()).isEqualTo(200);
@@ -78,18 +78,18 @@ class VersionamentoTest extends ApiHttpTeste {
 
     @Test
     void rotasSemVersaoAtendemQualquerVersaoSuportada() throws Exception {
-        assertThat(chamar("GET", "/autores", null, "X-API-Version", "2").status()).isEqualTo(200);
-        assertThat(chamar("GET", "/categorias", null, "X-API-Version", "1").status()).isEqualTo(200);
+        assertThat(chamar("GET", "/autores", null, "X-API-Version", "2", "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/categorias", null, "X-API-Version", "1", "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
     }
 
     @Test
     void versaoInexistenteResponde400DizendoAsVersoesDisponiveis() throws Exception {
-        Resposta r = chamar("GET", "/livros", null, "X-API-Version", "3");
+        Resposta r = chamar("GET", "/livros", null, "X-API-Version", "3", "X-API-Key", CHAVE_CATALOGO);
 
         assertThat(r.status()).isEqualTo(400);
         assertThat(campo(r, "erro")).isEqualTo("Versão da API não suportada");
         assertThat(campo(r, "mensagem")).contains("'3'").contains("1, 2");
-        assertThat(chamar("GET", "/livros", null, "X-API-Version", "abc").status()).isEqualTo(400);
+        assertThat(chamar("GET", "/livros", null, "X-API-Version", "abc", "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(400);
     }
 
     @Test

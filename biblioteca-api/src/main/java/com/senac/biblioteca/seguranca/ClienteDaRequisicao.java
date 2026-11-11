@@ -49,9 +49,19 @@ public class ClienteDaRequisicao {
      * "ip:ENDEREÇO" para os demais (inclusive quem envia uma chave falsa).
      */
     public String identificador(HttpServletRequest request) {
-        return chave(request)
+        return chaveDeConta(request)
             .map(chave -> "chave:" + chave.getId())
             .orElse("ip:" + request.getRemoteAddr());
+    }
+
+    /**
+     * Chave que conta como "de uma conta" para o limite de requisições: a de um usuário ou a de administrador.
+     * A chave do catálogo é pública e usada por todos os visitantes do site e do app: contar tudo junto
+     * bloquearia todo mundo por causa de um só. Ela é contada por IP, com o limite de quem não tem chave.
+     */
+    public Optional<ChaveApi> chaveDeConta(HttpServletRequest request) {
+        return chave(request)
+            .filter(chave -> chave.getUsuarioId() != null || chave.getNivel() == com.senac.biblioteca.enums.NivelAcesso.ADMIN);
     }
 
     /** Chave já identificada nesta requisição (sem consultar o banco). */

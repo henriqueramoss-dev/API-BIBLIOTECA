@@ -21,6 +21,9 @@ abstract class ApiHttpTeste {
     /** Chave ADMIN fixa usada nos testes (a API a cadastra ao iniciar, ver ChaveAdminInicial). */
     static final String CHAVE_ADMIN = "bib_chave_admin_dos_testes_123";
 
+    /** Chave de leitura do catálogo (a API a cadastra ao iniciar, ver ChaveCatalogoInicial). Só lê livros, autores e categorias. */
+    static final String CHAVE_CATALOGO = "bib_catalogo_aberto_da_biblioteca_2026";
+
     /** Propriedade que faz a API cadastrar a CHAVE_ADMIN. */
     static final String PROPRIEDADE_CHAVE_ADMIN = "biblioteca.chave-api.admin-inicial=" + CHAVE_ADMIN;
 

@@ -24,14 +24,14 @@ class LimiteDeRequisicoesTest extends ApiHttpTeste {
     @Test
     void semChaveOLimiteEhPorIpEPassandoDeleResponde429ComRetryAfter() throws Exception {
         for (int restantes = 2; restantes >= 0; restantes--) {
-            Resposta r = chamar("GET", "/livros", null);
+            Resposta r = chamar("GET", "/livros", null, "X-API-Key", CHAVE_CATALOGO);
             assertThat(r.status()).isEqualTo(200);
             assertThat(r.cabecalho("X-RateLimit-Limit")).isEqualTo("3");
             assertThat(r.cabecalho("X-RateLimit-Remaining")).isEqualTo(String.valueOf(restantes));
             assertThat(Long.parseLong(r.cabecalho("X-RateLimit-Reset"))).isBetween(1L, 60L);
         }
 
-        Resposta bloqueada = chamar("GET", "/livros", null);
+        Resposta bloqueada = chamar("GET", "/livros", null, "X-API-Key", CHAVE_CATALOGO);
         assertThat(bloqueada.status()).isEqualTo(429);
         assertThat(Long.parseLong(bloqueada.cabecalho("Retry-After"))).isBetween(1L, 60L);
         assertThat(bloqueada.cabecalho("X-RateLimit-Remaining")).isEqualTo("0");
