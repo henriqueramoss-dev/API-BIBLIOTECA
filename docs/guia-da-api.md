@@ -1,6 +1,6 @@
 # Guia da API
 
-A API é REST, fala **JSON** e roda por padrão em `http://localhost:8080`. A documentação interativa (Swagger) está em <http://localhost:8080/swagger-ui.html>. Este guia resume o que o Swagger mostra e explica as regras gerais.
+A API é REST, fala **JSON** e roda por padrão em `https://api-biblioteca-xgsa.onrender.com`. A documentação interativa (Swagger) está em <https://api-biblioteca-xgsa.onrender.com/swagger-ui.html>. Este guia resume o que o Swagger mostra e explica as regras gerais.
 
 ## Convenções
 
@@ -97,7 +97,7 @@ Todas as listagens, buscas e rotas de navegação são **paginadas**.
 | `sort` | `id,asc` | `campo,asc` ou `campo,desc` (ex.: `titulo,desc`) |
 
 ```bash
-curl "http://localhost:8080/livros?page=0&size=5&sort=titulo,asc"
+curl "https://api-biblioteca-xgsa.onrender.com/livros?page=0&size=5&sort=titulo,asc"
 ```
 
 | O que acontece | Resposta |
@@ -114,10 +114,10 @@ Formato da resposta (HATEOAS, `PagedModel`):
 {
   "_embedded": { "livroList": [ { "...": "um livro por item" } ] },
   "_links": {
-    "first": { "href": "http://localhost:8080/livros?page=0&size=2&sort=id,asc" },
-    "self":  { "href": "http://localhost:8080/livros?page=0&size=2&sort=id,asc" },
-    "next":  { "href": "http://localhost:8080/livros?page=1&size=2&sort=id,asc" },
-    "last":  { "href": "http://localhost:8080/livros?page=1&size=2&sort=id,asc" }
+    "first": { "href": "https://api-biblioteca-xgsa.onrender.com/livros?page=0&size=2&sort=id,asc" },
+    "self":  { "href": "https://api-biblioteca-xgsa.onrender.com/livros?page=0&size=2&sort=id,asc" },
+    "next":  { "href": "https://api-biblioteca-xgsa.onrender.com/livros?page=1&size=2&sort=id,asc" },
+    "last":  { "href": "https://api-biblioteca-xgsa.onrender.com/livros?page=1&size=2&sort=id,asc" }
   },
   "page": { "number": 0, "size": 2, "totalElements": 4, "totalPages": 2 }
 }
@@ -149,11 +149,11 @@ Exemplo, `GET /categorias/4`:
   "localizacao": "Estante D",
   "publicoAlvo": "Juvenil",
   "_links": {
-    "self":       { "href": "http://localhost:8080/categorias/4" },
-    "update":     { "href": "http://localhost:8080/categorias/4" },
-    "delete":     { "href": "http://localhost:8080/categorias/4" },
-    "livros":     { "href": "http://localhost:8080/categorias/4/livros" },
-    "categorias": { "href": "http://localhost:8080/categorias" }
+    "self":       { "href": "https://api-biblioteca-xgsa.onrender.com/categorias/4" },
+    "update":     { "href": "https://api-biblioteca-xgsa.onrender.com/categorias/4" },
+    "delete":     { "href": "https://api-biblioteca-xgsa.onrender.com/categorias/4" },
+    "livros":     { "href": "https://api-biblioteca-xgsa.onrender.com/categorias/4/livros" },
+    "categorias": { "href": "https://api-biblioteca-xgsa.onrender.com/categorias" }
   }
 }
 ```
@@ -237,12 +237,12 @@ CHAVE=bib_cole_aqui_a_chave_do_log
 ### 1. Cadastrar uma categoria e um autor
 
 ```bash
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/categorias -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/categorias -H "Content-Type: application/json" -d '{
   "nome": "Romance", "codigo": "ROM", "descricao": "Narrativas de ficção em prosa",
   "localizacao": "Estante A", "publicoAlvo": "Adulto"
 }'
 
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/autores -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/autores -H "Content-Type: application/json" -d '{
   "nome": "Machado de Assis", "nacionalidade": "Brasileira",
   "dataNascimento": "1839-06-21", "generoLiterario": "Romance"
 }'
@@ -253,7 +253,7 @@ A resposta é **201 Created**, com o endereço do novo registro no cabeçalho `L
 ### 2. Cadastrar um livro (usa os IDs acima)
 
 ```bash
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/livros -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/livros -H "Content-Type: application/json" -d '{
   "titulo": "Dom Casmurro", "isbn": "9788535910663", "anoPublicacao": 1899,
   "editora": "Penguin-Companhia", "numeroPaginas": 256,
   "categoriaId": 1, "autoresIds": [1]
@@ -263,7 +263,7 @@ curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/livros -H "Content-Typ
 ### 3. Cadastrar um usuário, a carteirinha dele e um empréstimo
 
 ```bash
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/usuarios -H "Content-Type: application/json" -d '{
   "nome": "Henrique Ramos", "email": "henrique@email.com",
   "cpf": "12345678909", "tipo": "ALUNO",
   "telefone": "11999990000", "endereco": "Rua das Flores, 10",
@@ -271,12 +271,12 @@ curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/usuarios -H "Content-T
   "dataNascimento": "2000-05-10"
 }'
 
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/carteirinhas -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/carteirinhas -H "Content-Type: application/json" -d '{
   "numero": "CB-000123", "dataEmissao": "2026-02-01", "dataValidade": "2027-02-01",
   "status": "ATIVA", "limiteEmprestimos": 3, "usuarioId": 1
 }'
 
-curl -H "X-API-Key: $CHAVE" -X POST http://localhost:8080/emprestimos -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X POST https://api-biblioteca-xgsa.onrender.com/emprestimos -H "Content-Type: application/json" -d '{
   "dataEmprestimo": "2026-10-20", "dataPrevistaDevolucao": "2026-11-03",
   "status": "ATIVO", "usuarioId": 1, "livroId": 1
 }'
@@ -288,18 +288,18 @@ A senha é opcional no cadastro do usuário (de 8 a 72 caracteres). A API guarda
 
 ```bash
 # Cadastrar já com senha
-curl -X POST http://localhost:8080/usuarios -H "Content-Type: application/json" -d '{
+curl -X POST https://api-biblioteca-xgsa.onrender.com/usuarios -H "Content-Type: application/json" -d '{
   "nome": "Ana Souza", "email": "ana@email.com", "cpf": "52998224725",
   "tipo": "ALUNO", "senha": "minhaSenha123"
 }'
 
 # Entrar: 200 com o usuário, ou 401 "E-mail ou senha incorretos."
-curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" -d '{
+curl -X POST https://api-biblioteca-xgsa.onrender.com/auth/login -H "Content-Type: application/json" -d '{
   "email": "ana@email.com", "senha": "minhaSenha123"
 }'
 
 # Trocar a senha: 204; senha atual errada devolve 400 com "campos.senhaAtual"
-curl -X PUT http://localhost:8080/usuarios/1/senha -H "Content-Type: application/json" -d '{
+curl -X PUT https://api-biblioteca-xgsa.onrender.com/usuarios/1/senha -H "Content-Type: application/json" -d '{
   "senhaAtual": "minhaSenha123", "novaSenha": "outraSenha456"
 }'
 ```
@@ -309,7 +309,7 @@ Regras: a nova senha deve ser diferente da atual; usuário **sem senha** (criado
 Sem chave de API, o cadastro (autocadastro) só aceita os tipos `ALUNO` e `VISITANTE`. Com a senha cadastrada, o próprio usuário gera uma chave de LEITURA para acessar os dados dele:
 
 ```bash
-curl -X POST http://localhost:8080/chaves-api -H "Content-Type: application/json" -d '{
+curl -X POST https://api-biblioteca-xgsa.onrender.com/chaves-api -H "Content-Type: application/json" -d '{
   "email": "ana@email.com", "senha": "minhaSenha123", "nome": "Meu celular"
 }'
 ```
@@ -320,14 +320,14 @@ Quem é **cliente** (`ALUNO`, `PROFESSOR` ou `VISITANTE`) tem chave de nível LE
 
 ```bash
 # Cada livro do catálogo (público) diz se pode ser reservado, no campo "situacao"
-curl http://localhost:8080/livros/1                                  # ..."situacao":"DISPONIVEL"
+curl https://api-biblioteca-xgsa.onrender.com/livros/1                                  # ..."situacao":"DISPONIVEL"
 
 # Reservar o livro 1 (quem reserva é o dono da chave)
-curl -X POST http://localhost:8080/reservas -H "X-API-Key: $CHAVE_DO_CLIENTE" -H "Content-Type: application/json" -d '{"livroId":1}'
+curl -X POST https://api-biblioteca-xgsa.onrender.com/reservas -H "X-API-Key: $CHAVE_DO_CLIENTE" -H "Content-Type: application/json" -d '{"livroId":1}'
 # 201 → "status":"RESERVADO", "retirarAte":"2026-11-13"
 
-curl -H "X-API-Key: $CHAVE_DO_CLIENTE" http://localhost:8080/reservas/minhas
-curl -X DELETE -H "X-API-Key: $CHAVE_DO_CLIENTE" http://localhost:8080/reservas/1     # cancelar (204)
+curl -H "X-API-Key: $CHAVE_DO_CLIENTE" https://api-biblioteca-xgsa.onrender.com/reservas/minhas
+curl -X DELETE -H "X-API-Key: $CHAVE_DO_CLIENTE" https://api-biblioteca-xgsa.onrender.com/reservas/1     # cancelar (204)
 ```
 
 | Regra | Resposta |
@@ -344,10 +344,10 @@ Quando a pessoa chega para retirar o livro, a equipe muda o empréstimo para `AT
 ### 4. Consultar
 
 ```bash
-curl "http://localhost:8080/livros/buscar?titulo=dom"              # busca por parte do título
-curl -H "X-API-Key: $CHAVE" "http://localhost:8080/emprestimos/buscar?status=ATIVO"       # empréstimos ativos
-curl "http://localhost:8080/categorias/1/livros"                   # livros de uma categoria
-curl -H "X-API-Key: $CHAVE" "http://localhost:8080/usuarios/1/emprestimos"                # empréstimos de um usuário
+curl "https://api-biblioteca-xgsa.onrender.com/livros/buscar?titulo=dom"              # busca por parte do título
+curl -H "X-API-Key: $CHAVE" "https://api-biblioteca-xgsa.onrender.com/emprestimos/buscar?status=ATIVO"       # empréstimos ativos
+curl "https://api-biblioteca-xgsa.onrender.com/categorias/1/livros"                   # livros de uma categoria
+curl -H "X-API-Key: $CHAVE" "https://api-biblioteca-xgsa.onrender.com/usuarios/1/emprestimos"                # empréstimos de um usuário
 ```
 
 ### 5. Devolver um livro (atualizar o empréstimo)
@@ -355,7 +355,7 @@ curl -H "X-API-Key: $CHAVE" "http://localhost:8080/usuarios/1/emprestimos"      
 O `PUT` substitui os campos do registro, então envie o corpo completo:
 
 ```bash
-curl -H "X-API-Key: $CHAVE" -X PUT http://localhost:8080/emprestimos/1 -H "Content-Type: application/json" -d '{
+curl -H "X-API-Key: $CHAVE" -X PUT https://api-biblioteca-xgsa.onrender.com/emprestimos/1 -H "Content-Type: application/json" -d '{
   "dataEmprestimo": "2026-10-20", "dataPrevistaDevolucao": "2026-11-03",
   "dataDevolucao": "2026-11-01", "status": "DEVOLVIDO",
   "usuarioId": 1, "livroId": 1
@@ -365,7 +365,7 @@ curl -H "X-API-Key: $CHAVE" -X PUT http://localhost:8080/emprestimos/1 -H "Conte
 ### 6. Excluir
 
 ```bash
-curl -H "X-API-Key: $CHAVE" -X DELETE http://localhost:8080/emprestimos/1     # 204 No Content
+curl -H "X-API-Key: $CHAVE" -X DELETE https://api-biblioteca-xgsa.onrender.com/emprestimos/1     # 204 No Content
 ```
 
 **Ordem de exclusão:** um registro em uso não pode ser excluído (erro 409). Exclua primeiro quem depende dele: empréstimo → livro → autor e categoria → usuário (que leva a carteirinha junto).

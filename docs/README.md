@@ -5,7 +5,7 @@ Sistema de **gestão de acervo e empréstimos** de uma biblioteca, feito como pr
 ```
  App mobile (Expo)  ──┐
                       ├──►  API REST (Spring Boot)  ──►  Banco H2 (em memória)
- Site (React/Vite)  ──┘      http://localhost:8080
+ Site (React/Vite)  ──┘      https://api-biblioteca-xgsa.onrender.com
 ```
 
 | Parte | Onde está | Tecnologias |
@@ -30,9 +30,9 @@ Sistema de **gestão de acervo e empréstimos** de uma biblioteca, feito como pr
 
 | O quê | Endereço |
 |---|---|
-| Documentação interativa (Swagger) | <http://localhost:8080/swagger-ui.html> |
-| Especificação OpenAPI (JSON) | <http://localhost:8080/v3/api-docs/v1> e <http://localhost:8080/v3/api-docs/v2> (uma por versão) |
-| Site | <http://localhost:5173> |
+| Documentação interativa (Swagger) | <https://api-biblioteca-xgsa.onrender.com/swagger-ui.html> |
+| Especificação OpenAPI (JSON) | <https://api-biblioteca-xgsa.onrender.com/v3/api-docs/v1> e <https://api-biblioteca-xgsa.onrender.com/v3/api-docs/v2> (uma por versão) |
+| Site | <https://api-biblioteca-ebon.vercel.app> |
 | Coleção do Postman | `biblioteca-api/postman/Biblioteca-API.postman_collection.json` |
 
 > **Atenção:** o sistema é um projeto acadêmico. Use **somente dados fictícios** e não o publique sem ler [Segurança e limitações](seguranca-e-limitacoes.md).

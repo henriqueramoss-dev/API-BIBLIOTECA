@@ -24,10 +24,10 @@ cd biblioteca-api
 mvn spring-boot:run
 ```
 
-Quando aparecer `Started BibliotecaApplication`, a API está no ar em **<http://localhost:8080>**. Para conferir:
+Quando aparecer `Started BibliotecaApplication`, a API está no ar no seu computador, na porta 8080. A versão já publicada fica em **<https://api-biblioteca-xgsa.onrender.com>**. Para conferir a publicada:
 
 ```bash
-curl http://localhost:8080/livros
+curl https://api-biblioteca-xgsa.onrender.com/livros
 ```
 
 Para gerar e rodar o arquivo `.jar`:
@@ -53,7 +53,7 @@ Ela muda a cada início. Para fixar uma chave no seu computador, defina a variá
 
 ### Swagger
 
-Abra <http://localhost:8080/swagger-ui.html>. Clique em **Authorize**, cole a chave de administrador e confirme. Depois, clique em um endpoint, em **Try it out** e **Execute**. As rotas com cadeado exigem a chave. No topo da página, o seletor **Versão da API** troca entre a documentação da versão 1 e da versão 2.
+Abra <https://api-biblioteca-xgsa.onrender.com/swagger-ui.html>. Clique em **Authorize**, cole a chave de administrador e confirme. Depois, clique em um endpoint, em **Try it out** e **Execute**. As rotas com cadeado exigem a chave. No topo da página, o seletor **Versão da API** troca entre a documentação da versão 1 e da versão 2.
 
 ### Apresentando pelo Swagger
 
@@ -97,12 +97,12 @@ npm install
 npm run dev
 ```
 
-Abra <http://localhost:5173>.
+O site publicado está em <https://api-biblioteca-ebon.vercel.app>. Ao rodar `npm run dev`, o terminal mostra o endereço do site no seu computador (a porta padrão do Vite é a 5173).
 
-Para usar outro endereço da API, copie `.env.example` para `.env` e troque a linha:
+O site já usa a API publicada. Para usar outra API (por exemplo, a que roda no seu computador), copie `.env.example` para `.env` e troque a linha pelo endereço dela:
 
 ```bash
-VITE_API_URL=http://localhost:8080
+VITE_API_URL=https://api-biblioteca-xgsa.onrender.com
 ```
 
 Sem chave de API, o site só consegue consultar o catálogo (livros, autores e categorias). Para cadastrar, alterar e excluir, coloque uma chave no `.env`:
@@ -140,9 +140,8 @@ Depois, escolha como abrir:
 
 Em ordem de prioridade:
 
-1. a variável `EXPO_PUBLIC_API_URL`, se existir um arquivo `.env` na raiz do app;
-2. o endereço IP do computador que roda o Expo, na porta 8080 (é o que faz o Expo Go funcionar no celular);
-3. `http://localhost:8080`.
+1. a variável `EXPO_PUBLIC_API_URL`, se existir um arquivo `.env` na raiz do app (use para apontar para outra API, como uma que rode no seu computador, pelo IP dele na rede Wi-Fi);
+2. `https://api-biblioteca-xgsa.onrender.com` (a API publicada).
 
 Para forçar um endereço, crie o arquivo `.env`:
 
@@ -158,7 +157,7 @@ EXPO_PUBLIC_API_URL=http://192.168.0.10:8080
 |---|---|---|
 | `Port 8080 was already in use` | Outra API ou programa usa a porta | Encerre o outro programa ou rode com `mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8090` (e ajuste `VITE_API_URL` / `EXPO_PUBLIC_API_URL`) |
 | `release version 21 not supported` | JDK mais antigo que o 21 | Instale o JDK 21 |
-| Site ou app mostram "Não foi possível conectar à API" | API desligada ou endereço errado | Confira se `curl http://localhost:8080/livros` responde |
+| Site ou app mostram "Não foi possível conectar à API" | API desligada ou endereço errado | Confira se `curl https://api-biblioteca-xgsa.onrender.com/livros` responde |
 | O app no celular não acha a API | Rede diferente, firewall do computador ou IP errado | Use a mesma Wi-Fi, libere a porta 8080 no firewall ou defina `EXPO_PUBLIC_API_URL` |
 | Navegador bloqueia as chamadas (erro de CORS) | A API só aceita `localhost`, `127.0.0.1` e `192.168.*` | Abra o site por um desses endereços. Redes `10.*` e `172.16.*` precisam ser incluídas em `CorsConfig.java` |
 | Os dados sumiram | A API foi reiniciada (banco em memória) | Cadastre de novo ou rode a coleção do Postman |

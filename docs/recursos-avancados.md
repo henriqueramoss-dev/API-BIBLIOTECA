@@ -42,7 +42,7 @@ A ordem tem motivo: o **limite** vem antes da autenticação para contar também
 As rotas que leem dados pessoais ou alteram dados exigem uma chave de API no cabeçalho `X-API-Key`:
 
 ```bash
-curl http://localhost:8080/usuarios -H "X-API-Key: bib_SUA_CHAVE_AQUI"
+curl https://api-biblioteca-xgsa.onrender.com/usuarios -H "X-API-Key: bib_SUA_CHAVE_AQUI"
 ```
 
 ### Quais rotas exigem chave
@@ -132,7 +132,7 @@ Com isso, `/entrar` no site já leva o dono ao painel. CPF, telefone e endereço
 
 ```bash
 # Gerar (o usuário precisa ter senha)
-curl -X POST http://localhost:8080/chaves-api -H "Content-Type: application/json" -d '{
+curl -X POST https://api-biblioteca-xgsa.onrender.com/chaves-api -H "Content-Type: application/json" -d '{
   "email": "funcionario@email.com", "senha": "minhaSenha123",
   "nome": "Postman do laboratório", "nivel": "ESCRITA"
 }'
@@ -213,7 +213,7 @@ biblioteca.limite.requisicoes-por-minuto.com-chave=300
 **A solução:** o cliente gera um identificador único para a operação (um UUID) e envia no cabeçalho `X-Idempotency-Key`. Se precisar reenviar, usa a mesma chave:
 
 ```bash
-curl -X POST http://localhost:8080/emprestimos \
+curl -X POST https://api-biblioteca-xgsa.onrender.com/emprestimos \
   -H "Content-Type: application/json" \
   -H "X-API-Key: bib_SUA_CHAVE" \
   -H "X-Idempotency-Key: 3f1c9a52-7d4e-4b8a-9c6f-2e5d8b1a0c47" \
@@ -244,7 +244,7 @@ O CORS diz ao **navegador** quais sites podem chamar a API. Ele não protege a A
 
 | Item | Configuração |
 |---|---|
-| Origens permitidas | `http://localhost:*`, `http://127.0.0.1:*` e `http://192.168.*:*`, em `biblioteca.cors.origens-permitidas` (application.properties) |
+| Origens permitidas | O site publicado (`https://api-biblioteca-ebon.vercel.app`) e, no desenvolvimento, `http://localhost:*`, `http://127.0.0.1:*` e `http://192.168.*:*`, em `biblioteca.cors.origens-permitidas` (application.properties) |
 | Métodos | `GET`, `POST`, `PUT`, `DELETE`, `OPTIONS` |
 | Cabeçalhos aceitos | `Content-Type`, `Accept`, `X-API-Key`, `X-Idempotency-Key`, `X-API-Version` |
 | Cabeçalhos expostos ao JavaScript | `Location`, `Allow`, `WWW-Authenticate`, `X-RateLimit-*`, `Retry-After`, `X-Idempotency-Replayed`, `X-API-Version` |
@@ -285,7 +285,7 @@ A versão é escolhida pelo cabeçalho `X-API-Version`, usando o versionamento n
 | Links HATEOAS | `self`, `update`, `delete`, `categoria`, `autores`... | Os mesmos (os IDs continuam nos links) |
 
 ```bash
-curl http://localhost:8080/livros/1 -H "X-API-Version: 2"
+curl https://api-biblioteca-xgsa.onrender.com/livros/1 -H "X-API-Version: 2"
 ```
 
 ```json

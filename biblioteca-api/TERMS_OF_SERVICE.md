@@ -68,9 +68,9 @@ O sistema foi projetado para rodar **localmente**:
 
 | Parte | Endereço |
 |---|---|
-| API | `http://localhost:8080` |
-| Documentação (Swagger) | `http://localhost:8080/swagger-ui.html` |
-| Site | `http://localhost:5173` |
+| API | `https://api-biblioteca-xgsa.onrender.com` |
+| Documentação (Swagger) | `https://api-biblioteca-xgsa.onrender.com/swagger-ui.html` |
+| Site | `https://api-biblioteca-ebon.vercel.app` |
 
 A API usa o banco **H2 em memória**: **todos os dados cadastrados são apagados quando a API é encerrada**.
 
