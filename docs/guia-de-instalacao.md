@@ -140,9 +140,8 @@ Depois, escolha como abrir:
 
 Em ordem de prioridade:
 
-1. a variável `EXPO_PUBLIC_API_URL`, se existir um arquivo `.env` na raiz do app;
-2. o endereço IP do computador que roda o Expo, na porta 8080 (é o que faz o Expo Go funcionar no celular);
-3. `https://api-biblioteca-xgsa.onrender.com`.
+1. a variável `EXPO_PUBLIC_API_URL`, se existir um arquivo `.env` na raiz do app (use para apontar para outra API, como uma que rode no seu computador, pelo IP dele na rede Wi-Fi);
+2. `https://api-biblioteca-xgsa.onrender.com` (a API publicada).
 
 Para forçar um endereço, crie o arquivo `.env`:
 
