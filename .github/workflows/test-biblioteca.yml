@@ -53,8 +53,16 @@ jobs:
             sleep 2
           done
 
-          curl -fsS "http://localhost:8080/livros?page=0&size=10" > livros.json
-          echo "Catalogo publico (GET /livros) respondeu sem chave de API."
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "http://localhost:8080/livros?page=0&size=10")
+          test "$STATUS" = "401"
+          echo "Catalogo (GET /livros) sem chave respondeu 401."
+
+          curl -fsS -H "X-API-Key: bib_catalogo_aberto_da_biblioteca_2026" "http://localhost:8080/livros?page=0&size=10" > livros.json
+          echo "Catalogo (GET /livros) com a chave de leitura do catalogo respondeu com sucesso."
+
+          STATUS=$(curl -sS -o /dev/null -w "%{http_code}" -H "X-API-Key: bib_catalogo_aberto_da_biblioteca_2026" "http://localhost:8080/usuarios?page=0&size=10")
+          test "$STATUS" = "403"
+          echo "A chave do catalogo nao le dados pessoais (GET /usuarios respondeu 403)."
 
           STATUS=$(curl -sS -o /dev/null -w "%{http_code}" "http://localhost:8080/usuarios?page=0&size=10")
           test "$STATUS" = "401"

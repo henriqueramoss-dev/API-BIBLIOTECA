@@ -61,7 +61,7 @@ Ao iniciar, a API já carrega um **acervo de exemplo**: 5 categorias, 6 autores,
 
 Roteiro sugerido:
 
-1. **Versão 1 (Parte 1):** abra `GET /livros` e execute: o catálogo abre sem chave, com paginação e links HATEOAS. Use a caixa de busca do topo para achar uma rota.
+1. **Versão 1 (Parte 1):** clique em **Authorize**, cole a chave de leitura do catálogo (`bib_catalogo_aberto_da_biblioteca_2026`) e execute `GET /livros`: com paginação e links HATEOAS. Sem a chave, a resposta é 401. Use a caixa de busca do topo para achar uma rota.
 2. **Gerar a chave:** troque para a **Versão 2**, abra `POST /chaves-api` (o corpo já vem com a conta de cliente de exemplo, `beatriz@exemplo.com` / `Cliente12345`) e execute. Para uma chave de funcionário, use o e-mail e a senha do dono (`BIBLIOTECA_DONO_EMAIL` e `BIBLIOTECA_DONO_SENHA`) com `"nivel": "ADMIN"`, ou a chave de administrador do log.
 3. **Authorize:** copie o campo `chave`, clique em **Authorize** e cole. A chave fica guardada no navegador, inclusive ao trocar de versão ou recarregar a página. Agora as rotas com cadeado executam, inclusive na versão 1.
 4. **Idempotência:** em qualquer POST da versão 2, preencha `X-Idempotency-Key` com um valor qualquer e execute duas vezes: a segunda devolve `X-Idempotency-Replayed: true` e não cadastra de novo.
@@ -105,7 +105,7 @@ O site já usa a API publicada. Para usar outra API (por exemplo, a que roda no 
 VITE_API_URL=https://api-biblioteca-xgsa.onrender.com
 ```
 
-Sem chave de API, o site só consegue consultar o catálogo (livros, autores e categorias). Para cadastrar, alterar e excluir, coloque uma chave no `.env`:
+O site já usa a chave de leitura do catálogo para os visitantes (ela só lê livros, autores e categorias). Quem entra usa a própria chave. Para trocar a chave do catálogo, defina no `.env`:
 
 ```bash
 VITE_API_KEY=bib_cole_aqui_a_chave
@@ -119,7 +119,7 @@ Para gerar a versão final do site: `npm run build` (o resultado fica em `dist/`
 
 O app está no repositório [REACT-NATIVE](https://github.com/henriqueramoss-dev/REACT-NATIVE). Com a API rodando:
 
-> **Chave de API:** o catálogo, o login e o autocadastro continuam abertos, mas as telas que mostram empréstimos e dados de usuários usam rotas que agora exigem a chave `X-API-Key`. Para elas funcionarem, o app precisa, depois do login, gerar uma chave de LEITURA em `POST /chaves-api` (com o mesmo e-mail e senha) e enviá-la nas requisições. Veja [Recursos avançados](recursos-avancados.md#gerar-e-gerenciar-chaves).
+> **Chave de API:** só o login e o autocadastro continuam abertos; o catálogo exige a chave de leitura do catálogo (o app a envia para os visitantes), e as telas que mostram empréstimos e dados de usuários exigem a chave `X-API-Key` de quem entrou. Para elas funcionarem, o app precisa, depois do login, gerar uma chave de LEITURA em `POST /chaves-api` (com o mesmo e-mail e senha) e enviá-la nas requisições. Veja [Recursos avançados](recursos-avancados.md#gerar-e-gerenciar-chaves).
 
 ```bash
 git clone https://github.com/henriqueramoss-dev/REACT-NATIVE.git

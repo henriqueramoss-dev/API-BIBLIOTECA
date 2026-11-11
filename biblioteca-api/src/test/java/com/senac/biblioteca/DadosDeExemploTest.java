@@ -40,7 +40,7 @@ class DadosDeExemploTest extends ApiHttpTeste {
 
     @Test
     void catalogoMostraLivrosEmprestadosEDisponiveis() throws Exception {
-        String livros = chamar("GET", "/livros?size=100", null).corpo();
+        String livros = chamar("GET", "/livros?size=100", null, "X-API-Key", CHAVE_CATALOGO).corpo();
 
         assertThat(livros).contains("\"situacao\":\"EMPRESTADO\"").contains("\"situacao\":\"DISPONIVEL\"");
     }

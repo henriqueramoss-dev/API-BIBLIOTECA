@@ -59,20 +59,39 @@ class ChaveApiTest extends ApiHttpTeste {
     }
 
     @Test
-    void catalogoLoginESwaggerContinuamPublicos() throws Exception {
-        assertThat(chamar("GET", "/livros", null).status()).isEqualTo(200);
-        assertThat(chamar("GET", "/autores", null).status()).isEqualTo(200);
-        assertThat(chamar("GET", "/categorias", null).status()).isEqualTo(200);
+    void catalogoExigeChaveDeLeituraMasLoginCadastroESwaggerContinuamAbertos() throws Exception {
+        // Sem chave, o catálogo dá 401; com a chave de leitura (a do catálogo ou a de um cliente), responde.
+        for (String rota : new String[]{"/livros", "/autores", "/categorias", "/livros/1", "/livros/buscar?titulo=a", "/categorias/1/livros"}) {
+            assertThat(chamar("GET", rota, null).status()).as("sem chave: GET " + rota).isEqualTo(401);
+        }
+        assertThat(chamar("GET", "/livros", null, "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/autores", null, "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/categorias", null, "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
+        // Seguem abertos: o Swagger, o login, a geração de chave e o autocadastro.
         assertThat(chamar("GET", "/v3/api-docs", null).status()).isEqualTo(200);
         assertThat(chamar("POST", "/auth/login", "{\"email\":\"ninguem@email.com\",\"senha\":\"x\"}").status())
             .isEqualTo(401); // credenciais erradas, mas a rota foi atendida
     }
 
     @Test
+    void chaveDoCatalogoSoLeOCatalogo() throws Exception {
+        for (String rota : new String[]{"/usuarios", "/carteirinhas", "/emprestimos", "/livros/1/emprestimos"}) {
+            assertThat(chamar("GET", rota, null, "X-API-Key", CHAVE_CATALOGO).status()).as("GET " + rota).isEqualTo(403);
+        }
+        // Não escreve, não exclui, não reserva (a reserva é do dono da chave) e não lista chaves.
+        assertThat(chamar("POST", "/categorias", "{\"nome\":\"X\"}", "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(403);
+        assertThat(chamar("DELETE", "/autores/1", null, "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(403);
+        assertThat(chamar("POST", "/reservas", "{\"livroId\":1}", "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(403);
+        Resposta chaves = chamar("GET", "/chaves-api", null, "X-API-Key", CHAVE_CATALOGO);
+        assertThat(chaves.status()).isEqualTo(200);
+        assertThat(chaves.corpo()).doesNotContain("\"prefixo\"");
+    }
+
+    @Test
     void historicoDeEmprestimosDeUmLivroNaoEhPublico() throws Exception {
         // Fica dentro de /livros (catálogo público), mas mostra quem pegou o livro.
         assertThat(chamar("GET", "/livros/1/emprestimos", null).status()).isEqualTo(401);
-        assertThat(chamar("GET", "/livros/1", null).status()).isIn(200, 404);
+        assertThat(chamar("GET", "/livros/1", null, "X-API-Key", CHAVE_CATALOGO).status()).isIn(200, 404);
     }
 
     @Test

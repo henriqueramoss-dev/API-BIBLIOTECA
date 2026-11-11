@@ -60,8 +60,10 @@ public final class RegrasDeAcesso {
         }
         return switch (metodo) {
             case "GET" -> {
+                // O catálogo (livros, autores e categorias) exige pelo menos LEITURA. O site e o app, para visitantes,
+                // usam a chave de leitura do catálogo, que não enxerga dados pessoais (ChaveCatalogoInicial).
                 if (CATALOGO.contains(recurso) && !caminho.endsWith("/emprestimos")) {
-                    yield null;
+                    yield NivelAcesso.LEITURA;
                 }
                 // Dados de outras pessoas (usuários, carteirinhas, empréstimos) são da equipe da biblioteca:
                 // clientes só têm chave de LEITURA, então não conseguem ler o que é de outros clientes.

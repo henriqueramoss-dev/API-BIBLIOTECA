@@ -45,7 +45,7 @@ class ReservaTest extends ApiHttpTeste {
 
     /** A situação do livro no catálogo público (GET /livros/{id}): DISPONIVEL, EMPRESTADO ou INDISPONIVEL. */
     private String situacao(long livroId) throws Exception {
-        Resposta r = chamar("GET", "/livros/" + livroId, null);
+        Resposta r = chamar("GET", "/livros/" + livroId, null, "X-API-Key", CHAVE_CATALOGO);
         assertThat(r.status()).isEqualTo(200);
         return campo(r, "situacao");
     }
@@ -82,7 +82,7 @@ class ReservaTest extends ApiHttpTeste {
         assertThat(segunda.corpo()).contains("não está disponível");
         // O catálogo (público) mostra o livro como indisponível, sem dados de pessoas.
         assertThat(situacao(livro)).isEqualTo("INDISPONIVEL");
-        assertThat(chamar("GET", "/livros/" + livro, null).corpo()).doesNotContain("@");
+        assertThat(chamar("GET", "/livros/" + livro, null, "X-API-Key", CHAVE_CATALOGO).corpo()).doesNotContain("@");
     }
 
     @Test
@@ -110,9 +110,9 @@ class ReservaTest extends ApiHttpTeste {
         long livro = novoLivro();
         reservar(ana, livro);
 
-        assertThat(chamar("GET", "/livros?size=100", null).corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
-        assertThat(chamar("GET", "/livros?size=100", null, "X-API-Version", "2").corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
-        assertThat(chamar("GET", "/livros/buscar?titulo=Livro", null).corpo()).contains("\"situacao\"");
+        assertThat(chamar("GET", "/livros?size=100", null, "X-API-Key", CHAVE_CATALOGO).corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
+        assertThat(chamar("GET", "/livros?size=100", null, "X-API-Version", "2", "X-API-Key", CHAVE_CATALOGO).corpo()).contains("\"situacao\":\"INDISPONIVEL\"");
+        assertThat(chamar("GET", "/livros/buscar?titulo=Livro", null, "X-API-Key", CHAVE_CATALOGO).corpo()).contains("\"situacao\"");
     }
 
     @Test
@@ -197,7 +197,7 @@ class ReservaTest extends ApiHttpTeste {
         assertThat(chamar("GET", "/emprestimos", null, "X-API-Key", ana.chave()).status()).isEqualTo(403);
         assertThat(chamar("GET", "/carteirinhas", null, "X-API-Key", ana.chave()).status()).isEqualTo(403);
         // O catálogo continua aberto.
-        assertThat(chamar("GET", "/livros", null).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/livros", null, "X-API-Key", CHAVE_CATALOGO).status()).isEqualTo(200);
     }
 
     @Test

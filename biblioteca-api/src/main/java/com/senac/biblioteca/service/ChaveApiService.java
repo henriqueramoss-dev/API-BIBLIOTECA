@@ -106,6 +106,10 @@ public class ChaveApiService {
         if (atual.getNivel() == NivelAcesso.ADMIN) {
             return repository.findAll(pageable);
         }
+        // Chave sem dono (a do catálogo) não é "de ninguém": não lista chave nenhuma.
+        if (atual.getUsuarioId() == null) {
+            return Page.empty(pageable);
+        }
         return repository.findByUsuario_Id(atual.getUsuarioId(), pageable);
     }
 

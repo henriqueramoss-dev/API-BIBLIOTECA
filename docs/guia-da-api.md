@@ -11,7 +11,7 @@ A API é REST, fala **JSON** e roda por padrão em `https://api-biblioteca-xgsa.
 | Identificadores | Números inteiros gerados pela API (`id`); o `id` enviado no corpo é ignorado na criação |
 | Relacionamentos na entrada | Por **ID**: `categoriaId`, `autoresIds`, `usuarioId`, `livroId` |
 | Relacionamentos na saída | Objetos completos dentro do registro, mais links HATEOAS |
-| Autenticação | Chave de API no cabeçalho `X-API-Key`, exigida para ler dados pessoais e para alterar dados. O catálogo (livros, autores, categorias) é público. Veja [Recursos avançados](recursos-avancados.md#1-chave-de-api-x-api-key) |
+| Autenticação | Chave de API no cabeçalho `X-API-Key`, exigida para ler dados pessoais e para alterar dados. O catálogo (livros, autores, categorias) exige pelo menos LEITURA; para visitantes existe a chave de leitura do catálogo. Veja [Recursos avançados](recursos-avancados.md#1-chave-de-api-x-api-key) |
 | Limite de requisições | 60 por minuto sem chave (por IP) e 300 com chave; acima disso, **429** com `Retry-After` |
 | Idempotência | Cabeçalho opcional `X-Idempotency-Key` nos `POST`, para reenviar com segurança |
 | Versão | Cabeçalho opcional `X-API-Version` (1 ou 2; padrão 1). `GET /livros` e `GET /livros/{id}` têm a versão 2 |
@@ -25,10 +25,10 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | Método | Rota | O que faz | Acesso | Respostas |
 |---|---|---|---|---|
 | **Livros** | | | | |
-| GET | `/livros` | Listar livros (versões 1 e 2, pelo cabeçalho `X-API-Version`) | — | 200, 400, 404 |
+| GET | `/livros` | Listar livros (versões 1 e 2, pelo cabeçalho `X-API-Version`) | L | 200, 400, 404 |
 | POST | `/livros` | Cadastrar livro | E | 201, 400, 409 |
-| GET | `/livros/buscar?titulo=` | Buscar por título | — | 200, 400, 404 |
-| GET | `/livros/{id}` | Buscar por ID (versões 1 e 2) | — | 200, 400, 404 |
+| GET | `/livros/buscar?titulo=` | Buscar por título | L | 200, 400, 404 |
+| GET | `/livros/{id}` | Buscar por ID (versões 1 e 2) | L | 200, 400, 404 |
 | PUT | `/livros/{id}` | Atualizar | E | 200, 400, 404, 409 |
 | DELETE | `/livros/{id}` | Excluir | A | 204, 404, 409 |
 | GET | `/livros/{id}/emprestimos` | Histórico de empréstimos do livro | E | 200, 400, 404 |
@@ -36,21 +36,21 @@ A coluna **Acesso** diz qual chave de API a rota exige: — (pública), L (LEITU
 | POST | `/auth/login` | Entrar (confere e-mail e senha e devolve o usuário) | — | 200, 400, 401 |
 | PUT | `/usuarios/{id}/senha` | Trocar a senha do usuário (a primeira senha exige chave de ESCRITA) | — | 204, 400, 403, 404 |
 | **Autores** | | | | |
-| GET | `/autores` | Listar autores | — | 200, 400, 404 |
+| GET | `/autores` | Listar autores | L | 200, 400, 404 |
 | POST | `/autores` | Cadastrar autor | E | 201, 400 |
-| GET | `/autores/buscar?nome=` | Buscar por nome | — | 200, 400, 404 |
-| GET | `/autores/{id}` | Buscar por ID | — | 200, 400, 404 |
+| GET | `/autores/buscar?nome=` | Buscar por nome | L | 200, 400, 404 |
+| GET | `/autores/{id}` | Buscar por ID | L | 200, 400, 404 |
 | PUT | `/autores/{id}` | Atualizar | E | 200, 400, 404 |
 | DELETE | `/autores/{id}` | Excluir | A | 204, 404, 409 |
-| GET | `/autores/{id}/livros` | Livros do autor | — | 200, 400, 404 |
+| GET | `/autores/{id}/livros` | Livros do autor | L | 200, 400, 404 |
 | **Categorias** | | | | |
-| GET | `/categorias` | Listar categorias | — | 200, 400, 404 |
+| GET | `/categorias` | Listar categorias | L | 200, 400, 404 |
 | POST | `/categorias` | Cadastrar categoria | E | 201, 400 |
-| GET | `/categorias/buscar?nome=` | Buscar por nome | — | 200, 400, 404 |
-| GET | `/categorias/{id}` | Buscar por ID | — | 200, 400, 404 |
+| GET | `/categorias/buscar?nome=` | Buscar por nome | L | 200, 400, 404 |
+| GET | `/categorias/{id}` | Buscar por ID | L | 200, 400, 404 |
 | PUT | `/categorias/{id}` | Atualizar | E | 200, 400, 404 |
 | DELETE | `/categorias/{id}` | Excluir | A | 204, 404, 409 |
-| GET | `/categorias/{id}/livros` | Livros da categoria | — | 200, 400, 404 |
+| GET | `/categorias/{id}/livros` | Livros da categoria | L | 200, 400, 404 |
 | **Usuários** | | | | |
 | GET | `/usuarios` | Listar usuários | E | 200, 400, 404 |
 | POST | `/usuarios` | Cadastrar usuário (sem chave de ESCRITA, só `ALUNO` e `VISITANTE`) | — | 201, 400, 403, 409 |
@@ -319,8 +319,8 @@ curl -X POST https://api-biblioteca-xgsa.onrender.com/chaves-api -H "Content-Typ
 Quem é **cliente** (`ALUNO`, `PROFESSOR` ou `VISITANTE`) tem chave de nível LEITURA. Com ela, reserva livros e vê só as próprias reservas; os dados de outras pessoas (`/usuarios`, `/carteirinhas`, `/emprestimos`) são da equipe da biblioteca (`FUNCIONARIO`, chave de ESCRITA ou ADMIN).
 
 ```bash
-# Cada livro do catálogo (público) diz se pode ser reservado, no campo "situacao"
-curl https://api-biblioteca-xgsa.onrender.com/livros/1                                  # ..."situacao":"DISPONIVEL"
+# Cada livro do catálogo diz se pode ser reservado, no campo "situacao"
+curl -H "X-API-Key: $CHAVE_DO_CATALOGO" https://api-biblioteca-xgsa.onrender.com/livros/1                                  # ..."situacao":"DISPONIVEL"
 
 # Reservar o livro 1 (quem reserva é o dono da chave)
 curl -X POST https://api-biblioteca-xgsa.onrender.com/reservas -H "X-API-Key: $CHAVE_DO_CLIENTE" -H "Content-Type: application/json" -d '{"livroId":1}'
