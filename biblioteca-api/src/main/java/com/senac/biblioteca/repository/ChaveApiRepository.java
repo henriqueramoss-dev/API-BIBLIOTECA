@@ -21,5 +21,7 @@ public interface ChaveApiRepository extends JpaRepository<ChaveApi, Long> {
     Optional<ChaveApi> findByHash(String hash);
 
     /** Chaves de um usuário, paginadas. */
-    Page<ChaveApi> findByUsuarioId(Long usuarioId, Pageable pageable);
+    // "usuario_id" com sublinhado: o ChaveApi tem o campo "usuario" (e só o getter getUsuarioId), então o Spring
+    // precisa ser avisado de que é usuario.id. Sem isso a consulta falhava (500) para quem não é ADMIN.
+    Page<ChaveApi> findByUsuario_Id(Long usuarioId, Pageable pageable);
 }

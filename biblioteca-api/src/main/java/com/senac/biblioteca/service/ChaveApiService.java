@@ -106,7 +106,7 @@ public class ChaveApiService {
         if (atual.getNivel() == NivelAcesso.ADMIN) {
             return repository.findAll(pageable);
         }
-        return repository.findByUsuarioId(atual.getUsuarioId(), pageable);
+        return repository.findByUsuario_Id(atual.getUsuarioId(), pageable);
     }
 
     /** Busca uma chave. A chave de outra pessoa responde 404, como se não existisse. */

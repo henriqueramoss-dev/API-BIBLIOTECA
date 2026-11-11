@@ -242,14 +242,17 @@ public class OpenApiConfig {
             return "**Para testar:** as listagens e buscas do catálogo (livros, autores e categorias) abrem sem chave. "
                 + "Para cadastrar, alterar, excluir ou ver dados pessoais, clique em **Authorize** e cole uma chave de API de "
                 + "funcionário (como gerar: na **Versão 2**, `POST /chaves-api`). A chave fica guardada neste navegador, "
-                + "inclusive ao trocar de versão." + contas;
+                + "inclusive ao trocar de versão. Se aparecer 401 com \"a chave não existe ou foi revogada\" (acontece depois de a API "
+                + "reiniciar), clique em **Authorize**, depois **Logout**, e gere uma chave nova." + contas;
         }
         return "**Passo a passo para testar:**\n"
             + "1. Abra `POST /chaves-api`, clique em **Try it out** e informe e-mail e senha de um usuário "
             + "(`nivel`: `ADMIN` para funcionário, `LEITURA` para cliente).\n"
             + "2. Copie o campo `chave` da resposta (ela só aparece uma vez), clique em **Authorize**, cole e confirme.\n"
             + "3. Pronto: as rotas com cadeado funcionam. Para ver a idempotência, execute um POST duas vezes com o mesmo "
-            + "`X-Idempotency-Key`; para o limite de requisições, repita uma rota até receber 429."
+            + "`X-Idempotency-Key`; para o limite de requisições, repita uma rota até receber 429.\n"
+            + "4. Se aparecer 401 com \"a chave não existe ou foi revogada\" (acontece depois de a API reiniciar, porque as chaves somem), "
+            + "clique em **Authorize**, depois **Logout**, e gere uma chave nova."
             + contas;
     }
 
