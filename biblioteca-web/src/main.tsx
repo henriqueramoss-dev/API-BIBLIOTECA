@@ -6,7 +6,7 @@ import { AuthProvider } from './auth/AuthContext';
 import App from './App';
 import './styles.css';
 
-setBaseUrl(import.meta.env.VITE_API_URL ?? 'http://localhost:8080');
+setBaseUrl(import.meta.env.VITE_API_URL ?? 'https://api-biblioteca-xgsa.onrender.com');
 setApiKey(import.meta.env.VITE_API_KEY);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

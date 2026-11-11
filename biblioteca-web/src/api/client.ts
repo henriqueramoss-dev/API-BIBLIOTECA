@@ -22,7 +22,7 @@ export class ApiError extends Error {
   }
 }
 
-let baseUrl = 'http://localhost:8080';
+let baseUrl = 'https://api-biblioteca-xgsa.onrender.com';
 
 export function setBaseUrl(url: string) {
   baseUrl = url.replace(/\/+$/, '');

@@ -436,7 +436,7 @@ Exemplo de documentação de endpoint:
 Depois que os controllers forem implementados, todas as rotas poderão ser visualizadas em:
 
 ```text
-http://localhost:8080/swagger-ui.html
+https://api-biblioteca-xgsa.onrender.com/swagger-ui.html
 ```
 
 ---
@@ -484,12 +484,12 @@ Exemplo de um empréstimo:
 
 ```json
 "_links": {
-  "self":        { "href": "http://localhost:8080/emprestimos/1" },
-  "update":      { "href": "http://localhost:8080/emprestimos/1" },
-  "delete":      { "href": "http://localhost:8080/emprestimos/1" },
-  "emprestimos": { "href": "http://localhost:8080/emprestimos" },
-  "usuario":     { "href": "http://localhost:8080/usuarios/1" },
-  "livro":       { "href": "http://localhost:8080/livros/1" }
+  "self":        { "href": "https://api-biblioteca-xgsa.onrender.com/emprestimos/1" },
+  "update":      { "href": "https://api-biblioteca-xgsa.onrender.com/emprestimos/1" },
+  "delete":      { "href": "https://api-biblioteca-xgsa.onrender.com/emprestimos/1" },
+  "emprestimos": { "href": "https://api-biblioteca-xgsa.onrender.com/emprestimos" },
+  "usuario":     { "href": "https://api-biblioteca-xgsa.onrender.com/usuarios/1" },
+  "livro":       { "href": "https://api-biblioteca-xgsa.onrender.com/livros/1" }
 }
 ```
 
@@ -514,7 +514,7 @@ spring.datasource.password=
 
 Console do H2:
 
-> **O console web do H2 não está disponível neste projeto.** A partir do Spring Boot 4 ele saiu do pacote padrão e fica no módulo separado `spring-boot-h2console`, que não está no `pom.xml` (por isso `http://localhost:8080/h2-console` responde 404, apesar das linhas `spring.h2.console.*` do `application.properties`). Para consultar os dados, use a própria API (Swagger ou Postman).
+> **O console web do H2 não está disponível neste projeto.** A partir do Spring Boot 4 ele saiu do pacote padrão e fica no módulo separado `spring-boot-h2console`, que não está no `pom.xml` (por isso `https://api-biblioteca-xgsa.onrender.com/h2-console` responde 404, apesar das linhas `spring.h2.console.*` do `application.properties`). Para consultar os dados, use a própria API (Swagger ou Postman).
 >
 > Para habilitá-lo apenas em testes locais, adicione ao `pom.xml` a dependência `org.springframework.boot:spring-boot-h2console` e reinicie a API. Dados de acesso: JDBC URL `jdbc:h2:mem:biblioteca`, usuário `sa`, senha vazia. Não deixe o console habilitado fora do seu computador: ele dá acesso direto ao banco.
 
@@ -545,10 +545,10 @@ Quando a aplicação iniciar corretamente, será exibida uma mensagem semelhante
 Started BibliotecaApplication
 ```
 
-A API estará disponível em:
+A API roda no seu computador, na porta 8080. A versão publicada está em:
 
 ```text
-http://localhost:8080
+https://api-biblioteca-xgsa.onrender.com
 ```
 
 No log, a API mostra uma **chave de API de administrador**, usada no cabeçalho `X-API-Key` para cadastrar, alterar, excluir e ver dados pessoais. Para fixar a chave, defina a variável de ambiente `BIBLIOTECA_CHAVE_ADMIN`. Veja [Recursos avançados](docs/recursos-avancados.md).
@@ -611,7 +611,7 @@ Telas disponíveis:
 - **Listagem** de empréstimos, livros, autores, categorias, usuários e carteirinhas, com busca (endpoints `/buscar`), paginação e exclusão;
 - **Formulário** de cadastro e edição de cada entidade, com validação dos campos e exibição dos erros devolvidos pela API.
 
-Como executar (com a API já rodando em `http://localhost:8080`):
+Como executar o site no seu computador (ele já usa a API publicada em `https://api-biblioteca-xgsa.onrender.com`):
 
 ```bash
 cd biblioteca-web
@@ -619,7 +619,7 @@ npm install
 npm run dev
 ```
 
-O site abre em `http://localhost:5173`. Para usar outro endereço da API, copie `.env.example` para `.env` e altere `VITE_API_URL`.
+O site publicado está em `https://api-biblioteca-ebon.vercel.app`. Para usar outro endereço da API, copie `.env.example` para `.env` e altere `VITE_API_URL`.
 
 As capas dos livros vêm do [Open Library](https://openlibrary.org), buscadas pelo ISBN; quando não existe capa, o site mostra uma capa ilustrada. Para desligar as capas reais (nenhuma consulta externa), use `VITE_CAPAS_REAIS=false` no `.env`.
 
@@ -653,8 +653,8 @@ Condições de uso:
 - não utilizar a aplicação em produção sem revisão adicional de segurança e persistência;
 - manter a identificação do projeto quando o código for utilizado como referência acadêmica.
 
-A documentação interativa da API está disponível, durante a execução, em:
+A documentação interativa da API está disponível em:
 
 ```text
-http://localhost:8080/swagger-ui.html
+https://api-biblioteca-xgsa.onrender.com/swagger-ui.html
 ```

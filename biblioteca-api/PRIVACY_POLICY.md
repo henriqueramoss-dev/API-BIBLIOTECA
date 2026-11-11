@@ -148,7 +148,7 @@ O sistema tem as seguintes proteções:
 - validação de todos os campos recebidos (Bean Validation);
 - chave de API (`X-API-Key`), com níveis de acesso, exigida para ler dados pessoais e para alterar dados;
 - limite de requisições por minuto, que também limita as tentativas de login;
-- acesso do navegador limitado a `localhost` e à rede local (`192.168.*`);
+- acesso do navegador limitado ao site publicado (`https://api-biblioteca-ebon.vercel.app`) e, no desenvolvimento, à rede local;
 - mensagens de erro que não revelam detalhes internos.
 
 E tem **limitações que impedem o uso com dados reais**:

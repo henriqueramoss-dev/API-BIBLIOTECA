@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -78,12 +77,6 @@ import java.util.Map;
             url = "https://github.com/henriqueramoss-dev/API-DE-JAVA-/blob/develop/README.md"
         )
     ),
-    servers = {
-        @Server(
-            url = "http://localhost:8080",
-            description = "Servidor local de desenvolvimento e testes"
-        )
-    },
     externalDocs = @ExternalDocumentation(
         description = "Código-fonte e documentação completa do projeto",
         url = "https://github.com/henriqueramoss-dev/API-DE-JAVA-/tree/develop/biblioteca-api"
@@ -234,8 +227,8 @@ public class OpenApiConfig {
             info.setDescription(base + (completa ? RESUMO_VERSAO_2 : RESUMO_VERSAO_1) + "\n\n" + passoAPasso(completa, exemplos));
             info.setVersion(completa ? "2.0.0" : "1.0.0");
         }
-        // O servidor fixo em localhost:8080 faria o Try it out chamar o computador de quem abre o Swagger
-        // quando a API está publicada. Com "/", o Swagger usa o mesmo endereço em que foi aberto.
+        // Um servidor com endereço fixo faria o Try it out chamar outra máquina que não a da API publicada.
+        // Com "/", o Swagger usa o mesmo endereço em que foi aberto, seja ele qual for.
         openApi.setServers(List.of(new io.swagger.v3.oas.models.servers.Server().url("/").description("Este servidor")));
     }
 
