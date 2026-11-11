@@ -144,6 +144,29 @@ class ChaveApiTest extends ApiHttpTeste {
     }
 
     @Test
+    void clienteComChaveDeLeituraListaSoAsProprias() throws Exception {
+        String chaveDaAna = novaChave("ALUNO", "LEITURA");
+        String chaveDoBeto = novaChave("ALUNO", "LEITURA");
+
+        Resposta lista = chamar("GET", "/chaves-api", null, "X-API-Key", chaveDaAna);
+
+        // Antes da correção, quem não era ADMIN recebia 500 aqui.
+        assertThat(lista.status()).as(lista.corpo()).isEqualTo(200);
+        assertThat(lista.corpo()).contains(chaveDaAna.substring(0, 10)).doesNotContain(chaveDoBeto.substring(0, 10));
+    }
+
+    @Test
+    void chaveDeLeituraListaCatalogoNoSwaggerSemPrecisarDeOutroNivel() throws Exception {
+        String chave = novaChave("ALUNO", "LEITURA");
+
+        // Com a chave de leitura, as listas do catálogo respondem (e são as mesmas que um visitante vê).
+        for (String rota : new String[]{"/livros", "/autores", "/categorias", "/livros/buscar?titulo=a", "/categorias/1/livros"}) {
+            int status = chamar("GET", rota, null, "X-API-Key", chave).status();
+            assertThat(status).as("GET " + rota + " com chave de LEITURA").isIn(200, 404); // 404: categoria 1 pode não existir neste teste
+        }
+    }
+
+    @Test
     void chaveDeEscritaCadastraMasSoAdminExclui() throws Exception {
         String chave = novaChave("FUNCIONARIO", "ESCRITA");
 
