@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visualizador de dispositivos</title>
+<style>
+  :root { --fundo:#1f1a17; --painel:#2b2420; --texto:#f4ede1; --suave:#b9ab98; --destaque:#c9a24a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.4 system-ui, sans-serif; background:var(--fundo); color:var(--texto); }
+  header { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:10px 16px; background:var(--painel); border-bottom:1px solid #443a33; }
+  header h1 { font-size:15px; margin:0 12px 0 0; }
+  label { color:var(--suave); display:flex; gap:6px; align-items:center; }
+  input[type=text], select, button { background:#1f1a17; color:var(--texto); border:1px solid #5a4d44; border-radius:6px; padding:6px 10px; font:inherit; }
+  input[type=text] { width:230px; }
+  button { cursor:pointer; } button:hover { border-color:var(--destaque); }
+  .atalhos { display:flex; gap:6px; flex-wrap:wrap; }
+  #palco { display:flex; gap:28px; padding:24px; align-items:flex-start; overflow:auto; min-height:calc(100vh - 60px); }
+  .aparelho { flex:none; }
+  .aparelho .nome { display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; color:var(--suave); font-size:12px; }
+  .aparelho .nome button { padding:2px 8px; font-size:12px; }
+  .moldura { box-sizing:content-box; background:#000; border:10px solid #3a3029; border-radius:22px; overflow:hidden; transform-origin:top left; }
+  .moldura.largo { border-radius:10px; border-width:6px; }
+  iframe { display:block; border:0; background:#fff; }
+  .dica { color:var(--suave); padding:0 16px 16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Visualizador de dispositivos</h1>
+  <label>Endereço <input id="rota" type="text" value="/" aria-label="Endereço"></label>
+  <button id="ir">Ir</button>
+  <button id="recarregar">Recarregar todos</button>
+  <label>Zoom
+    <select id="zoom"><option value="1">100%</option><option value="0.75" selected>75%</option><option value="0.5">50%</option><option value="0.35">35%</option></select>
+  </label>
+  <label>Adicionar
+    <select id="novo"></select>
+  </label>
+  <button id="add">+</button>
+  <span class="atalhos" id="atalhos"></span>
+</header>
+<div id="palco"></div>
+<p class="dica">Cada tela é um site separado: entre, navegue e teste botões e formulários em todas ao mesmo tempo. O botão ⟲ gira o aparelho (retrato/paisagem).</p>
+<script>
+const APARELHOS = {
+  'iPhone SE': [375, 667], 'iPhone 14': [390, 844], 'Pixel 7': [412, 915], 'Galaxy S20': [360, 800],
+  'iPad Mini': [768, 1024], 'iPad Pro 11"': [834, 1194], 'Notebook': [1280, 720], 'Desktop Full HD': [1920, 1080],
+};
+const INICIAIS = ['iPhone SE', 'Pixel 7', 'iPad Mini', 'Notebook'];
+const ATALHOS = { 'Catálogo': '/', 'Entrar': '/entrar', 'Criar conta': '/cadastro', 'Ficha do livro': '/livro/1', 'Livros (dono)': '/livros', 'Novo livro (dono)': '/livros/novo' };
+
+const palco = document.getElementById('palco');
+const rota = document.getElementById('rota');
+const zoom = document.getElementById('zoom');
+const novo = document.getElementById('novo');
+let lista = [];
+
+const salvar = () => { try { localStorage.setItem('dispositivos', JSON.stringify(lista)); } catch {} };
+const lerSalva = () => { try { return JSON.parse(localStorage.getItem('dispositivos')); } catch { return null; } };
+
+for (const nome of Object.keys(APARELHOS)) novo.add(new Option(`${nome} (${APARELHOS[nome].join('×')})`, nome));
+for (const [nome, caminho] of Object.entries(ATALHOS)) {
+  const b = document.createElement('button'); b.textContent = nome;
+  b.onclick = () => { rota.value = caminho; irParaRota(); }; document.getElementById('atalhos').append(b);
+}
+
+function desenhar() {
+  palco.replaceChildren();
+  const z = Number(zoom.value);
+  lista.forEach((item, i) => {
+    const [l, a] = APARELHOS[item.nome]; const largura = item.paisagem ? a : l, altura = item.paisagem ? l : a;
+    const box = document.createElement('div'); box.className = 'aparelho';
+    box.innerHTML = `<div class="nome"><span>${item.nome} · ${largura}×${altura}</span><span><button data-g>⟲</button> <button data-x>✕</button></span></div>`;
+    const moldura = document.createElement('div'); moldura.className = 'moldura' + (largura > 1000 ? ' largo' : '');
+    moldura.style.width = largura * z + 'px'; moldura.style.height = altura * z + 'px';
+    const f = document.createElement('iframe'); f.src = item.url || rota.value; f.width = largura; f.height = altura; f.title = item.nome;
+    f.style.transform = `scale(${z})`; f.style.transformOrigin = 'top left';
+    moldura.append(f); box.append(moldura); palco.append(box);
+    box.querySelector('[data-g]').onclick = () => { item.paisagem = !item.paisagem; salvar(); desenhar(); };
+    box.querySelector('[data-x]').onclick = () => { lista.splice(i, 1); salvar(); desenhar(); };
+  });
+}
+function irParaRota() { lista.forEach((i) => delete i.url); desenhar(); }
+
+document.getElementById('ir').onclick = irParaRota;
+rota.onkeydown = (e) => { if (e.key === 'Enter') irParaRota(); };
+document.getElementById('recarregar').onclick = desenhar;
+zoom.onchange = desenhar;
+document.getElementById('add').onclick = () => { lista.push({ nome: novo.value }); salvar(); desenhar(); };
+
+lista = lerSalva() ?? INICIAIS.map((nome) => ({ nome }));
+desenhar();
+</script>
+</body>
+</html>
