@@ -250,13 +250,14 @@ public class OpenApiConfig {
         if (!completa) {
             return "**Para testar:** todas as rotas exigem uma chave de API (cadeado); o botão **Authorize** guarda a chave neste "
                 + "navegador, inclusive ao trocar de versão. " + catalogo + "Para cadastrar, alterar, excluir ou ver dados pessoais, "
-                + "use uma chave de funcionário (como gerar: na **Versão 2**, `POST /chaves-api`). " + chaveAntiga + contas;
+                + "use uma chave de funcionário (como gerar: `POST /auth/login` com e-mail e senha de funcionário, ou na **Versão 2**, `POST /chaves-api`). " + chaveAntiga + contas;
         }
         return "**Passo a passo para testar:**\n"
             + "1. " + (catalogo.isEmpty() ? "" : "Só para ler o catálogo, " + catalogo.substring(0, 1).toLowerCase() + catalogo.substring(1)
                 + "\nPara o resto: ")
-            + "abra `POST /chaves-api`, clique em **Try it out** e informe e-mail e senha de um usuário "
-            + "(`nivel`: `ADMIN` para funcionário, `LEITURA` para cliente).\n"
+            + "abra `POST /auth/login`, clique em **Try it out** e informe e-mail e senha de um usuário "
+            + "(a chave vem no campo `chave`: nível ADMIN para funcionário, LEITURA para cliente). "
+            + "Também dá para gerar uma chave com `POST /chaves-api`, escolhendo o `nivel`.\n"
             + "2. Copie o campo `chave` da resposta (ela só aparece uma vez), clique em **Authorize**, cole e confirme.\n"
             + "3. Pronto: as rotas com cadeado funcionam. Para ver a idempotência, execute um POST duas vezes com o mesmo "
             + "`X-Idempotency-Key`; para o limite de requisições, repita uma rota até receber 429.\n"

@@ -104,6 +104,26 @@ class ChaveApiTest extends ApiHttpTeste {
     // ---------------------------------------------------------------- geração da chave
 
     @Test
+    void loginDevolveOUsuarioEUmaChaveQueFuncionaNoAuthorizeDoSwagger() throws Exception {
+        String funcionario = criarUsuario("FUNCIONARIO");
+        Resposta login = chamar("POST", "/auth/login", "{\"email\":\"" + funcionario + "\",\"senha\":\"" + SENHA + "\"}");
+        assertThat(login.status()).isEqualTo(200);
+        assertThat(login.corpo()).contains("\"email\":\"" + funcionario + "\"").contains("\"tipo\":\"FUNCIONARIO\"")
+            .contains("\"nivel\":\"ADMIN\"").doesNotContain("senha");
+        String chave = campo(login, "chave");
+        assertThat(chave).startsWith("bib_");
+        assertThat(chamar("GET", "/usuarios", null, "X-API-Key", chave).status()).isEqualTo(200);
+
+        // Cliente recebe só LEITURA: lê o catálogo, mas não vê dados pessoais.
+        String aluno = criarUsuario("ALUNO");
+        Resposta loginAluno = chamar("POST", "/auth/login", "{\"email\":\"" + aluno + "\",\"senha\":\"" + SENHA + "\"}");
+        assertThat(loginAluno.corpo()).contains("\"nivel\":\"LEITURA\"");
+        String chaveAluno = campo(loginAluno, "chave");
+        assertThat(chamar("GET", "/livros", null, "X-API-Key", chaveAluno).status()).isEqualTo(200);
+        assertThat(chamar("GET", "/usuarios", null, "X-API-Key", chaveAluno).status()).isEqualTo(403);
+    }
+
+    @Test
     void funcionarioGeraChaveQueSoApareceUmaVezEPassaAFuncionar() throws Exception {
         Resposta gerada = gerarChave(criarUsuario("FUNCIONARIO"), SENHA, "ADMIN");
 
