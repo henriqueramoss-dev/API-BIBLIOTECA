@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:visivel": "playwright test --headed --project=celular --workers=1",
+    "test:e2e:celular": "playwright test --project=celular-pequeno --project=celular",
+    "test:e2e:relatorio": "playwright show-report e2e/relatorio",
+    "e2e:instalar": "playwright install chromium",
+    "preview:dispositivos": "node dev-tools/abrir-visualizador.mjs"
   },
   "dependencies": {
     "react": "18.3.1",
@@ -14,6 +21,7 @@
     "react-router-dom": "6.26.2"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.2",

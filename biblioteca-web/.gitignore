@@ -2,3 +2,8 @@ node_modules
 dist
 .env
 *.tsbuildinfo
+e2e/resultados
+e2e/relatorio
+e2e/capturas
+test-results
+playwright-report
